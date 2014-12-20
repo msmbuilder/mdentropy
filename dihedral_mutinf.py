@@ -15,9 +15,7 @@ def mi(X, Y, r=rbins()):
     
 def dihedrals(traj):
     kinds = [md.compute_phi, 
-             md.compute_psi] 
-             #md.compute_chi1, 
-             #md.compute_chi2]
+             md.compute_psi]
     return [kind(traj)[1].T for kind in kinds]
     
 def f(D): 
@@ -26,7 +24,7 @@ def f(D):
     return g
     
 def run(traj, iter, N):
-    D = dihedrals(traj[(1000*j):(1000*(j+1))])
+    D = dihedrals(traj)
     n = D[0].shape[0]
     R = []
     for i in range(iter+1):
