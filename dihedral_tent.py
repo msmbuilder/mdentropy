@@ -35,8 +35,6 @@ def cmi(X, Y, Z):
 def dihedrals(traj):
     kinds = [md.compute_phi, 
              md.compute_psi]
-             #md.compute_chi1, 
-             #md.compute_chi2]
     return [kind(traj)[1].T for kind in kinds]
     
 def f(cD, pD): 
