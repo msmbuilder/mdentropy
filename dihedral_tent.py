@@ -65,7 +65,7 @@ def run(current, past, iter, N):
         CH = (pool.map(q, zip(*(2*[range(n)])))*np.ones((n,n))).T
         pool.terminate()
     T = CMI/CH
-    return T.T - T
+    return T - T.T
     
     
 def parse_cmdln():
