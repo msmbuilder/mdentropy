@@ -64,16 +64,16 @@ def dihedrals(traj):
 
 
 def f(cD, pD):
-    g = lambda i: sum([cmi(cD[d[0]][i[0]], pD[d[1]][i[1]], pD[d[0]][i[0]])
-                      for d in combinations(range(len(cD)), 2)])
-    g.__name__ = 'g'
+    def g(i):
+        sum([cmi(cD[d[0]][i[0]], pD[d[1]][i[1]], pD[d[0]][i[0]])
+             for d in combinations(range(len(cD)), 2)])
     return g
 
 
 def h(cD, pD):
-    q = lambda i: sum([ce(cD[d[0]][i[0]], pD[d[0]][i[0]])
-                       for d in combinations(range(len(cD)), 2)])
-    q.__name__ = 'q'
+    def q(i):
+        sum([ce(cD[d[0]][i[0]], pD[d[0]][i[0]])
+             for d in combinations(range(len(cD)), 2)])
     return q
 
 

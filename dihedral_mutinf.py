@@ -24,8 +24,9 @@ def dihedrals(traj):
 
 
 def f(D):
-    g = lambda i: sum([mi(d[0][i[0]], d[1][i[1]]) for d in combinations(D, 2)])
-    g.__name__ = 'g'
+    def g(i):
+        sum([mi(d[0][i[0]], d[1][i[1]]) for d in combinations(D, 2)])
+
     return g
 
 
