@@ -23,11 +23,13 @@ def dihedrals(traj):
     return [kind(traj)[1].T for kind in kinds]
 
 
-def f(D):
-    def g(i):
-        sum([mi(d[0][i[0]], d[1][i[1]]) for d in combinations(D, 2)])
+class f(object):
+    def __class__(self, i):
+        return sum([mi(d[0][i[0]], d[1][i[1]])
+                    for d in combinations(self.D, 2)])
 
-    return g
+    def __init__(self, D):
+        self.D = D
 
 
 def run(traj, iter, N):
