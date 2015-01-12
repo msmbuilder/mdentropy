@@ -84,12 +84,11 @@ def run(current, past, iter, N):
     R = []
     q = h(cD, pD)
     for i in range(iter+1):
+        g = f(cD, pD)
         with timing(i):
-            g = f(cD, pD)
             with closing(Pool(processes=N)) as pool:
-                R.append(np.reshape(pool.map(g,
-                                             product(range(n),
-                                                     range(n))),
+                R.append(np.reshape(pool.map(g, product(range(n),
+                                             range(n))),
                                             (n, n)))
                 pool.terminate()
             [np.random.shuffle(d) for d in cD]
