@@ -64,7 +64,7 @@ def dihedrals(traj):
 
 
 class f(object):
-    def g(self, i):
+    def __call__(self, i):
         return sum([cmi(self.cD[d[0]][i[0]], self.pD[d[1]][i[1]],
                     self.pD[d[0]][i[0]])
                     for d in combinations(range(len(self.cD)), 2)])
@@ -75,7 +75,7 @@ class f(object):
 
 
 class h(object):
-    def q(self, i):
+    def __call__(self, i):
         return sum([ce(self.cD[d[0]][i[0]], self.pD[d[0]][i[0]])
                     for d in combinations(range(len(self.cD)), 2)])
 
@@ -94,7 +94,7 @@ def run(current, past, iter, N):
         g = f(cD, pD)
         with timing(i):
             with closing(Pool(processes=N)) as pool:
-                R.append(np.reshape(pool.map(g.g, product(range(n),
+                R.append(np.reshape(pool.map(g, product(range(n),
                                              range(n))),
                                             (n, n)))
                 pool.terminate()
@@ -102,7 +102,7 @@ def run(current, past, iter, N):
             [np.random.shuffle(d) for d in pD]
     CMI = R[0] - np.mean(R[1:], axis=0)
     with closing(Pool(processes=N)) as pool:
-        CH = (pool.map(q.q, zip(*(2*[range(n)])))*np.ones((n, n))).T
+        CH = (pool.map(q, zip(*(2*[range(n)])))*np.ones((n, n))).T
         pool.terminate()
     T = CMI/CH
     return T - T.T
