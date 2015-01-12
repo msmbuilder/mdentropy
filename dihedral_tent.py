@@ -94,7 +94,7 @@ def run(current, past, iter, N):
         g = f(cD, pD)
         with timing(i):
             with closing(Pool(processes=N)) as pool:
-                R.append(np.reshape(pool.map(g, product(range(n),
+                R.append(np.reshape(pool.map(g.g, product(range(n),
                                              range(n))),
                                             (n, n)))
                 pool.terminate()
@@ -102,7 +102,7 @@ def run(current, past, iter, N):
             [np.random.shuffle(d) for d in pD]
     CMI = R[0] - np.mean(R[1:], axis=0)
     with closing(Pool(processes=N)) as pool:
-        CH = (pool.map(q, zip(*(2*[range(n)])))*np.ones((n, n))).T
+        CH = (pool.map(q.q, zip(*(2*[range(n)])))*np.ones((n, n))).T
         pool.terminate()
     T = CMI/CH
     return T - T.T
