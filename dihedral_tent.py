@@ -1,11 +1,27 @@
 import numpy as np
 import mdtraj as md
+import time
 import argparse
 import cPickle
 from multiprocessing import Pool
 from itertools import product
 from itertools import combinations_with_replacement as combinations
 from contextlib import closing
+
+
+class timing(object):
+    "Context manager for printing performance"
+    def __init__(self, iter):
+        self.iter = iter
+
+    def __enter__(self):
+        self.start = time.time()
+
+    def __exit__(self, ty, val, tb):
+        end = time.time()
+        print("Round %s : %0.3f seconds" %
+              (self.iter, end-self.start))
+        return False
 
 
 def rbins(n=30):
@@ -68,13 +84,16 @@ def run(current, past, iter, N):
     R = []
     q = h(cD, pD)
     for i in range(iter+1):
-        g = f(cD, pD)
-        with closing(Pool(processes=N)) as pool:
-            R.append(np.reshape(pool.map(g,
-                                         product(range(n), range(n))), (n, n)))
-            pool.terminate()
-        [np.random.shuffle(d) for d in cD]
-        [np.random.shuffle(d) for d in pD]
+        with timing(i):
+            g = f(cD, pD)
+            with closing(Pool(processes=N)) as pool:
+                R.append(np.reshape(pool.map(g,
+                                             product(range(n),
+                                                     range(n))),
+                                            (n, n)))
+                pool.terminate()
+            [np.random.shuffle(d) for d in cD]
+            [np.random.shuffle(d) for d in pD]
     CMI = R[0] - np.mean(R[1:], axis=0)
     with closing(Pool(processes=N)) as pool:
         CH = (pool.map(q, zip(*(2*[range(n)])))*np.ones((n, n))).T
