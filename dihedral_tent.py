@@ -63,20 +63,25 @@ def dihedrals(traj):
     return [kind(traj)[1].T for kind in kinds]
 
 
-def f(cD, pD):
-    def g(i):
-        return sum([cmi(cD[d[0]][i[0]], pD[d[1]][i[1]], pD[d[0]][i[0]])
-                    for d in combinations(range(len(cD)), 2)])
-    g.__module__ = '__main__'
-    return g
+class f(object):
+    def g(self, i):
+        return sum([cmi(self.cD[d[0]][i[0]], self.pD[d[1]][i[1]],
+                    self.pD[d[0]][i[0]])
+                    for d in combinations(range(len(self.cD)), 2)])
+
+    def __init__(self, cD, pD):
+        self.cD = cD
+        self.pD = pD
 
 
-def h(cD, pD):
-    def q(i):
-        return sum([ce(cD[d[0]][i[0]], pD[d[0]][i[0]])
-                    for d in combinations(range(len(cD)), 2)])
-    q.__module__ = '__main__'
-    return q
+class h(object):
+    def q(self, i):
+        return sum([ce(self.cD[d[0]][i[0]], self.pD[d[0]][i[0]])
+                    for d in combinations(range(len(self.cD)), 2)])
+
+    def __init__(self, cD, pD):
+        self.cD = cD
+        self.pD = pD
 
 
 def run(current, past, iter, N):
