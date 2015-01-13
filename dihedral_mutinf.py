@@ -2,10 +2,26 @@ import numpy as np
 import mdtraj as md
 import argparse
 import cPickle
+import time
 from multiprocessing import Pool
 from itertools import combinations_with_replacement as combinations
 from sklearn.metrics import mutual_info_score
 from contextlib import closing
+
+
+class timing(object):
+    "Context manager for printing performance"
+    def __init__(self, iter):
+        self.iter = iter
+
+    def __enter__(self):
+        self.start = time.time()
+
+    def __exit__(self, ty, val, tb):
+        end = time.time()
+        print("Round %s : %0.3f seconds" %
+              (self.iter, end-self.start))
+        return False
 
 
 def rbins(n=30):
@@ -39,12 +55,13 @@ def run(traj, iter, N):
     for i in range(iter+1):
         r = np.zeros((n, n))
         g = f(D)
-        with closing(Pool(processes=N)) as pool:
-            r[np.triu_indices(n)] = pool.map(g, combinations(range(n), 2))
-            pool.terminate()
-        r[np.triu_indices(n)[::-1]] = r[np.triu_indices(n)]
-        R.append(r)
-        [np.random.shuffle(d) for d in D]
+        with timing(i):
+            with closing(Pool(processes=N)) as pool:
+                r[np.triu_indices(n)] = pool.map(g, combinations(range(n), 2))
+                pool.terminate()
+            r[np.triu_indices(n)[::-1]] = r[np.triu_indices(n)]
+            R.append(r)
+            [np.random.shuffle(d) for d in D]
     return R[0] - np.mean(R[1:], axis=0)
 
 
