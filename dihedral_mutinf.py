@@ -40,7 +40,7 @@ def dihedrals(traj):
 
 
 class f(object):
-    def __class__(self, i):
+    def __call__(self, i):
         return sum([mi(d[0][i[0]], d[1][i[1]])
                     for d in combinations(self.D, 2)])
 
