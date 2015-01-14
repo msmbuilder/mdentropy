@@ -34,18 +34,18 @@ def ent(H):
 
 
 def ent1D(X, r=rbins()):
-    H = np.histogram(X, r)[0]
+    H = np.histogram(X, r)[0].astype(float)
     return ent(H)
 
 
 def ent2D(X, Y, r=rbins()):
-    H = np.histogram2d(X, Y, 2*[r])[0]
+    H = np.histogram2d(X, Y, 2*[r])[0].astype(float)
     return ent(H)
 
 
 def ent3D(X, Y, Z, r=rbins()):
     W = np.vstack((X, Y, Z)).T
-    H = np.histogramdd(W, 3*[r])[0]
+    H = np.histogramdd(W, 3*[r])[0].astype(float)
     return ent(H)
 
 
