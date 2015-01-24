@@ -1,9 +1,11 @@
 import numpy as np
 import mdtraj as md
+import pandas as pd
 import time
 import argparse
 import cPickle
 from multiprocessing import Pool
+from scipy import stats
 from itertools import product
 from itertools import combinations_with_replacement as combinations
 from contextlib import closing
@@ -24,88 +26,107 @@ class timing(object):
         return False
 
 
-def rbins(n=30):
-    return np.linspace(-np.pi, np.pi, n+3)[1:-1]
+def shuffle(df, n=1):
+    ind = df.index
+    sampler = np.random.permutation
+    for i in range(n):
+        new_vals = df.take(sampler(df.shape[0])).values
+        df = pd.DataFrame(new_vals, index=ind)
+    return df
 
 
-def ent(H):
-    H /= H.sum()
-    return -np.sum(H*np.nan_to_num(np.log2(H)))
+def ent(nbins, *args):
+    W = np.vstack((args)).T
+    n = len(args)
+    H = np.histogramdd(W, bins=nbins, range=n*[[-180, 180]])
+    dx = H[1][0][1] - H[1][0][0]
+    return stats.entropy(H[0].flatten()) + n*np.log(dx)
 
 
-def ent1D(X, r=rbins()):
-    H = np.histogram(X, r)[0].astype(float)
-    return ent(H)
+def ce(nbins, X, Y):
+    return ent(nbins, X, Y) - ent(nbins, Y)
 
 
-def ent2D(X, Y, r=rbins()):
-    H = np.histogram2d(X, Y, 2*[r])[0].astype(float)
-    return ent(H)
+def cmi(nbins, X, Y, Z):
+    return sum([ent(nbins, X, Z),
+                ent(nbins, Y, Z),
+                -ent(nbins, X, Y, Z),
+                - ent(nbins, Z)])
 
 
-def ent3D(X, Y, Z, r=rbins()):
-    W = np.vstack((X, Y, Z)).T
-    H = np.histogramdd(W, 3*[r])[0].astype(float)
-    return ent(H)
+class getDihedrals(object):
+    def __call__(self, traj):
+        atoms, angles = self.method(traj)
+        idx = [traj.topology.atom(i).residue.index
+               for i in atoms[:, self.type]]
+        return pd.DataFrame(180*angles/np.pi, columns=idx)
 
-
-def ce(X, Y):
-    return ent2D(X, Y) - ent1D(Y)
-
-
-def cmi(X, Y, Z):
-    return ent2D(X, Z) + ent2D(Y, Z) - ent3D(X, Y, Z) - ent1D(Z)
+    def __init__(self, method, type):
+        assert type < 3 or type > -1
+        self.type = type
+        self.method = method
 
 
 def dihedrals(traj):
-    kinds = [md.compute_phi,
-             md.compute_psi]
-    return [kind(traj)[1].T for kind in kinds]
+    kinds = [
+        getDihedrals(md.compute_phi, 2),
+        getDihedrals(md.compute_psi, 1),
+        getDihedrals(md.compute_chi1, 1),
+        getDihedrals(md.compute_chi2, 0)
+        ]
+    return [kind(traj) for kind in kinds]
 
 
-class f(object):
+class F(object):
     def __call__(self, i):
-        return sum([cmi(self.cD[d[0]][i[0]], self.pD[d[1]][i[1]],
-                    self.pD[d[0]][i[0]])
+        return sum([cmi(self.n, self.cD[d[0]][i[0]], self.pD[d[1]][i[1]],
+                        self.pD[d[0]][i[0]])
+                    if i[0] in self.cD[d[0]].columns
+                    and i[1] in self.cD[d[1]].columns
+                    else 0.0
                     for d in combinations(range(len(self.cD)), 2)])
 
-    def __init__(self, cD, pD):
+    def __init__(self, nbins, cD, pD):
         self.cD = cD
         self.pD = pD
+        self.n = nbins
 
 
-class h(object):
+class H(object):
     def __call__(self, i):
-        return sum([ce(self.cD[d[0]][i[0]], self.pD[d[0]][i[0]])
+        return sum([ce(self.n, self.cD[d[0]][i], self.pD[d[1]][i])
+                    if i in self.cD[d[0]].columns
+                    and i in self.pD[d[1]].columns
+                    else 0.0
                     for d in combinations(range(len(self.cD)), 2)])
 
-    def __init__(self, cD, pD):
+    def __init__(self, nbins, cD, pD):
         self.cD = cD
         self.pD = pD
+        self.n = nbins
 
 
-def run(current, past, iter, N):
+def run(current, past, nbins, iter, N):
     cD = dihedrals(current)
     pD = dihedrals(past)
-    n = cD[0].shape[0]
+    n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in cD]))))
     R = []
-    q = h(cD, pD)
+    q = H(nbins, cD, pD)
     for i in range(iter+1):
-        g = f(cD, pD)
+        g = F(nbins, cD, pD)
         with timing(i):
             with closing(Pool(processes=N)) as pool:
-                R.append(np.reshape(pool.map(g, product(range(n),
-                                             range(n))),
-                                            (n, n)))
+                R.append(np.reshape(pool.map(g, product(n, n)),
+                                            (n.size, n.size)))
                 pool.terminate()
-            [np.random.shuffle(d) for d in cD]
-            [np.random.shuffle(d) for d in pD]
+            cD = [shuffle(df) for df in cD]
+            pD = [shuffle(df) for df in pD]
     CMI = R[0] - np.mean(R[1:], axis=0)
     with closing(Pool(processes=N)) as pool:
-        CH = (pool.map(q, zip(*(2*[range(n)])))*np.ones((n, n))).T
+        CH = (pool.map(q, n)*np.ones((n.size, n.size))).T
         pool.terminate()
     T = CMI/CH
-    return T - T.T
+    return pd.DataFrame(T - T.T, columns=n)
 
 
 def parse_cmdln():
@@ -122,6 +143,8 @@ def parse_cmdln():
     parser.add_argument('-s', '--shuffle-iter', dest='iter',
                         help='Number of shuffle iterations.',
                         default=100, type=int)
+    parser.add_argument('-b', '--n-bins', dest='nbins',
+                        help='Number of bins', default=30, type=int)
     parser.add_argument('-n', '--n-proc', dest='N',
                         help='Number of processors', default=4, type=int)
     parser.add_argument('-o', '--output', dest='out',
@@ -134,5 +157,5 @@ if __name__ == "__main__":
     options = parse_cmdln()
     current = md.load(options.current, top=options.top)
     past = md.load(options.past, top=options.top)
-    D = run(current, past, options.iter, options.N)
+    D = run(current, past, options.nbins, options.iter, options.N)
     cPickle.dump(D, open(options.out, 'wb'))

@@ -3,8 +3,10 @@ import mdtraj as md
 import argparse
 import cPickle
 import time
+import pandas as pd
 from multiprocessing import Pool
 from itertools import combinations_with_replacement as combinations
+from scipy import stats
 from sklearn.metrics import mutual_info_score
 from contextlib import closing
 
@@ -24,44 +26,84 @@ class timing(object):
         return False
 
 
-def rbins(n=30):
-    return np.linspace(-np.pi, np.pi, n+3)[1:-1]
+def shuffle(df, n=1):
+    ind = df.index
+    sampler = np.random.permutation
+    for i in range(n):
+        new_vals = df.take(sampler(df.shape[0])).values
+        df = pd.DataFrame(new_vals, index=ind)
+    return df
 
 
-def mi(X, Y, r=rbins()):
-    H = np.histogram2d(X, Y, [r, r])[0]
-    return mutual_info_score(None, None, contingency=H)
+def ent(nbins, *args):
+    W = np.vstack((args)).T
+    n = len(args)
+    H = np.histogramdd(W, bins=nbins, range=n*[[-180, 180]])
+    dx = H[1][0][1] - H[1][0][0]
+    return stats.entropy(H[0].flatten()) + n*np.log(dx)
+
+
+def mi(nbins, X, Y):
+    H = np.histogram2d(X, Y, bins=nbins, range=2*[[-180, 180]])
+    return mutual_info_score(None, None, contingency=H[0])
+
+
+class getDihedrals(object):
+    def __call__(self, traj):
+        atoms, angles = self.method(traj)
+        idx = [traj.topology.atom(i).residue.index
+               for i in atoms[:, self.type]]
+        return pd.DataFrame(180*angles/np.pi, columns=idx)
+
+    def __init__(self, method, type):
+        assert type < 3 or type > -1
+        self.type = type
+        self.method = method
 
 
 def dihedrals(traj):
-    kinds = [md.compute_phi,
-             md.compute_psi]
-    return [kind(traj)[1].T for kind in kinds]
+    kinds = [
+        getDihedrals(md.compute_phi, 2),
+        getDihedrals(md.compute_psi, 1),
+        getDihedrals(md.compute_chi1, 1),
+        getDihedrals(md.compute_chi2, 0)
+        ]
+    return [kind(traj) for kind in kinds]
 
 
 class f(object):
     def __call__(self, i):
-        return sum([mi(d[0][i[0]], d[1][i[1]])
-                    for d in combinations(self.D, 2)])
+        return np.divide(sum([mi(self.n, d[0][i[0]], d[1][i[1]])
+                              if i[0] in d[0].columns
+                              and i[1] in d[1].columns
+                              else 0.0
+                              for d in combinations(self.D, 2)]),
+                         sum([np.sqrt(
+                              ent(self.n, d[0][i[0]])*ent(self.n, d[1][i[1]]))
+                              if i[0] in d[0].columns
+                              and i[1] in d[1].columns
+                              else 0.0
+                              for d in combinations(self.D, 2)]))
 
-    def __init__(self, D):
+    def __init__(self, nbins, D):
         self.D = D
+        self.n = nbins
 
 
-def run(traj, iter, N):
+def run(traj, nbins, iter, N):
     D = dihedrals(traj)
-    n = D[0].shape[0]
+    n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in D]))))
     R = []
     for i in range(iter+1):
-        r = np.zeros((n, n))
-        g = f(D)
+        r = np.zeros((n.size, n.size))
+        g = f(nbins, D)
         with timing(i):
             with closing(Pool(processes=N)) as pool:
-                r[np.triu_indices(n)] = pool.map(g, combinations(range(n), 2))
+                r[np.triu_indices(n.size)] = pool.map(g, combinations(n, 2))
                 pool.terminate()
-            r[np.triu_indices(n)[::-1]] = r[np.triu_indices(n)]
+            r[np.triu_indices(n.size)[::-1]] = r[np.triu_indices(n.size)]
             R.append(r)
-            [np.random.shuffle(d) for d in D]
+            [shuffle(df) for df in D]
     return R[0] - np.mean(R[1:], axis=0)
 
 
@@ -76,6 +118,8 @@ def parse_cmdln():
                         default=100, type=int)
     parser.add_argument('-t', '--topology', dest='top',
                         help='File containing topology.', default=None)
+    parser.add_argument('-b', '--n-bins', dest='nbins',
+                        help='Number of bins', default=30, type=int)
     parser.add_argument('-n', '--n-proc', dest='N',
                         help='Number of processors to be used.',
                         default=4, type=int)
@@ -88,5 +132,5 @@ def parse_cmdln():
 if __name__ == "__main__":
     options = parse_cmdln()
     traj = md.load(options.traj, top=options.top)
-    M = run(traj, options.iter, options.N)
+    M = run(traj, options.nbins, options.iter, options.N)
     cPickle.dump(M, open(options.out, 'wb'))
