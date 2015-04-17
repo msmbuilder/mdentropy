@@ -128,6 +128,7 @@ def parse_cmdln():
 
 if __name__ == "__main__":
     options = parse_cmdln()
-    traj = md.load(options.traj, top=options.top)
+    files = options.traj.replace(' ', '').split(',')
+    traj = md.load(files, top=options.top)
     M = run(traj, options.nbins, options.iter, options.N)
     cPickle.dump(M, open(options.out, 'wb'))
