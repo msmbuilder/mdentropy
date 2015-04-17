@@ -134,9 +134,11 @@ def parse_cmdln():
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-c', '--current', dest='current',
-                        help='File containing current step states.')
+                        help='File containing current step states.',
+                        required=True)
     parser.add_argument('-p', '--past', dest='past',
-                        help='File containing past step states.')
+                        help='File containing past step states.',
+                        required=True)
     parser.add_argument('-t', '--topology',
                         dest='top', help='File containing topology.',
                         default=None)

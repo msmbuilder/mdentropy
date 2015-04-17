@@ -1,14 +1,14 @@
+import time
+import cPickle
+import argparse
 import numpy as np
 import mdtraj as md
-import argparse
-import cPickle
-import time
 import pandas as pd
-from multiprocessing import Pool
-from itertools import combinations_with_replacement as combinations
 from scipy import stats
-from sklearn.metrics import mutual_info_score
 from contextlib import closing
+from multiprocessing import Pool
+from sklearn.metrics import mutual_info_score
+from itertools import combinations_with_replacement as combinations
 
 
 class timing(object):
