@@ -1,14 +1,14 @@
+import time
+import cPickle
+import argparse
 import numpy as np
 import mdtraj as md
 import pandas as pd
-import time
-import argparse
-import cPickle
-from multiprocessing import Pool
 from scipy import stats
 from itertools import product
-from itertools import combinations_with_replacement as combinations
 from contextlib import closing
+from multiprocessing import Pool
+from itertools import combinations_with_replacement as combinations
 
 
 class timing(object):
@@ -71,8 +71,8 @@ def dihedrals(traj):
     kinds = [
         getDihedrals(md.compute_phi, 2),
         getDihedrals(md.compute_psi, 1),
-        getDihedrals(md.compute_chi1, 1),
-        getDihedrals(md.compute_chi2, 0)
+        # getDihedrals(md.compute_chi1, 1),
+        # getDihedrals(md.compute_chi2, 0)
         ]
     return [kind(traj) for kind in kinds]
 

@@ -65,25 +65,19 @@ def dihedrals(traj):
     kinds = [
         getDihedrals(md.compute_phi, 2),
         getDihedrals(md.compute_psi, 1),
-        getDihedrals(md.compute_chi1, 1),
-        getDihedrals(md.compute_chi2, 0)
+        # getDihedrals(md.compute_chi1, 1),
+        # getDihedrals(md.compute_chi2, 0)
         ]
     return [kind(traj) for kind in kinds]
 
 
 class f(object):
     def __call__(self, i):
-        return np.divide(sum([mi(self.n, d[0][i[0]], d[1][i[1]])
-                              if i[0] in d[0].columns
-                              and i[1] in d[1].columns
-                              else 0.0
-                              for d in combinations(self.D, 2)]),
-                         sum([np.sqrt(
-                              ent(self.n, d[0][i[0]])*ent(self.n, d[1][i[1]]))
-                              if i[0] in d[0].columns
-                              and i[1] in d[1].columns
-                              else 0.0
-                              for d in combinations(self.D, 2)]))
+        return sum([mi(self.n, d[0][i[0]], d[1][i[1]])
+                    if i[0] in d[0].columns
+                    and i[1] in d[1].columns
+                    else 0.0
+                    for d in combinations(self.D, 2)])
 
     def __init__(self, nbins, D):
         self.D = D
@@ -94,17 +88,20 @@ def run(traj, nbins, iter, N):
     D = dihedrals(traj)
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in D]))))
     R = []
-    for i in range(iter+1):
+    for i in xrange(iter+1):
         r = np.zeros((n.size, n.size))
         g = f(nbins, D)
         with timing(i):
+            idx = np.triu_indices(n.size)
             with closing(Pool(processes=N)) as pool:
-                r[np.triu_indices(n.size)] = pool.map(g, combinations(n, 2))
+                r[idx] = pool.map(g, combinations(n, 2))
                 pool.terminate()
-            r[np.triu_indices(n.size)[::-1]] = r[np.triu_indices(n.size)]
+            r[idx[::-1]] = r[idx]
             R.append(r)
-            [shuffle(df) for df in D]
-    return R[0] - np.mean(R[1:], axis=0)
+            D = [shuffle(df) for df in D]
+    if iter > 0:
+        return R[0] - np.mean(R[1:], axis=0)
+    return R[0]
 
 
 def parse_cmdln():
@@ -112,7 +109,7 @@ def parse_cmdln():
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-i', '--input', dest='traj',
-                        help='File containing trajectory.')
+                        help='File containing trajectory.', required=True)
     parser.add_argument('-s', '--shuffle-iter', dest='iter',
                         help='Number of shuffle iterations.',
                         default=100, type=int)
