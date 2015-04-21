@@ -70,9 +70,7 @@ class getDihedrals(object):
 def dihedrals(traj):
     kinds = [
         getDihedrals(md.compute_phi, 2),
-        getDihedrals(md.compute_psi, 1),
-        # getDihedrals(md.compute_chi1, 1),
-        # getDihedrals(md.compute_chi2, 0)
+        getDihedrals(md.compute_psi, 1)
         ]
     return [kind(traj) for kind in kinds]
 
