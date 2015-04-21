@@ -1,10 +1,10 @@
 import time
-import glob
 import cPickle
 import argparse
 import numpy as np
 import mdtraj as md
 import pandas as pd
+from glob import glob
 from scipy import stats
 from itertools import chain
 from contextlib import closing
