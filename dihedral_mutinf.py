@@ -1,10 +1,12 @@
 import time
+import glob
 import cPickle
 import argparse
 import numpy as np
 import mdtraj as md
 import pandas as pd
 from scipy import stats
+from itertools import chain
 from contextlib import closing
 from multiprocessing import Pool
 from sklearn.metrics import mutual_info_score
@@ -128,7 +130,8 @@ def parse_cmdln():
 
 if __name__ == "__main__":
     options = parse_cmdln()
-    files = options.traj.replace(' ', '').split(',')
+    expr = options.traj.replace(' ', '').split(',')
+    files = list(chain(*map(glob, expr)))
     traj = md.load(files, top=options.top)
     M = run(traj, options.nbins, options.iter, options.N)
     cPickle.dump(M, open(options.out, 'wb'))
