@@ -31,8 +31,6 @@ def dihedrals(traj):
     kinds = [
         getDihedrals(md.compute_phi, 2),
         getDihedrals(md.compute_psi, 1),
-        # getDihedrals(md.compute_chi1, 1),
-        # getDihedrals(md.compute_chi2, 0)
         ]
     return [kind(traj) for kind in kinds]
 
@@ -82,7 +80,7 @@ def parse_cmdln():
     parser.add_argument('-t', '--topology', dest='top',
                         help='File containing topology.', default=None)
     parser.add_argument('-b', '--n-bins', dest='nbins',
-                        help='Number of bins', default=30, type=int)
+                        help='Number of bins', default=24, type=int)
     parser.add_argument('-n', '--n-proc', dest='N',
                         help='Number of processors to be used.',
                         default=4, type=int)

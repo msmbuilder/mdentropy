@@ -5,6 +5,8 @@ import argparse
 import numpy as np
 import mdtraj as md
 import pandas as pd
+from glob import glob
+from itertools import chain
 from itertools import product
 from contextlib import closing
 from multiprocessing import Pool
@@ -36,7 +38,9 @@ def dihedrals(traj):
 
 class F(object):
     def __call__(self, i):
-        return sum([cmi(self.n, self.cD[d[0]][i[0]], self.pD[d[1]][i[1]],
+        return sum([cmi(self.n, self.r,
+                        self.cD[d[0]][i[0]],
+                        self.pD[d[1]][i[1]],
                         self.pD[d[0]][i[0]])
                     if i[0] in self.cD[d[0]].columns
                     and i[1] in self.cD[d[1]].columns
@@ -103,7 +107,7 @@ def parse_cmdln():
                         help='Number of shuffle iterations.',
                         default=100, type=int)
     parser.add_argument('-b', '--n-bins', dest='nbins',
-                        help='Number of bins', default=30, type=int)
+                        help='Number of bins', default=24, type=int)
     parser.add_argument('-n', '--n-proc', dest='N',
                         help='Number of processors', default=4, type=int)
     parser.add_argument('-o', '--output', dest='out',
@@ -114,7 +118,11 @@ def parse_cmdln():
 
 if __name__ == "__main__":
     options = parse_cmdln()
-    current = md.load(options.current, top=options.top)
-    past = md.load(options.past, top=options.top)
+    expr1, expr2 = options.current.replace(' ', '').split(','),
+    options.past.replace(' ', '').split(',')
+    f1, f2 = list(chain(*map(glob, expr1))),
+    list(chain(*map(glob, expr2))),
+    current = md.load(f1, top=options.top)
+    past = md.load(f2, top=options.top)
     D = run(current, past, options.nbins, options.iter, options.N)
     cPickle.dump(D, open(options.out, 'wb'))

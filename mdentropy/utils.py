@@ -2,6 +2,7 @@ import time
 import numpy as np
 import pandas as pd
 
+
 class timing(object):
     "Context manager for printing performance"
     def __init__(self, iter):
