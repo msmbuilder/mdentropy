@@ -1,51 +1,17 @@
-import time
+# !/usr/bin/env python
+
 import cPickle
 import argparse
 import numpy as np
 import mdtraj as md
 import pandas as pd
-from scipy import stats
+from glob import glob
+from itertools import chain
 from contextlib import closing
+from mdentropy.entropy import mi
 from multiprocessing import Pool
-from sklearn.metrics import mutual_info_score
+from mdentropy.utils import timing, shuffle
 from itertools import combinations_with_replacement as combinations
-
-
-class timing(object):
-    "Context manager for printing performance"
-    def __init__(self, iter):
-        self.iter = iter
-
-    def __enter__(self):
-        self.start = time.time()
-
-    def __exit__(self, ty, val, tb):
-        end = time.time()
-        print("Round %s : %0.3f seconds" %
-              (self.iter, end-self.start))
-        return False
-
-
-def shuffle(df, n=1):
-    ind = df.index
-    sampler = np.random.permutation
-    for i in range(n):
-        new_vals = df.take(sampler(df.shape[0])).values
-        df = pd.DataFrame(new_vals, index=ind)
-    return df
-
-
-def ent(nbins, *args):
-    W = np.vstack((args)).T
-    n = len(args)
-    H = np.histogramdd(W, bins=nbins, range=n*[[-180, 180]])
-    dx = H[1][0][1] - H[1][0][0]
-    return stats.entropy(H[0].flatten()) + n*np.log(dx)
-
-
-def mi(nbins, X, Y):
-    H = np.histogram2d(X, Y, bins=nbins, range=2*[[-180, 180]])
-    return mutual_info_score(None, None, contingency=H[0])
 
 
 class getDihedrals(object):
@@ -128,7 +94,8 @@ def parse_cmdln():
 
 if __name__ == "__main__":
     options = parse_cmdln()
-    files = options.traj.replace(' ', '').split(',')
+    expr = options.traj.replace(' ', '').split(',')
+    files = list(chain(*map(glob, expr)))
     traj = md.load(files, top=options.top)
     M = run(traj, options.nbins, options.iter, options.N)
     cPickle.dump(M, open(options.out, 'wb'))

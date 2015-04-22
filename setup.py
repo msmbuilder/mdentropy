@@ -21,16 +21,16 @@ classifiers = """\
     Topic :: Scientific/Engineering :: Information Analysis"""
 
 setup(
-    name = "MDEntropy",
+    name = "mdentropy",
     version = "0.1",
     packages = find_packages(),
-    scripts = ['dmutinf', 'dtent.py'],
+    scripts = ['./scripts/dmutinf', './scripts/dtent'],
     zip_safe=True,
     platforms=["Windows", "Linux", "Mac OS-X", "Unix"],
     classifiers=[e.strip() for e in classifiers.splitlines()],
-    author = "Carlos Xavier Hernández",
-    author_email = "me@example.com",
-    description = "This is an Example Package",
+    author = "Carlos Xavier Hernandez",
+    author_email = "cxh@stanford.edu",
+    description = "Analyze correlated motions in MD trajectories with only a few lines of Python code.",
     license = "MIT",
     keywords = "molecular dynamics entropy analysis",
     url = "http://github.com/cxhernandez/mdentropy"

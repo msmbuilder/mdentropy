@@ -1,57 +1,16 @@
-import time
+# !/usr/bin/env python
+
 import cPickle
 import argparse
 import numpy as np
 import mdtraj as md
 import pandas as pd
-from scipy import stats
 from itertools import product
 from contextlib import closing
 from multiprocessing import Pool
+from mdentropy.entropy import ce, cmi
+from mdentropy.utils import timing, shuffle
 from itertools import combinations_with_replacement as combinations
-
-
-class timing(object):
-    "Context manager for printing performance"
-    def __init__(self, iter):
-        self.iter = iter
-
-    def __enter__(self):
-        self.start = time.time()
-
-    def __exit__(self, ty, val, tb):
-        end = time.time()
-        print("Round %s : %0.3f seconds" %
-              (self.iter, end-self.start))
-        return False
-
-
-def shuffle(df, n=1):
-    ind = df.index
-    sampler = np.random.permutation
-    for i in range(n):
-        new_vals = df.take(sampler(df.shape[0])).values
-        df = pd.DataFrame(new_vals, index=ind)
-    return df
-
-
-def ent(nbins, *args):
-    W = np.vstack((args)).T
-    n = len(args)
-    H = np.histogramdd(W, bins=nbins, range=n*[[-180, 180]])
-    dx = H[1][0][1] - H[1][0][0]
-    return stats.entropy(H[0].flatten()) + n*np.log(dx)
-
-
-def ce(nbins, X, Y):
-    return ent(nbins, X, Y) - ent(nbins, Y)
-
-
-def cmi(nbins, X, Y, Z):
-    return sum([ent(nbins, X, Z),
-                ent(nbins, Y, Z),
-                -ent(nbins, X, Y, Z),
-                - ent(nbins, Z)])
 
 
 class getDihedrals(object):
