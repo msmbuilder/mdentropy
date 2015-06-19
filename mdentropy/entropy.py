@@ -4,17 +4,15 @@ from sklearn.metrics import mutual_info_score
 
 
 def bias(h, n):
-    dx = np.abs(h[1][1] - h[1][0])
+    dx = np.abs(h[1][0][1] - h[1][0][0])
     return n*np.log(dx)
 
 
-def ent(nbins, range, correction=True, *args):
+def ent(nbins, range, *args):
     data = np.vstack((args)).T
     hist = np.histogramdd(data, bins=nbins, range=range)
     H = stats.entropy(hist[0].flatten())
-    if correction:
-        H += bias(hist, len(args))
-    return H
+    return H + bias(hist, len(args))
 
 
 def mi(nbins, X, Y, range=2*[[-180., 180.]]):
