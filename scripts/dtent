@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 
-import cPickle
+import pickle
 import argparse
 import numpy as np
 import mdtraj as md
@@ -126,4 +126,4 @@ if __name__ == "__main__":
     current = md.load(f1, top=options.top)
     past = md.load(f2, top=options.top)
     D = run(current, past, options.nbins, options.iter, options.N)
-    cPickle.dump(D, open(options.out, 'wb'))
+    pickle.dump(D, open(options.out, 'wb'))
