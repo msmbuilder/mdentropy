@@ -118,10 +118,10 @@ def parse_cmdln():
 
 if __name__ == "__main__":
     options = parse_cmdln()
-    expr1, expr2 = options.current.replace(' ', '').split(','),
-    options.past.replace(' ', '').split(',')
-    f1, f2 = list(chain(*map(glob, expr1))),
-    list(chain(*map(glob, expr2))),
+    expr1, expr2 = (options.current.replace(' ', '').split(','),
+                    options.past.replace(' ', '').split(','))
+    f1, f2 = (list(chain(*map(glob, expr1))),
+              list(chain(*map(glob, expr2))))
     current = md.load(f1, top=options.top)
     past = md.load(f2, top=options.top)
     D = run(current, past, options.nbins, options.iter, options.N)
