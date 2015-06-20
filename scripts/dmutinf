@@ -4,39 +4,13 @@ import pickle
 import argparse
 import numpy as np
 import mdtraj as md
-import pandas as pd
 from glob import glob
-<<<<<<< HEAD:scripts/dmutinf
-=======
-from scipy import stats
->>>>>>> master:dihedral_mutinf.py
 from itertools import chain
 from contextlib import closing
 from multiprocessing import Pool
-from mdentropy.utils import timing, shuffle
 from mdentropy.mutinf import MutualInformation
+from mdentropy.utils import timing, shuffle, dihedrals
 from itertools import combinations_with_replacement as combinations
-
-
-class getDihedrals(object):
-    def __call__(self, traj):
-        atoms, angles = self.method(traj)
-        idx = [traj.topology.atom(i).residue.index
-               for i in atoms[:, self.type]]
-        return pd.DataFrame(180*angles/np.pi, columns=idx)
-
-    def __init__(self, method, type):
-        assert type < 3 or type > -1
-        self.type = type
-        self.method = method
-
-
-def dihedrals(traj):
-    kinds = [
-        getDihedrals(md.compute_phi, 2),
-        getDihedrals(md.compute_psi, 1),
-        ]
-    return [kind(traj) for kind in kinds]
 
 
 def run(traj, nbins, iter, N):

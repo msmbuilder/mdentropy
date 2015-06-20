@@ -10,31 +10,8 @@ from itertools import chain
 from itertools import product
 from contextlib import closing
 from multiprocessing import Pool
-from mdentropy.utils import timing
+from mdentropy.utils import timing, dihedrals
 from mdentropy.tent import TransferEntropy
-
-
-class getDihedrals(object):
-    def __call__(self, traj):
-        atoms, angles = self.method(traj)
-        idx = [traj.topology.atom(i).residue.index
-               for i in atoms[:, self.type]]
-        return pd.DataFrame(180*angles/np.pi, columns=idx)
-
-    def __init__(self, method, type):
-        assert type < 3 or type > -1
-        self.type = type
-        self.method = method
-
-
-def dihedrals(traj):
-    kinds = [
-        getDihedrals(md.compute_phi, 2),
-        getDihedrals(md.compute_psi, 1),
-        getDihedrals(md.compute_chi1, 0),
-        getDihedrals(md.compute_chi2, 1)
-        ]
-    return [kind(traj) for kind in kinds]
 
 
 def run(current, past, nbins, N):
