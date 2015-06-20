@@ -31,8 +31,8 @@ def dihedrals(traj):
     kinds = [
         getDihedrals(md.compute_phi, 2),
         getDihedrals(md.compute_psi, 1),
-        getDihedrals(md.compute_chi, 0),
-        getDihedrals(md.compute_chi, 1)
+        getDihedrals(md.compute_chi1, 0),
+        getDihedrals(md.compute_chi2, 1)
         ]
     return [kind(traj) for kind in kinds]
 
