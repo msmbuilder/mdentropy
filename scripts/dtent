@@ -31,7 +31,9 @@ class getDihedrals(object):
 def dihedrals(traj):
     kinds = [
         getDihedrals(md.compute_phi, 2),
-        getDihedrals(md.compute_psi, 1)
+        getDihedrals(md.compute_psi, 1),
+        getDihedrals(md.compute_chi, 0),
+        getDihedrals(md.compute_chi, 1)
         ]
     return [kind(traj) for kind in kinds]
 
@@ -54,41 +56,17 @@ class F(object):
         self.n = nbins
 
 
-class H(object):
-    def __call__(self, i):
-        return sum([ce(self.n, self.cD[d[0]][i], self.pD[d[1]][i])
-                    if i in self.cD[d[0]].columns
-                    and i in self.pD[d[1]].columns
-                    else 0.0
-                    for d in combinations(range(len(self.cD)), 2)])
-
-    def __init__(self, nbins, cD, pD):
-        self.cD = cD
-        self.pD = pD
-        self.n = nbins
-
-
 def run(current, past, nbins, iter, N):
     cD = dihedrals(current)
     pD = dihedrals(past)
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in cD]))))
-    R = []
-    q = H(nbins, cD, pD)
-    for i in range(iter+1):
-        g = F(nbins, cD, pD)
-        with timing(i):
-            with closing(Pool(processes=N)) as pool:
-                R.append(np.reshape(pool.map(g, product(n, n)),
-                                            (n.size, n.size)))
-                pool.terminate()
-            cD = [shuffle(df) for df in cD]
-            pD = [shuffle(df) for df in pD]
-    CMI = R[0] - np.mean(R[1:], axis=0)
-    with closing(Pool(processes=N)) as pool:
-        CH = (pool.map(q, n)*np.ones((n.size, n.size))).T
-        pool.terminate()
-    T = CMI/CH
-    return pd.DataFrame(T - T.T, columns=n)
+    g = F(nbins, cD, pD)
+    with timing(i):
+        with closing(Pool(processes=N)) as pool:
+            T = np.reshape(pool.map(g, product(n, n)),
+                          (n.size, n.size))
+            pool.terminate()
+    return pd.DataFrame(T, columns=n)
 
 
 def parse_cmdln():
@@ -104,9 +82,6 @@ def parse_cmdln():
     parser.add_argument('-t', '--topology',
                         dest='top', help='File containing topology.',
                         default=None)
-    parser.add_argument('-s', '--shuffle-iter', dest='iter',
-                        help='Number of shuffle iterations.',
-                        default=100, type=int)
     parser.add_argument('-b', '--n-bins', dest='nbins',
                         help='Number of bins', default=24, type=int)
     parser.add_argument('-n', '--n-proc', dest='N',
@@ -125,5 +100,5 @@ if __name__ == "__main__":
               list(chain(*map(glob, expr2))))
     current = md.load(f1, top=options.top)
     past = md.load(f2, top=options.top)
-    D = run(current, past, options.nbins, options.iter, options.N)
+    D = run(current, past, options.nbins, options.N)
     pickle.dump(D, open(options.out, 'wb'))
