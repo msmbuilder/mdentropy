@@ -6,6 +6,10 @@ import numpy as np
 import mdtraj as md
 import pandas as pd
 from glob import glob
+<<<<<<< HEAD:scripts/dmutinf
+=======
+from scipy import stats
+>>>>>>> master:dihedral_mutinf.py
 from itertools import chain
 from contextlib import closing
 from multiprocessing import Pool
