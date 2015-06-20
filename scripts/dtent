@@ -45,6 +45,9 @@ def parse_cmdln():
     parser.add_argument('-p', '--past', dest='past',
                         help='File containing past step states.',
                         required=True)
+    parser.add_argument('-s', '--shuffle-iter', dest='iter',
+                        help='Number of shuffle iterations.',
+                        default=100, type=int)
     parser.add_argument('-t', '--topology',
                         dest='top', help='File containing topology.',
                         default=None)
