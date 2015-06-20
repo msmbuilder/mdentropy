@@ -109,7 +109,7 @@ def run(N=100, n=1000):
     S = gen_cov(2*N)
     T = Theoretical(U, S, N).tent()
     E = Empirical(U, S, N, n).tent()
-    print np.sum((E-T)**2)
+    print(np.sum((E-T)**2))
     embed()
 
 if __name__ == "__main__":
