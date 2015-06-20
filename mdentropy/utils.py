@@ -22,12 +22,12 @@ class timing(object):
 
 
 def shuffle(df, n=1):
-    ind = df.index
+    sdf = df.copy()
     sampler = np.random.permutation
     for i in range(n):
-        new_vals = df.take(sampler(df.shape[0])).values
-        df = pd.DataFrame(new_vals, index=ind)
-    return df
+        sdf = sdf.apply(sampler, axis=0)
+        sdf = sdf.apply(sampler, axis=1)
+    return sdf
 
 
 class Dihedrals(object):

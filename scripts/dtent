@@ -18,9 +18,9 @@ def run(current, past, nbins, iter, N):
     cD = dihedrals(current)
     pD = dihedrals(past)
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in cD]))))
-    g = TransferEntropy(nbins, cD, pD)
     R = []
     for i in range(iter+1):
+        g = TransferEntropy(nbins, cD, pD)
         with timing(i):
             with closing(Pool(processes=N)) as pool:
                 CMI = np.reshape(pool.map(g, product(n, n)),
