@@ -8,9 +8,9 @@ import pandas as pd
 from glob import glob
 from itertools import chain
 from contextlib import closing
-from mdentropy.entropy import mi
 from multiprocessing import Pool
 from mdentropy.utils import timing, shuffle
+from mdentropy.mutinf import MutualInformation
 from itertools import combinations_with_replacement as combinations
 
 
@@ -35,26 +35,13 @@ def dihedrals(traj):
     return [kind(traj) for kind in kinds]
 
 
-class f(object):
-    def __call__(self, i):
-        return sum([mi(self.n, d[0][i[0]], d[1][i[1]])
-                    if i[0] in d[0].columns
-                    and i[1] in d[1].columns
-                    else 0.0
-                    for d in combinations(self.D, 2)])
-
-    def __init__(self, nbins, D):
-        self.D = D
-        self.n = nbins
-
-
 def run(traj, nbins, iter, N):
     D = dihedrals(traj)
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in D]))))
     R = []
     for i in xrange(iter+1):
         r = np.zeros((n.size, n.size))
-        g = f(nbins, D)
+        g = MutualInformation(nbins, D)
         with timing(i):
             idx = np.triu_indices(n.size)
             with closing(Pool(processes=N)) as pool:

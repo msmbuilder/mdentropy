@@ -10,9 +10,8 @@ from itertools import chain
 from itertools import product
 from contextlib import closing
 from multiprocessing import Pool
-from mdentropy.entropy import ce, cmi
-from mdentropy.utils import timing, shuffle
-from itertools import combinations_with_replacement as combinations
+from mdentropy.utils import timing
+from mdentropy.tent import TransferEntropy
 
 
 class getDihedrals(object):
@@ -38,33 +37,15 @@ def dihedrals(traj):
     return [kind(traj) for kind in kinds]
 
 
-class F(object):
-    def __call__(self, i):
-        return sum([cmi(self.n,
-                        self.cD[d[0]][i[0]],
-                        self.pD[d[1]][i[1]],
-                        self.pD[d[0]][i[0]])/ce(self.n, self.cD[d[0]][i[0]],
-                                                self.pD[d[0]][i[0]])
-                    if i[0] in self.cD[d[0]].columns
-                    and i[1] in self.cD[d[1]].columns
-                    else 0.0
-                    for d in combinations(range(len(self.cD)), 2)])
-
-    def __init__(self, nbins, cD, pD):
-        self.cD = cD
-        self.pD = pD
-        self.n = nbins
-
-
 def run(current, past, nbins, iter, N):
     cD = dihedrals(current)
     pD = dihedrals(past)
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in cD]))))
-    g = F(nbins, cD, pD)
-    with timing(i):
+    g = TransferEntropy(nbins, cD, pD)
+    with timing():
         with closing(Pool(processes=N)) as pool:
             T = np.reshape(pool.map(g, product(n, n)),
-                          (n.size, n.size))
+                           (n.size, n.size))
             pool.terminate()
     return pd.DataFrame(T, columns=n)
 
