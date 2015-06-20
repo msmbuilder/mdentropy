@@ -32,5 +32,5 @@ def cmi(nbins, X, Y, Z, range=[-180., 180.]):
 
 
 def ncmi(nbins, X, Y, Z, range=[-180., 180.]):
-    return (1 - (ent(nbins, 2*[range], Y, Z)
+    return (1 + (ent(nbins, 2*[range], Y, Z)
             - ent(nbins, 3*[range], X, Y, Z))/ce(nbins, X, Z, range=range))
