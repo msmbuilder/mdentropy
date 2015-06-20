@@ -20,7 +20,7 @@ def run(current, past, nbins, iter, N):
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in cD]))))
     g = TransferEntropy(nbins, cD, pD)
     R = []
-    for i in xrange(iter+1):
+    for i in range(iter+1):
         with timing(i):
             with closing(Pool(processes=N)) as pool:
                 CMI = np.reshape(pool.map(g, product(n, n)),
