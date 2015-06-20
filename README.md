@@ -3,4 +3,11 @@ MDEntropy
 =========
 
 MDEntropy is a python library that allows users to perform information-theoretic
-analyses on molecular dynamics (MD) trajectories.
+analyses on molecular dynamics (MD) trajectories. It includes methods to
+calculate:
+
++ Bias-Corrected Entropy
++ Conditional Entropy
++ Mutual Information
++ Conditional Mutual Information
++ Normalized Conditional Mutual Information
