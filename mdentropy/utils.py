@@ -8,23 +8,26 @@ import mdtraj as md
 
 class timing(object):
     "Context manager for printing performance"
+    def __init__(self, iter):
+        self.iter = iter
+
     def __enter__(self):
         self.start = time.time()
 
     def __exit__(self, ty, val, tb):
         end = time.time()
-        print("Runtime : %0.3f seconds" %
-              (end-self.start))
+        print("Round %d : %0.3f seconds" %
+              (self.iter, end-self.start))
         return False
 
 
 def shuffle(df, n=1):
-    ind = df.index
+    sdf = df.copy()
     sampler = np.random.permutation
     for i in range(n):
-        new_vals = df.take(sampler(df.shape[0])).values
-        df = pd.DataFrame(new_vals, index=ind)
-    return df
+        sdf = sdf.apply(sampler, axis=0)
+        sdf = sdf.apply(sampler, axis=1)
+    return sdf
 
 
 class Dihedrals(object):

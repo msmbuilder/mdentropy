@@ -10,20 +10,28 @@ from itertools import chain
 from itertools import product
 from contextlib import closing
 from multiprocessing import Pool
-from mdentropy.utils import timing, dihedrals
+from mdentropy.utils import timing, dihedrals, shuffle
 from mdentropy.tent import TransferEntropy
 
 
-def run(current, past, nbins, N):
+def run(current, past, nbins, iter, N):
     cD = dihedrals(current)
     pD = dihedrals(past)
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in cD]))))
-    g = TransferEntropy(nbins, cD, pD)
-    with timing():
-        with closing(Pool(processes=N)) as pool:
-            T = np.reshape(pool.map(g, product(n, n)),
-                           (n.size, n.size))
-            pool.terminate()
+    R = []
+    for i in range(iter+1):
+        g = TransferEntropy(nbins, cD, pD)
+        with timing(i):
+            with closing(Pool(processes=N)) as pool:
+                CMI = np.reshape(pool.map(g, product(n, n)),
+                                 (n.size, n.size))
+                pool.terminate()
+            R.append(CMI)
+            cD = [shuffle(df) for df in cD]
+            pD = [shuffle(df) for df in pD]
+    T = R[0]
+    if iter > 0:
+        T -= np.mean(R[1:], axis=0)
     return pd.DataFrame(T, columns=n)
 
 
@@ -37,6 +45,9 @@ def parse_cmdln():
     parser.add_argument('-p', '--past', dest='past',
                         help='File containing past step states.',
                         required=True)
+    parser.add_argument('-s', '--shuffle-iter', dest='iter',
+                        help='Number of shuffle iterations.',
+                        default=100, type=int)
     parser.add_argument('-t', '--topology',
                         dest='top', help='File containing topology.',
                         default=None)
@@ -58,5 +69,5 @@ if __name__ == "__main__":
               list(chain(*map(glob, expr2))))
     current = md.load(f1, top=options.top)
     past = md.load(f2, top=options.top)
-    D = run(current, past, options.nbins, options.N)
+    D = run(current, past, options.nbins, options.iter, options.N)
     pickle.dump(D, open(options.out, 'wb'))

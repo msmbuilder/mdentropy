@@ -17,7 +17,7 @@ def run(traj, nbins, iter, N):
     D = dihedrals(traj)
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in D]))))
     R = []
-    for i in xrange(iter+1):
+    for i in range(iter+1):
         r = np.zeros((n.size, n.size))
         g = MutualInformation(nbins, D)
         with timing(i):
