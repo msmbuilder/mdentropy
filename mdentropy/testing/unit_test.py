@@ -9,4 +9,5 @@ def check_ncmi():
 
     NCMI = ncmi(30, A, B, C)
 
-    assert(NCMI == cmi(30, A, B, C)/ce(30, A, B, C))
+    if not (NCMI == cmi(30, A, B, C)/ce(30, A, B, C)):
+        ValueError('Normalized mutual information test failed.')

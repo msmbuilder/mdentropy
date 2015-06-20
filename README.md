@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.14940.svg)](http://dx.doi.org/10.5281/zenodo.14940)
+[![Build Status](https://travis-ci.org/cxhernandez/mdentropy.svg?branch=master)](https://travis-ci.org/cxhernandez/mdentropy) [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.14940.svg)](http://dx.doi.org/10.5281/zenodo.14940)
 MDEntropy
 =========
 
