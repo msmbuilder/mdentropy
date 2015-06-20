@@ -37,7 +37,7 @@ def dihedrals(traj):
     return [kind(traj) for kind in kinds]
 
 
-def run(current, past, nbins, iter, N):
+def run(current, past, nbins, N):
     cD = dihedrals(current)
     pD = dihedrals(past)
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in cD]))))
