@@ -1,0 +1,85 @@
+# !/usr/bin/env python
+
+import pickle
+import argparse
+import numpy as np
+import mdtraj as md
+import pandas as pd
+from glob import glob
+from itertools import chain
+from itertools import product
+from contextlib import closing
+from multiprocessing import Pool
+from mdentropy.utils import timing
+from mdentropy.tent import TransferEntropy
+
+
+class getDihedrals(object):
+    def __call__(self, traj):
+        atoms, angles = self.method(traj)
+        idx = [traj.topology.atom(i).residue.index
+               for i in atoms[:, self.type]]
+        return pd.DataFrame(180*angles/np.pi, columns=idx)
+
+    def __init__(self, method, type):
+        assert type < 3 or type > -1
+        self.type = type
+        self.method = method
+
+
+def dihedrals(traj):
+    kinds = [
+        getDihedrals(md.compute_phi, 2),
+        getDihedrals(md.compute_psi, 1),
+        getDihedrals(md.compute_chi, 0),
+        getDihedrals(md.compute_chi, 1)
+        ]
+    return [kind(traj) for kind in kinds]
+
+
+def run(current, past, nbins, iter, N):
+    cD = dihedrals(current)
+    pD = dihedrals(past)
+    n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in cD]))))
+    g = TransferEntropy(nbins, cD, pD)
+    with timing():
+        with closing(Pool(processes=N)) as pool:
+            T = np.reshape(pool.map(g, product(n, n)),
+                           (n.size, n.size))
+            pool.terminate()
+    return pd.DataFrame(T, columns=n)
+
+
+def parse_cmdln():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('-c', '--current', dest='current',
+                        help='File containing current step states.',
+                        required=True)
+    parser.add_argument('-p', '--past', dest='past',
+                        help='File containing past step states.',
+                        required=True)
+    parser.add_argument('-t', '--topology',
+                        dest='top', help='File containing topology.',
+                        default=None)
+    parser.add_argument('-b', '--n-bins', dest='nbins',
+                        help='Number of bins', default=24, type=int)
+    parser.add_argument('-n', '--n-proc', dest='N',
+                        help='Number of processors', default=4, type=int)
+    parser.add_argument('-o', '--output', dest='out',
+                        help='Name of output file.', default='tent.pkl')
+    args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    options = parse_cmdln()
+    expr1, expr2 = (options.current.replace(' ', '').split(','),
+                    options.past.replace(' ', '').split(','))
+    f1, f2 = (list(chain(*map(glob, expr1))),
+              list(chain(*map(glob, expr2))))
+    current = md.load(f1, top=options.top)
+    past = md.load(f2, top=options.top)
+    D = run(current, past, options.nbins, options.N)
+    pickle.dump(D, open(options.out, 'wb'))

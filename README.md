@@ -2,4 +2,5 @@
 MDEntropy
 =========
 
-Entropy calculations for MD data
+MDEntropy is a python library that allows users to perform information-theoretic
+analyses on molecular dynamics (MD) trajectories.
