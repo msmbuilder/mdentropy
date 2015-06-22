@@ -24,7 +24,7 @@ def run(current, past, nbins, iter, N):
         with timing(i):
             with closing(Pool(processes=N)) as pool:
                 CMI = np.reshape(pool.map(g, product(n, n)),
-                                 (n.size, n.size))
+                                 (n.size, n.size)).T
                 pool.terminate()
             R.append(CMI)
             cD = [shuffle(df) for df in cD]
