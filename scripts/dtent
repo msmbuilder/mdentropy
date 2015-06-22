@@ -28,11 +28,10 @@ def run(current, past, nbins, iter, N):
                 pool.terminate()
             R.append(CMI)
             cD = [shuffle(df) for df in cD]
-            pD = [shuffle(df) for df in pD]
     T = R[0]
     if iter > 0:
         T -= np.mean(R[1:], axis=0)
-    return pd.DataFrame(T, columns=n)
+    return pd.DataFrame(T - T.T, columns=n)
 
 
 def parse_cmdln():
@@ -47,7 +46,7 @@ def parse_cmdln():
                         required=True)
     parser.add_argument('-s', '--shuffle-iter', dest='iter',
                         help='Number of shuffle iterations.',
-                        default=100, type=int)
+                        default=10, type=int)
     parser.add_argument('-t', '--topology',
                         dest='top', help='File containing topology.',
                         default=None)
