@@ -5,7 +5,7 @@ from itertools import combinations_with_replacement as combinations
 class TransferEntropy(object):
     def __call__(self, i):
         return sum([ncmi(self.n,
-                         self.cD[d[0]][i[0]],
+                         self.cD[d[1]][i[1]],
                          self.pD[d[1]][i[1]],
                          self.pD[d[0]][i[0]])
                     if i[0] in self.cD[d[0]].columns

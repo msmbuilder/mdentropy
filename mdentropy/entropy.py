@@ -25,12 +25,12 @@ def ce(nbins, X, Y, range=[-180., 180.]):
 
 
 def cmi(nbins, X, Y, Z, range=[-180., 180.]):
-    return sum([ent(nbins, 2*[range], X, Z),
-                ent(nbins, 2*[range], Y, Z),
+    return sum([ent(nbins, 2*[range], Y, Z),
+                ent(nbins, 2*[range], X, Z),
                 - ent(nbins, [range], Z),
                 - ent(nbins, 3*[range], X, Y, Z)])
 
 
 def ncmi(nbins, X, Y, Z, range=[-180., 180.]):
-    return (1 + (ent(nbins, 2*[range], Y, Z)
-            - ent(nbins, 3*[range], X, Y, Z))/ce(nbins, X, Z, range=range))
+    return (1 + (ent(nbins, 2*[range], X, Z)
+            - ent(nbins, 3*[range], X, Y, Z))/ce(nbins, Y, Z, range=range))
