@@ -21,6 +21,11 @@ class timing(object):
         return False
 
 
+def hist(nbins, range, *args):
+    data = np.vstack((args)).T
+    return np.histogramdd(data, bins=nbins, range=range)[0].flatten()
+
+
 def shuffle(df, n=1):
     sdf = df.copy()
     sampler = np.random.permutation

@@ -1,36 +1,42 @@
 import numpy as np
 from scipy import stats
+from scipy.special import psi
 from sklearn.metrics import mutual_info_score
-
-
-def bias(h, n):
-    dx = np.abs(h[1][0][1] - h[1][0][0])
-    return n*np.log(dx)
+from mdentropy.utils import hist
 
 
 def ent(nbins, range, *args):
-    data = np.vstack((args)).T
-    hist = np.histogramdd(data, bins=nbins, range=range)
-    H = stats.entropy(hist[0].flatten())
-    return H + bias(hist, len(args))
+    bins = hist(nbins, range, *args)
+    return stats.entropy(bins)
+
+
+def entc(nbins, range, *args):
+    N = args[0].shape[0]
+    bins = hist(nbins, range, *args)
+    return np.sum(bins*(np.log(N)
+                  - psi(bins)
+                  - ((-1)**bins/(bins + 1))))/N
 
 
 def mi(nbins, X, Y, range=2*[[-180., 180.]]):
-    H = np.histogram2d(X, Y, bins=nbins, range=range)
-    return mutual_info_score(None, None, contingency=H[0])
+    bins = hist(nbins, range, X, Y)
+    return entc(nbins, range, X)
+           + entc(nbins, range, Y)
+           - entc(nbins, range, X, Y)
 
 
 def ce(nbins, X, Y, range=[-180., 180.]):
-    return ent(nbins, 2*[range], X, Y) - ent(nbins, [range], Y)
+    return entc(nbins, 2*[range], X, Y)
+           - entc(nbins, [range], Y)
 
 
 def cmi(nbins, X, Y, Z, range=[-180., 180.]):
-    return sum([ent(nbins, 2*[range], X, Z),
-                ent(nbins, 2*[range], Y, Z),
-                - ent(nbins, [range], Z),
-                - ent(nbins, 3*[range], X, Y, Z)])
+    return sum([entc(nbins, 2*[range], X, Z),
+                entc(nbins, 2*[range], Y, Z),
+                - entc(nbins, [range], Z),
+                - entc(nbins, 3*[range], X, Y, Z)])
 
 
 def ncmi(nbins, X, Y, Z, range=[-180., 180.]):
-    return (1 + (ent(nbins, 2*[range], Y, Z)
-            - ent(nbins, 3*[range], X, Y, Z))/ce(nbins, X, Z, range=range))
+    return (1 + (entc(nbins, 2*[range], Y, Z)
+            - entc(nbins, 3*[range], X, Y, Z))/ce(nbins, X, Z, range=range))
