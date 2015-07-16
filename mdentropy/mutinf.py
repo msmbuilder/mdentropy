@@ -1,4 +1,4 @@
-from mdentropy.entropy import mi
+from mdentropy.entropy import nmi
 from itertools import combinations_with_replacement as combinations
 
 
