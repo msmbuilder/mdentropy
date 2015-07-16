@@ -4,7 +4,7 @@ from itertools import combinations_with_replacement as combinations
 
 class MutualInformation(object):
     def __call__(self, i):
-        return sum([mi(self.n, d[0][i[0]], d[1][i[1]])
+        return sum([nmi(self.n, d[0][i[0]], d[1][i[1]])
                     if i[0] in d[0].columns
                     and i[1] in d[1].columns
                     else 0.0
