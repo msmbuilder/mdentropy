@@ -23,7 +23,7 @@ class timing(object):
 
 def hist(nbins, r, *args):
     data = np.vstack((args)).T
-    return np.histogramdd(data, bins=nbins, r=r)[0].flatten()
+    return np.histogramdd(data, bins=nbins, range=r)[0].flatten()
 
 
 def shuffle(df, n=1):
