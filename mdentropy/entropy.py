@@ -23,8 +23,9 @@ def mi(nbins, X, Y, r=[-180., 180.]):
            + entc(nbins, [r], Y)
            - entc(nbins, 2*[r], X, Y))
 
+
 def nmi(nbins, X, Y, r=[-180., 180.]):
-    return (mi(nbins, X, Y, r = 2*[r])/
+    return (mi(nbins, X, Y, r = r)/
             np.sqrt(entc(nbins, [r], X)*entc(nbins, [r], Y)))
 
 
