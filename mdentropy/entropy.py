@@ -18,21 +18,14 @@ def entc(nbins, r, *args):
                   - ((-1)**bins/(bins + 1))))/N
 
 
-def mi(nbins, X, Y, r=2*[[-180., 180.]]):
-    bins = hist(nbins, r, X, Y)
-    return (entc(nbins, r, X)
-           + entc(nbins, r, Y)
-           - entc(nbins, r, X, Y))
+def mi(nbins, X, Y, r=[-180., 180.]):
+    return (entc(nbins, [r], X)
+           + entc(nbins, [r], Y)
+           - entc(nbins, 2*[r], X, Y))
 
-def mi(nbins, X, Y, r=2*[[-180., 180.]]):
-    bins = hist(nbins, r, X, Y)
-    return (entc(nbins, r, X)
-           + entc(nbins, r, Y)
-           - entc(nbins, r, X, Y))
-
-def nmi(nbins, X, Y, r=2*[[-180., 180.]]):
-    bins = hist(nbins, r, X, Y)
-    return mi(nbins, X, Y, r = r)/np.sqrt(entc(nbins, r, X)*entc(nbins, r, Y))
+def nmi(nbins, X, Y, r=[-180., 180.]):
+    return (mi(nbins, X, Y, r = 2*[r])/
+            np.sqrt(entc(nbins, [r], X)*entc(nbins, [r], Y)))
 
 
 def ce(nbins, X, Y, r=[-180., 180.]):
