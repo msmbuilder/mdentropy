@@ -5,38 +5,48 @@ from sklearn.metrics import mutual_info_score
 from mdentropy.utils import hist
 
 
-def ent(nbins, range, *args):
-    bins = hist(nbins, range, *args)
+def ent(nbins, r, *args):
+    bins = hist(nbins, r, *args)
     return stats.entropy(bins)
 
 
-def entc(nbins, range, *args):
+def entc(nbins, r, *args):
     N = args[0].shape[0]
-    bins = hist(nbins, range, *args)
+    bins = hist(nbins, r, *args)
     return np.sum(bins*(np.log(N)
                   - np.nan_to_num(psi(bins))
                   - ((-1)**bins/(bins + 1))))/N
 
 
-def mi(nbins, X, Y, range=2*[[-180., 180.]]):
-    bins = hist(nbins, range, X, Y)
-    return (entc(nbins, range, X)
-           + entc(nbins, range, Y)
-           - entc(nbins, range, X, Y))
+def mi(nbins, X, Y, r=2*[[-180., 180.]]):
+    bins = hist(nbins, r, X, Y)
+    return (entc(nbins, r, X)
+           + entc(nbins, r, Y)
+           - entc(nbins, r, X, Y))
+
+def mi(nbins, X, Y, r=2*[[-180., 180.]]):
+    bins = hist(nbins, r, X, Y)
+    return (entc(nbins, r, X)
+           + entc(nbins, r, Y)
+           - entc(nbins, r, X, Y))
+
+def nmi(nbins, X, Y, r=2*[[-180., 180.]]):
+    bins = hist(nbins, r, X, Y)
+    return mi(nbins, X, Y, r = r)/np.sqrt(entc(nbins, r, X)*entc(nbins, r, Y))
 
 
-def ce(nbins, X, Y, range=[-180., 180.]):
-    return (entc(nbins, 2*[range], X, Y)
-           - entc(nbins, [range], Y))
+def ce(nbins, X, Y, r=[-180., 180.]):
+    return (entc(nbins, 2*[r], X, Y)
+           - entc(nbins, [r], Y))
 
 
-def cmi(nbins, X, Y, Z, range=[-180., 180.]):
-    return (entc(nbins, 2*[range], X, Z)
-            +entc(nbins, 2*[range], Y, Z)
-            - entc(nbins, [range], Z)
-            - entc(nbins, 3*[range], X, Y, Z))
+def cmi(nbins, X, Y, Z, r=[-180., 180.]):
+    return (entc(nbins, 2*[r], X, Z)
+            +entc(nbins, 2*[r], Y, Z)
+            - entc(nbins, [r], Z)
+            - entc(nbins, 3*[r], X, Y, Z))
 
 
-def ncmi(nbins, X, Y, Z, range=[-180., 180.]):
-    return (1 + (entc(nbins, 2*[range], Y, Z)
-            - entc(nbins, 3*[range], X, Y, Z))/ce(nbins, X, Z, range=range))
+def ncmi(nbins, X, Y, Z, r=[-180., 180.]):
+    return (1 + (entc(nbins, 2*[r], Y, Z)
+            - entc(nbins, 3*[r], X, Y, Z))/ce(nbins, X, Z, r=r))
