@@ -48,7 +48,9 @@ def parse_cmdln():
                         help='Number of bins', default=24, type=int)
     parser.add_argument('-n', '--n-proc', dest='N',
                         help='Number of processors to be used.',
-                        default=4, type=int)
+                        default=12, type=int)
+    parser.add_argument('-r','--stride',dest='stride',
+                        help='Stride to use',default=100)
     parser.add_argument('-o', '--output', dest='out',
                         help='Name of output file.', default='mutinf.pkl')
     args = parser.parse_args()
@@ -59,6 +61,6 @@ if __name__ == "__main__":
     options = parse_cmdln()
     expr = options.traj.replace(' ', '').split(',')
     files = list(chain(*map(glob, expr)))
-    traj = md.load(files, top=options.top)
+    traj = md.load(files, top=options.top,stride=parser.stride)
     M = run(traj, options.nbins, options.iter, options.N)
     pickle.dump(M, open(options.out, 'wb'))
