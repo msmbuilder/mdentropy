@@ -61,6 +61,6 @@ if __name__ == "__main__":
     options = parse_cmdln()
     expr = options.traj.replace(' ', '').split(',')
     files = list(chain(*map(glob, expr)))
-    traj = md.load(files, top=options.top,stride=options.stride)
+    traj = md.load(files, top=options.top, stride=options.stride)
     M = run(traj, options.nbins, options.iter, options.N)
     pickle.dump(M, open(options.out, 'wb'))
