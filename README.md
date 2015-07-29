@@ -9,5 +9,6 @@ calculate:
 + Bias-Corrected Entropy
 + Conditional Entropy
 + Mutual Information
++ Normalized Mutual Information
 + Conditional Mutual Information
 + Normalized Conditional Mutual Information
