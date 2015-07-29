@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import stats
-from scipy.special import digamma
+from scipy.special import psi
 from sklearn.metrics import mutual_info_score
 from mdentropy.utils import hist
 
@@ -17,7 +17,7 @@ def ent(nbins, r, method, *args):
 def grassberger(bins):
     N = np.sum(bins)
     return np.sum(bins*(np.log(N)
-                  - np.nan_to_num(digamma(bins))
+                  - np.nan_to_num(psi(bins))
                   - ((-1.)**bins/(bins + 1.))))/N
 
 
@@ -33,7 +33,7 @@ def chaowangjost(bins):
         A = 2. * bc[2]/((N - 1.) * (bc[1] - 1.) + 2. * bc[2])
     p = np.arange(1, int(N))
     p = 1./p * (1. - A)**p
-    cwj = np.sum(bins/N * (digamma(N) - np.nan_to_num(digamma(bins))))
+    cwj = np.sum(bins/N * (psi(N) - np.nan_to_num(psi(bins))))
     if bc[1]>0 and A != 1.:
         cwj += np.nan_to_num(bc[1]/N
                              * (1 - A)**(1 - N * (-np.log(A) - np.sum(p))))
