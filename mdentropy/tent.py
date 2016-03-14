@@ -8,8 +8,13 @@ class TransferEntropy(object):
                          self.cD[d[1]][i[1]],
                          self.pD[d[0]][i[0]],
                          self.pD[d[1]][i[1]])
+<<<<<<< HEAD
                     if (i[0] in self.cD[d[0]].columns and
                     i[1] in self.cD[d[1]].columns)
+=======
+                    if i[0] in self.cD[d[0]].columns and
+                    i[1] in self.cD[d[1]].columns
+>>>>>>> master
                     else 0.0
                     for d in combinations(range(len(self.cD)), 2)])
 
