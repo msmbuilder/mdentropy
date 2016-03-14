@@ -4,8 +4,8 @@ from scipy.special import psi
 from mdentropy.utils import hist
 
 
-def ent(r, method, *args):
-    bins = hist(r, *args)
+def ent(*args, r=None, method='chaowangjost'):
+    bins = hist(*args, r=r)
     if method == 'chaowangjost':
         return chaowangjost(bins)
     elif method == 'grassberger':
@@ -39,31 +39,31 @@ def chaowangjost(bins):
     return cwj
 
 
-def mi(nbins, X, Y, r=[-180., 180.], method='chaowangjost'):
-    return (ent(nbins, [r], method, X) +
-            ent(nbins, [r], method, Y) -
-            ent(nbins, 2*[r], method, X, Y))
+def mi(X, Y, r=[-180., 180.], method='chaowangjost'):
+    return (ent(X, r=[r], method=method) +
+            ent(Y, r=[r], method=method) -
+            ent(X, Y, r=2*[r], method=method))
 
 
-def nmi(nbins, X, Y, r=[-180., 180.], method='chaowangjost'):
-    return np.nan_to_num(mi(nbins, X, Y, r=r) /
-                         np.sqrt(ent(nbins, [r], method, X) *
-                         ent(nbins, [r], method, Y)))
+def nmi(X, Y, r=[-180., 180.], method='chaowangjost'):
+    return np.nan_to_num(mi(X, Y, r=r, method=method) /
+                         np.sqrt(ent(X, r=[r], method=method) *
+                         ent(Y, r=[r], method=method)))
 
 
-def ce(nbins, X, Y, r=[-180., 180.], method='chaowangjost'):
-    return (ent(nbins, 2*[r], method, X, Y) -
-            ent(nbins, [r], method, Y))
+def ce(X, Y, r=[-180., 180.], method='chaowangjost'):
+    return (ent(X, Y, r=2*[r], method=method) -
+            ent(Y, r=[r], method=method))
 
 
-def cmi(nbins, X, Y, Z, r=[-180., 180.], method='chaowangjost'):
-    return (ent(nbins, 2*[r], method, X, Z) +
-            ent(nbins, 2*[r], method, Y, Z) -
-            ent(nbins, [r], method, Z) -
-            ent(nbins, 3*[r], method, X, Y, Z))
+def cmi(X, Y, Z, r=[-180., 180.], method='chaowangjost'):
+    return (ent(X, Z, r=2*[r], method=method) +
+            ent(Y, Z, r=2*[r], method=method) -
+            ent(Z, r=[r], method=method) -
+            ent(X, Y, Z, r=3*[r], method=method))
 
 
-def ncmi(nbins, X, Y, Z, r=[-180., 180.], method='chaowangjost'):
-    return np.nan_to_num(1 + (ent(nbins, 2*[r], method, Y, Z) -
-                              ent(nbins, 3*[r], method, X, Y, Z)) /
-                         ce(nbins, X, Z, r=r, method=method))
+def ncmi(X, Y, Z, r=[-180., 180.], method='chaowangjost'):
+    return np.nan_to_num(1 + (ent(Y, Z, r=2*[r], method=method) -
+                              ent(X, Y, Z, r=3*[r], method=method)) /
+                         ce(X, Z, r=r, method=method))

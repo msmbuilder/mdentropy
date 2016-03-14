@@ -23,11 +23,12 @@ class timing(object):
         return False
 
 
-def hist(nbins, r, *args):
+def hist(*args, r=None):
     X = np.vstack(args).T
     N = X.shape[0]
-    parts = dvpartition(*args, r=r, alpha=1/N)
-    return np.array([np.histogramdd(X, part)[0] for part in parts]).flatten()
+    parts = dvpartition(X, r=r, alpha=1/N)
+    return np.array([np.histogramdd(X, part)[0]
+                     for part in parts if part is not None]).flatten()
 
 
 def dvpartition(X, r=None, alpha=.05):
@@ -41,25 +42,29 @@ def dvpartition(X, r=None, alpha=.05):
         return np.sum((freq - freq.mean())**2)/freq.mean()
 
     N = X.shape[1]
-
     if r is None:
         r = [[X[:, i].min(), X[:, i].max()] for i in range(N)]
+
     Y = X[np.product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
                       for j, i in enumerate(r)], 0).astype(bool), :]
+
     part = np.array([np.linspace(r[i][0], r[i][1], 3) for i in range(N)])
     partitions = []
+
     freq = np.histogramdd(Y, bins=part)[0]
+
     if ((sX2(freq) > chi2.ppf(1-alpha, N-1)) and
         np.product([Y[:, i].min() != Y[:, i].max()
                     for i in range(N)]).astype(bool)):
         newr = [[[part[i, j[i]], part[i, j[i]+1]] for i in range(N)]
-                for j in product(range(N), range(N))]
+                for j in product(*(N*[[0, 1]]))]
         for nr in newr:
             newpart = dvpartition(Y, r=nr, alpha=alpha)
             for newp in newpart:
                 partitions.append(newp)
     elif Y.shape[0] > 0:
         partitions = [r]
+
     return partitions
 
 
