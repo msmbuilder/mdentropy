@@ -10,6 +10,7 @@ def ent(nbins, r, method, *args):
         return kde(r, *args)
 
     bins = hist(nbins, r, *args)
+
     if method == 'chaowangjost':
         return chaowangjost(bins)
     elif method == 'grassberger':
@@ -17,8 +18,7 @@ def ent(nbins, r, method, *args):
     return naive(bins)
 
 
-def kde(r, *args, gride_size=100):
-    gride_size = 100
+def kde(r, *args, gride_size=20):
     N = len(args)
     data = np.vstack((args))
     kde = gkde(data)
