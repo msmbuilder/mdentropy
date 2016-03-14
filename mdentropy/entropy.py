@@ -4,8 +4,8 @@ from scipy.special import psi
 from mdentropy.utils import hist
 
 
-def ent(nbins, r, method, *args):
-    bins = hist(nbins, r, *args)
+def ent(r, method, *args):
+    bins = hist(r, *args)
     if method == 'chaowangjost':
         return chaowangjost(bins)
     elif method == 'grassberger':

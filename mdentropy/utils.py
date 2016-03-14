@@ -24,11 +24,13 @@ class timing(object):
 
 
 def hist(nbins, r, *args):
-    data = np.vstack((args)).T
-    return np.histogramdd(data, bins=nbins, range=r)[0].flatten()
+    X = np.vstack(args).T
+    N = X.shape[0]
+    parts = dvpartition(*args, r=r, alpha=1/N)
+    return np.array([np.histogramdd(X, part)[0] for part in parts]).flatten()
 
 
-def dvpartition(*args, r=None, alpha=.05):
+def dvpartition(X, r=None, alpha=.05):
     # Adapted from:
     # Darbellay AG, Vajda I: Estimation of the information by an adaptive
     # partitioning of the observation space.
@@ -38,8 +40,8 @@ def dvpartition(*args, r=None, alpha=.05):
     def sX2(freq):
         return np.sum((freq - freq.mean())**2)/freq.mean()
 
-    N = len(args)
-    X = np.vstack(args).T
+    N = X.shape[1]
+
     if r is None:
         r = [[X[:, i].min(), X[:, i].max()] for i in range(N)]
     Y = X[np.product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
@@ -53,7 +55,7 @@ def dvpartition(*args, r=None, alpha=.05):
         newr = [[[part[i, j[i]], part[i, j[i]+1]] for i in range(N)]
                 for j in product(range(N), range(N))]
         for nr in newr:
-            newpart = dvpartition(Y[:, 0], Y[:, 1], r=nr, alpha=alpha)
+            newpart = dvpartition(Y, r=nr, alpha=alpha)
             for newp in newpart:
                 partitions.append(newp)
     elif Y.shape[0] > 0:
