@@ -47,8 +47,8 @@ def parse_cmdln():
     parser.add_argument('-s', '--shuffle-iter', dest='iter',
                         help='Number of shuffle iterations.',
                         default=10, type=int)
-    parser.add_argument('-r','--stride',dest='stride',
-                        help='Stride to use',default=100)
+    parser.add_argument('-r', '--stride', dest='stride',
+                        help='Stride to use', default=100)
     parser.add_argument('-t', '--topology',
                         dest='top', help='File containing topology.',
                         default=None)

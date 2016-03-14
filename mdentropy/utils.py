@@ -4,6 +4,8 @@ import time
 import numpy as np
 import pandas as pd
 import mdtraj as md
+from scipy.stats import chi2
+from itertools import product
 
 
 class timing(object):
@@ -24,6 +26,39 @@ class timing(object):
 def hist(nbins, r, *args):
     data = np.vstack((args)).T
     return np.histogramdd(data, bins=nbins, range=r)[0].flatten()
+
+
+def dvpartition(*args, r=None, alpha=.05):
+    # Adapted from:
+    # Darbellay AG, Vajda I: Estimation of the information by an adaptive
+    # partitioning of the observation space.
+    # IEEE Transactions on Information Theory 1999, 45(4):1315–1321.
+    # 10.1109/18.761290
+
+    def sX2(freq):
+        return np.sum((freq - freq.mean())**2)/freq.mean()
+
+    N = len(args)
+    X = np.vstack(args).T
+    if r is None:
+        r = [[X[:, i].min(), X[:, i].max()] for i in range(N)]
+    Y = X[np.product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
+                      for j, i in enumerate(r)], 0).astype(bool), :]
+    part = np.array([np.linspace(r[i][0], r[i][1], 3) for i in range(N)])
+    partitions = []
+    freq = np.histogramdd(Y, bins=part)[0]
+    if ((sX2(freq) > chi2.ppf(1-alpha, N-1)) and
+        np.product([Y[:, i].min() != Y[:, i].max()
+                    for i in range(N)]).astype(bool)):
+        newr = [[[part[i, j[i]], part[i, j[i]+1]] for i in range(N)]
+                for j in product(range(N), range(N))]
+        for nr in newr:
+            newpart = dvpartition(Y[:, 0], Y[:, 1], r=nr, alpha=alpha)
+            for newp in newpart:
+                partitions.append(newp)
+    elif Y.shape[0] > 0:
+        partitions = [r]
+    return partitions
 
 
 def shuffle(df, n=1):
