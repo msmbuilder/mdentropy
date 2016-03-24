@@ -2,24 +2,24 @@ import numpy as np
 from scipy.stats import entropy as naive
 from scipy.stats.kde import gaussian_kde as gkde
 from scipy.special import psi
-from mdentropy.utils import hist
+from mdentropy.utils import hist, adaptive
 
 
-<<<<<<< HEAD
-def ent(*args, r=None, method='chaowangjost'):
-    bins = hist(*args, r=r)
-=======
-def ent(nbins, r, method, *args):
-    if method == 'kde':
+def ent(*args, nbins=None, r=None, method='adaptive', **kwargs):
+    # These methods do not require pre-defined bins
+    if method == 'adaptive':
+        bins = adaptive(*args, r=r, **kwargs)
+        return grassberger(bins)
+    elif method == 'kde':
         return kde(r, *args)
 
+    # These methods do
     bins = hist(nbins, r, *args)
-
->>>>>>> master
     if method == 'chaowangjost':
         return chaowangjost(bins)
     elif method == 'grassberger':
         return grassberger(bins)
+
     return naive(bins)
 
 
@@ -60,62 +60,31 @@ def chaowangjost(bins):
     return cwj
 
 
-<<<<<<< HEAD
-def mi(X, Y, r=[-180., 180.], method='chaowangjost'):
-    return (ent(X, r=[r], method=method) +
-            ent(Y, r=[r], method=method) -
-            ent(X, Y, r=2*[r], method=method))
-
-
-def nmi(X, Y, r=[-180., 180.], method='chaowangjost'):
-    return np.nan_to_num(mi(X, Y, r=r, method=method) /
-                         np.sqrt(ent(X, r=[r], method=method) *
-                         ent(Y, r=[r], method=method)))
-
-
-def ce(X, Y, r=[-180., 180.], method='chaowangjost'):
-    return (ent(X, Y, r=2*[r], method=method) -
-            ent(Y, r=[r], method=method))
-
-
-def cmi(X, Y, Z, r=[-180., 180.], method='chaowangjost'):
-    return (ent(X, Z, r=2*[r], method=method) +
-            ent(Y, Z, r=2*[r], method=method) -
-            ent(Z, r=[r], method=method) -
-            ent(X, Y, Z, r=3*[r], method=method))
-
-
-def ncmi(X, Y, Z, r=[-180., 180.], method='chaowangjost'):
-    return np.nan_to_num(1 + (ent(Y, Z, r=2*[r], method=method) -
-                              ent(X, Y, Z, r=3*[r], method=method)) /
-                         ce(X, Z, r=r, method=method))
-=======
-def mi(nbins, X, Y, r=[-180., 180.], method='kde'):
+def mi(nbins, X, Y, r=[-180., 180.], method='adaptive'):
     return (ent(nbins, [r], method, X) +
             ent(nbins, [r], method, Y) -
             ent(nbins, 2*[r], method, X, Y))
 
 
-def nmi(nbins, X, Y, r=[-180., 180.], method='kde'):
+def nmi(nbins, X, Y, r=[-180., 180.], method='adaptive'):
     return np.nan_to_num(mi(nbins, X, Y, r=r) /
                          np.sqrt(ent(nbins, [r], method, X) *
                          ent(nbins, [r], method, Y)))
 
 
-def ce(nbins, X, Y, r=[-180., 180.], method='kde'):
+def ce(nbins, X, Y, r=[-180., 180.], method='adaptive'):
     return (ent(nbins, 2*[r], method, X, Y) -
             ent(nbins, [r], method, Y))
 
 
-def cmi(nbins, X, Y, Z, r=[-180., 180.], method='kde'):
+def cmi(nbins, X, Y, Z, r=[-180., 180.], method='adaptive'):
     return (ent(nbins, 2*[r], method, X, Z) +
             ent(nbins, 2*[r], method, Y, Z) -
             ent(nbins, [r], method, Z) -
             ent(nbins, 3*[r], method, X, Y, Z))
 
 
-def ncmi(nbins, X, Y, Z, r=[-180., 180.], method='kde'):
+def ncmi(nbins, X, Y, Z, r=[-180., 180.], method='adaptive'):
     return np.nan_to_num(1 + (ent(nbins, 2*[r], method, Y, Z) -
                          ent(nbins, 3*[r], method, X, Y, Z)) /
                          ce(nbins, X, Z, r=r, method=method))
->>>>>>> master

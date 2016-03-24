@@ -2,10 +2,11 @@ from __future__ import print_function
 
 import time
 import numpy as np
+from numpy import linspace, histogramdd, product, vstack
 import pandas as pd
 import mdtraj as md
 from scipy.stats import chi2
-from itertools import product
+from itertools import product as iterproduct
 
 
 class timing(object):
@@ -23,48 +24,120 @@ class timing(object):
         return False
 
 
-def hist(*args, r=None):
-    X = np.vstack(args).T
-    N = X.shape[0]
-    parts = dvpartition(X, r=r, alpha=1/N)
-    return np.array([np.histogramdd(X, part)[0]
-                     for part in parts if part is not None]).flatten()
+def hist(nbins, r, *args):
+    data = vstack((args)).T
+    return histogramdd(data, bins=nbins, range=r)[0].flatten()
 
 
-def dvpartition(X, r=None, alpha=.05):
-    # Adapted from:
-    # Darbellay AG, Vajda I: Estimation of the information by an adaptive
-    # partitioning of the observation space.
-    # IEEE Transactions on Information Theory 1999, 45(4):1315–1321.
-    # 10.1109/18.761290
+def adaptive(*args, r=None, alpha=0.05):
+    # Stack data
+    X = vstack(args).T
 
+    # Get number of dimensions
+    N = X.shape[1]
+    dims = range(N)
+
+    # Compute X2 statistic at given CI with Bonferoni correction
+    x2 = chi2.ppf(1-alpha/4., N-1)
+    counts = []
+
+    # Estimate of X2 statistic
     def sX2(freq):
         return np.sum((freq - freq.mean())**2)/freq.mean()
 
+    def dvpartition(X, r):
+        # Adapted from:
+        # Darbellay AG, Vajda I: Estimation of the information by an adaptive
+        # partitioning of the observation space.
+        # IEEE Transactions on Information Theory 1999, 45(4):1315–1321.
+        # 10.1109/18.761290
+        nonlocal N
+        nonlocal counts
+        nonlocal dims
+        nonlocal x2
+
+        # If no ranges are supplied, initialize with min/max for each dimension
+        # Else filter out data that is not in our initial partition
+        if r is None:
+            r = [[X[:, i].min(), X[:, i].max()] for i in dims]
+        else:
+            Y = X[product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
+                           for j, i in enumerate(r)], 0).astype(bool), :]
+
+        part = [linspace(r[i][0], r[i][1], 3) for i in dims]
+
+        partitions = []
+        newr = [[[part[i][j[i]], part[i][j[i]+1]] for i in dims]
+                for j in iterproduct(*(N*[[0, 1]]))]
+        freq = histogramdd(Y, bins=part)[0]
+        chisq = (sX2(freq) > x2)
+        if chisq and False not in ((X.max(0) - X.min(0)).T > 0):
+            for nr in newr:
+                newpart = dvpartition(X, r=nr)
+                for newp in newpart:
+                        partitions.append(newp)
+        elif Y.shape[0] > 0:
+            partitions = [r]
+            counts.append(Y.shape[0])
+        return partitions
+
+    return array(dvpartition(X, r)), array(counts).astype(int)
+
+
+def dvpartition(X, r=None, min_partitions=4, alpha=.05):
+
+    # Estimate of X2 statistic
+    def sX2(freq):
+        return np.sum((freq - freq.mean())**2)/freq.mean()
+
+    # Get number of dimensions
     N = X.shape[1]
+
+    # If no ranges are supplied, initialize with min/max for each dimension
+    # Else filter out data that is not in our initial partition
     if r is None:
         r = [[X[:, i].min(), X[:, i].max()] for i in range(N)]
+    else:
+        Y = X[np.product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
+                          for j, i in enumerate(r)], 0).astype(bool), :]
 
-    Y = X[np.product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
-                      for j, i in enumerate(r)], 0).astype(bool), :]
-
+    # Subdivide our partitions by the midpoint in each dimension
     part = np.array([np.linspace(r[i][0], r[i][1], 3) for i in range(N)])
     partitions = []
+    newr = [[[part[i, j[i]], part[i, j[i]+1]] for i in range(N)]
+            for j in product(*(N*[[0, 1]]))]
 
+    # Calculate counts for new partitions
     freq = np.histogramdd(Y, bins=part)[0]
 
-    if ((sX2(freq) > chi2.ppf(1-alpha, N-1)) and
-        np.product([Y[:, i].min() != Y[:, i].max()
-                    for i in range(N)]).astype(bool)):
-        newr = [[[part[i, j[i]], part[i, j[i]+1]] for i in range(N)]
-                for j in product(*(N*[[0, 1]]))]
+    # Compare estimate to X2 statistic at given alpha
+    # to determine if data in partition is not uniform.
+    # Skips check if alpha is set to None.
+    if alpha is not None:
+        chisq = (sX2(freq) > chi2.ppf(1-alpha, N-1))
+    else:
+        chisq = Y.shape[0] > 0
+
+    # If not uniform proceed
+    if (chisq and np.product([Y[:, i].min() != Y[:, i].max()
+                              for i in range(N)]).astype(bool)):
+
+        # For each new partition continue dvpartition recursively
         for nr in newr:
-            newpart = dvpartition(Y, r=nr, alpha=alpha)
+            newpart = dvpartition(X, r=nr, alpha=alpha)
             for newp in newpart:
                 partitions.append(newp)
+    # If uniform and contains data, return current partition
+    # unless min_partitions is not satisfied. In that case,
+    # try a looser restriction on alpha.
     elif Y.shape[0] > 0:
-        partitions = [r]
-
+        if min_partitions == 1:
+            partitions = [r]
+        while len(partitions) < min_partitions:
+            for nr in newr:
+                newpart = dvpartition(X, r=nr, alpha=min_partitions*alpha)
+                for newp in newpart:
+                    partitions.append(newp)
     return partitions
 
 
