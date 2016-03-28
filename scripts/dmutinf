@@ -49,8 +49,8 @@ def parse_cmdln():
     parser.add_argument('-n', '--n-proc', dest='N',
                         help='Number of processors to be used.',
                         default=12, type=int)
-    parser.add_argument('-r','--stride',dest='stride',
-                        help='Stride to use',default=100)
+    parser.add_argument('-r', '--stride', dest='stride',
+                        help='Stride to use', default=100)
     parser.add_argument('-o', '--output', dest='out',
                         help='Name of output file.', default='mutinf.pkl')
     args = parser.parse_args()

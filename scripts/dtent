@@ -47,8 +47,8 @@ def parse_cmdln():
     parser.add_argument('-s', '--shuffle-iter', dest='iter',
                         help='Number of shuffle iterations.',
                         default=10, type=int)
-    parser.add_argument('-r','--stride',dest='stride',
-                        help='Stride to use',default=100)
+    parser.add_argument('-r', '--stride', dest='stride',
+                        help='Stride to use', default=100)
     parser.add_argument('-t', '--topology',
                         dest='top', help='File containing topology.',
                         default=None)
@@ -68,7 +68,7 @@ if __name__ == "__main__":
                     options.past.replace(' ', '').split(','))
     f1, f2 = (list(chain(*map(glob, expr1))),
               list(chain(*map(glob, expr2))))
-    current = md.load(f1, top=options.top)
-    past = md.load(f2, top=options.top, stride=options.r)
+    current = md.load(f1, top=options.top, stride=options.stride)
+    past = md.load(f2, top=options.top, stride=options.stride)
     D = run(current, past, options.nbins, options.iter, options.N)
     pickle.dump(D, open(options.out, 'wb'))
