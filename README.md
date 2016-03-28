@@ -1,5 +1,5 @@
 [![PyPI version](https://badge.fury.io/py/mdentropy.svg)](http://badge.fury.io/py/mdentropy)
-[![Build Status](https://travis-ci.org/cxhernandez/mdentropy.svg?branch=master)](https://travis-ci.org/cxhernandez/mdentropy) [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.18859.svg)](http://dx.doi.org/10.5281/zenodo.18859)
+[![Build Status](https://travis-ci.org/msmbuilder/mdentropy.svg?branch=master)](https://travis-ci.org/msmbuilder/mdentropy) [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.18859.svg)](http://dx.doi.org/10.5281/zenodo.18859)
 MDEntropy
 =========
 
