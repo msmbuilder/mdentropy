@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import time
 import numpy as np
-from numpy import linspace, histogramdd, product, vstack
+from numpy import linspace, histogramdd, product, vstack, sum
 import pandas as pd
 import mdtraj as md
 from scipy.stats import chi2
@@ -29,59 +29,48 @@ def hist(nbins, r, *args):
     return histogramdd(data, bins=nbins, range=r)[0].flatten()
 
 
-def adaptive(*args, r=None, alpha=0.05):
-    # Stack data
-    X = vstack(args).T
+def adaptive(X, r=None, alpha=0.05):
 
-    # Get number of dimensions
     N = X.shape[1]
     dims = range(N)
-
-    # Compute X2 statistic at given CI with Bonferoni correction
-    x2 = chi2.ppf(1-alpha/4., N-1)
+    x2 = chi2.ppf(1-alpha, N-1)
     counts = []
+
+    if r is None:
+        r = tuple((X[:, i].min(), X[:, i].max()) for i in dims)
 
     # Estimate of X2 statistic
     def sX2(freq):
-        return np.sum((freq - freq.mean())**2)/freq.mean()
+        return sum((freq - freq.mean())**2)/freq.mean()
 
     def dvpartition(X, r):
-        # Adapted from:
-        # Darbellay AG, Vajda I: Estimation of the information by an adaptive
-        # partitioning of the observation space.
-        # IEEE Transactions on Information Theory 1999, 45(4):1315–1321.
-        # 10.1109/18.761290
         nonlocal N
         nonlocal counts
         nonlocal dims
         nonlocal x2
 
-        # If no ranges are supplied, initialize with min/max for each dimension
-        # Else filter out data that is not in our initial partition
-        if r is None:
-            r = [[X[:, i].min(), X[:, i].max()] for i in dims]
-        else:
-            Y = X[product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
-                           for j, i in enumerate(r)], 0).astype(bool), :]
+        Y = X[product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
+                       for j, i in enumerate(r)], 0).astype(bool), :]
 
         part = [linspace(r[i][0], r[i][1], 3) for i in dims]
 
-        partitions = []
-        newr = [[[part[i][j[i]], part[i][j[i]+1]] for i in dims]
-                for j in iterproduct(*(N*[[0, 1]]))]
+        partitions = set([])
+        newr = set((tuple((part[i][j[i]], part[i][j[i]+1])
+                    for i in dims)
+                    for j in iterproduct(*(N*[[0, 1]]))),)
         freq = histogramdd(Y, bins=part)[0]
         chisq = (sX2(freq) > x2)
         if chisq and False not in ((X.max(0) - X.min(0)).T > 0):
             for nr in newr:
                 newpart = dvpartition(X, r=nr)
                 for newp in newpart:
-                        partitions.append(newp)
+                    partitions.update(tuple((newp,)))
         elif Y.shape[0] > 0:
-            partitions = [r]
+            partitions = set(tuple((r,)))
             counts.append(Y.shape[0])
         return partitions
 
-    return array(dvpartition(X, r)), array(counts).astype(int)
+    return array(list(dvpartition(X, r))), array(counts).astype(int)
 
 
 def dvpartition(X, r=None, min_partitions=4, alpha=.05):

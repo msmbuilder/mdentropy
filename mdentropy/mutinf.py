@@ -5,16 +5,9 @@ from itertools import combinations_with_replacement as combinations
 class MutualInformation(object):
     def __call__(self, i):
         return sum([nmi(self.n, d[0][i[0]], d[1][i[1]])
-<<<<<<< HEAD
                     if (i[0] in d[0].columns and
                     i[1] in d[1].columns)
                     else 0.0 for d in combinations(self.D, 2)])
-=======
-                    if i[0] in d[0].columns and
-                    i[1] in d[1].columns
-                    else 0.0
-                    for d in combinations(self.D, 2)])
->>>>>>> master
 
     def __init__(self, nbins, D):
         self.D = D

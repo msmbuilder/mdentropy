@@ -68,7 +68,7 @@ if __name__ == "__main__":
                     options.past.replace(' ', '').split(','))
     f1, f2 = (list(chain(*map(glob, expr1))),
               list(chain(*map(glob, expr2))))
-    current = md.load(f1, top=options.top)
-    past = md.load(f2, top=options.top, stride=options.r)
+    current = md.load(f1, top=options.top, stride=options.stride)
+    past = md.load(f2, top=options.top, stride=options.stride)
     D = run(current, past, options.nbins, options.iter, options.N)
     pickle.dump(D, open(options.out, 'wb'))
