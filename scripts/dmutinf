@@ -13,13 +13,13 @@ from mdentropy.utils import timing, shuffle, dihedrals
 from itertools import combinations_with_replacement as combinations
 
 
-def run(traj, nbins, iter, N):
+def run(traj, nbins, iter, N, method):
     D = dihedrals(traj)
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in D]))))
     R = []
     for i in range(iter+1):
         r = np.zeros((n.size, n.size))
-        g = MutualInformation(nbins, D)
+        g = MutualInformation(nbins, D, method=method)
         with timing(i):
             idx = np.triu_indices(n.size)
             with closing(Pool(processes=N)) as pool:
@@ -53,6 +53,10 @@ def parse_cmdln():
                         help='Stride to use', default=100)
     parser.add_argument('-o', '--output', dest='out',
                         help='Name of output file.', default='mutinf.pkl')
+    parser.add_argument('-m', '--method', dest='method',
+                        help='Entropy estimate method.',
+                        choices=['chaowangjost', 'grassberger', 'kde'],
+                        default='chaowangjost')
     args = parser.parse_args()
     return args
 
@@ -62,5 +66,5 @@ if __name__ == "__main__":
     expr = options.traj.replace(' ', '').split(',')
     files = list(chain(*map(glob, expr)))
     traj = md.load(files, top=options.top, stride=options.stride)
-    M = run(traj, options.nbins, options.iter, options.N)
+    M = run(traj, options.nbins, options.iter, options.N, options.method)
     pickle.dump(M, open(options.out, 'wb'))

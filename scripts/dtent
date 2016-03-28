@@ -14,13 +14,13 @@ from mdentropy.utils import timing, dihedrals, shuffle
 from mdentropy.tent import TransferEntropy
 
 
-def run(current, past, nbins, iter, N):
+def run(current, past, nbins, iter, N, method):
     cD = dihedrals(current)
     pD = dihedrals(past)
     n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in cD]))))
     R = []
     for i in range(iter+1):
-        g = TransferEntropy(nbins, cD, pD)
+        g = TransferEntropy(nbins, cD, pD, method=method)
         with timing(i):
             with closing(Pool(processes=N)) as pool:
                 CMI = np.reshape(pool.map(g, product(n, n)),
@@ -58,6 +58,10 @@ def parse_cmdln():
                         help='Number of processors', default=12, type=int)
     parser.add_argument('-o', '--output', dest='out',
                         help='Name of output file.', default='tent.pkl')
+    parser.add_argument('-m', '--method', dest='method',
+                        help='Entropy estimate method.',
+                        choices=['chaowangjost', 'grassberger', 'kde'],
+                        default='chaowangjost')
     args = parser.parse_args()
     return args
 
@@ -70,5 +74,6 @@ if __name__ == "__main__":
               list(chain(*map(glob, expr2))))
     current = md.load(f1, top=options.top, stride=options.stride)
     past = md.load(f2, top=options.top, stride=options.stride)
-    D = run(current, past, options.nbins, options.iter, options.N)
+    D = run(current, past, options.nbins, options.iter, options.N,
+            options.method)
     pickle.dump(D, open(options.out, 'wb'))
