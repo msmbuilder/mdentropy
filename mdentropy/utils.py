@@ -3,7 +3,7 @@ from __future__ import print_function
 import time
 import numpy as np
 import pandas as pd
-import mdtraj as md
+from msmbuilder.featurizer import DihedralFeaturizer
 
 
 class timing(object):
@@ -37,22 +37,18 @@ def shuffle(df, n=1):
 
 class Dihedrals(object):
     def __call__(self, traj):
-        atoms, angles = self.method(traj)
-        idx = [traj.topology.atom(i).residue.index
-               for i in atoms[:, self.type]]
+        featurizer = DihedralFeaturizer(types=[self.kind], sincos=False)
+        angles = featurizer.partial_transform(traj)
+        summary = featurizer.describe_features(traj)
+
+        idx = [[traj.topology.atom(ati).residue.index
+                for ati in item['atominds']][1] for item in summary]
+
         return pd.DataFrame(180*angles/np.pi, columns=idx)
 
-    def __init__(self, method, type):
-        assert type < 3 or type > -1
-        self.type = type
-        self.method = method
+    def __init__(self, kind):
+        self.kind = kind
 
 
-def dihedrals(traj):
-    kinds = [
-        Dihedrals(md.compute_phi, 2),
-        Dihedrals(md.compute_psi, 1),
-        Dihedrals(md.compute_chi1, 0),
-        Dihedrals(md.compute_chi2, 1)
-        ]
-    return [kind(traj) for kind in kinds]
+def dihedrals(traj, kinds=['phi', 'psi']):
+    return [Dihedrals(kind)(traj) for kind in kinds]

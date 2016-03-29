@@ -62,7 +62,7 @@ def mi(nbins, X, Y, r=[-180., 180.], method='kde'):
 
 
 def nmi(nbins, X, Y, r=[-180., 180.], method='kde'):
-    return np.nan_to_num(mi(nbins, X, Y, r=r) /
+    return np.nan_to_num(mi(nbins, X, Y, method=method, r=r) /
                          np.sqrt(ent(nbins, [r], method, X) *
                          ent(nbins, [r], method, Y)))
 

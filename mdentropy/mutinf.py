@@ -1,16 +1,18 @@
 from mdentropy.entropy import nmi
-from itertools import combinations_with_replacement as combinations
+from itertools import product
 
 
 class MutualInformation(object):
     def __call__(self, i):
-        return sum([nmi(self.n, d[0][i[0]], d[1][i[1]], method='chaowangjost')
-                    if i[0] in d[0].columns and
-                    i[1] in d[1].columns
-                    else 0.0
-                    for d in combinations(self.D, 2)])
+        return sum([0.0 if (i[0] not in d[0].columns or
+                            i[1] not in d[1].columns)
+                    else 1.0
+                    if i[0] == i[1] and all(d[0][i[0]].isin(d[1][i[1]]))
+                    else nmi(self.n, d[0][i[0]], d[1][i[1]],
+                             method=self.method)
+                    for d in product(self.D, self.D)])
 
-    def __init__(self, nbins, D, method='chaowangjost'):
+    def __init__(self, D, nbins=24, method='chaowangjost'):
         self.D = D
         self.n = nbins
         self.method = method
