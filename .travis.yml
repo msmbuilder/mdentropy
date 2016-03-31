@@ -8,14 +8,14 @@ before_install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - conda install numpy scipy pandas scikit-learn
-  - conda install -c https://conda.binstar.org/omnia mdtraj
+  - conda install numpy scipy pandas scikit-learn nose
+  - conda install -c https://conda.binstar.org/omnia mdtraj msmbuilder
 
 install:
   - python setup.py install
 
 script:
-  - python setup.py build
+  - nosetests -v
 
 after_success:
-  - echo 'yay!'
+  - echo 'after_success'

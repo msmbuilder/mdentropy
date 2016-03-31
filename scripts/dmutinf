@@ -6,28 +6,20 @@ import numpy as np
 import mdtraj as md
 from glob import glob
 from itertools import chain
-from contextlib import closing
-from multiprocessing import Pool
-from mdentropy.mutinf import MutualInformation
-from mdentropy.utils import timing, shuffle, dihedrals
-from itertools import combinations_with_replacement as combinations
+
+from mdentropy.utils import timing
+from mdentropy.mutinf import DihedralMutualInformation
 
 
 def run(traj, nbins, iter, N, method):
-    D = dihedrals(traj)
-    n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in D]))))
     R = []
+    mi = DihedralMutualInformation(nbins=nbins, method=method)
+    shuffle = False
     for i in range(iter+1):
-        r = np.zeros((n.size, n.size))
-        g = MutualInformation(nbins, D, method=method)
+        if i > 0:
+            shuffle = True
         with timing(i):
-            idx = np.triu_indices(n.size)
-            with closing(Pool(processes=N)) as pool:
-                r[idx] = pool.map(g, combinations(n, 2))
-                pool.terminate()
-            r[idx[::-1]] = r[idx]
-            R.append(r)
-            D = [shuffle(df) for df in D]
+            R.append(mi.partial_transform(traj, shuffle=shuffle))
     if iter > 0:
         return R[0] - np.mean(R[1:], axis=0)
     return R[0]

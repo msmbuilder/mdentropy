@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.testing import assert_almost_equal as eq
 from mdentropy.entropy import cmi, ce, ncmi, nmi
 
 
@@ -9,9 +10,7 @@ def test_ncmi():
 
     NCMI = ncmi(30, A, B, C)
 
-    if not (NCMI == cmi(30, A, B, C)/ce(30, A, B, C)):
-        raise ValueError('Normalized conditional mutual '
-                         'information test failed.')
+    eq(NCMI, cmi(30, A, B, C)/ce(30, A, C), 6)
 
 
 def test_mi():
@@ -21,5 +20,4 @@ def test_mi():
     MI1 = nmi(24, A, B)
     MI2 = nmi(24, B, A)
 
-    if not MI1 == MI2:
-        raise ValueError('Normalized mutual information test failed.')
+    eq(MI1, MI2, 6)

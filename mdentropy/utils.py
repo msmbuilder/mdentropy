@@ -29,7 +29,7 @@ def hist(nbins, r, *args):
 def shuffle(df, n=1):
     sdf = df.copy()
     sampler = np.random.permutation
-    for i in range(n):
+    for _ in range(n):
         sdf = sdf.apply(sampler, axis=0)
         sdf = sdf.apply(sampler, axis=1)
     return sdf
@@ -37,7 +37,7 @@ def shuffle(df, n=1):
 
 class Dihedrals(object):
     def __call__(self, traj):
-        featurizer = DihedralFeaturizer(types=[self.kind], sincos=False)
+        featurizer = DihedralFeaturizer(types=[self.type], sincos=False)
         angles = featurizer.partial_transform(traj)
         summary = featurizer.describe_features(traj)
 
@@ -46,9 +46,9 @@ class Dihedrals(object):
 
         return pd.DataFrame(180*angles/np.pi, columns=idx)
 
-    def __init__(self, kind):
-        self.kind = kind
+    def __init__(self, type):
+        self.type = type
 
 
-def dihedrals(traj, kinds=['phi', 'psi']):
-    return [Dihedrals(kind)(traj) for kind in kinds]
+def dihedrals(traj, types=['phi', 'psi']):
+    return [Dihedrals(type)(traj) for type in types]

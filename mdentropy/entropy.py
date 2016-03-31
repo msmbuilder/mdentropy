@@ -7,7 +7,7 @@ from mdentropy.utils import hist
 
 def ent(nbins, r, method, *args):
     if method == 'kde':
-        return kde(r, *args)
+        return kde(r, *args, gride_size=nbins)
 
     bins = hist(nbins, r, *args)
 

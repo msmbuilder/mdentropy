@@ -1,48 +1,66 @@
+from mdentropy.utils import dihedrals, shuffle
 from mdentropy.entropy import nmi
+
+import numpy as np
 from itertools import product
+from itertools import combinations_with_replacement as combinations
 
 
-class MutualInformation(object):
-    def __call__(self, i):
-        return sum([0.0 if (i[0] not in d[0].columns or
-                            i[1] not in d[1].columns)
-                    else 1.0
-                    if i[0] == i[1] and all(d[0][i[0]].isin(d[1][i[1]]))
-                    else nmi(self.n, d[0][i[0]], d[1][i[1]],
-                             method=self.method)
-                    for d in product(self.D, self.D)])
+class MutualInformationBase(object):
 
-    def __init__(self, D, nbins=24, method='chaowangjost'):
-        self.D = D
-        self.n = nbins
-        self.method = method
+    def _partial_mutinf(cls, i, j):
+        for m, n in product(range(cls.n_types),
+                            range(cls.n_types)):
+            if (i not in cls.data[m].columns or j not in cls.data[n].columns):
+                yield 0.0
+            if i == j and m == n:
+                yield 1.0
+            yield nmi(cls.n_bins, cls.data[m][i], cls.data[n][j],
+                      method=cls.method)
 
-# class MutualInformationFactory(object):
-#     def fit(cls, *args):
-#         cls._fit(*args)
+    def _mutinf(cls):
 
-#     def transform(cls):
-#         return cls._mutinf
+        def y(p):
+            i, j = p
+            return sum(cls._partial_mutinf(i, j))
+
+        n = np.unique(np.hstack(tuple(map(np.array,
+                                          [df.columns for df in cls.data]))))
+
+        idx = np.triu_indices(n.size)
+        M = np.zeros((n.size, n.size))
+        M[idx] = list(map(y, combinations(n, 2)))
+        M[idx[::-1]] = M[idx]
+        return M
+
+    def _extract_data(cls, traj):
+        pass
+
+    def _shuffle(cls):
+        cls.data = shuffle(cls.data)
+
+    def partial_transform(cls, traj, shuffle=False):
+        cls.data = cls._extract_data(traj)
+        if shuffle:
+            cls.shuffle()
+        return cls._mutinf()
+
+    def transform(cls, trajs):
+        for traj in trajs:
+            yield cls.partial_transform(traj)
+
+    def __init__(cls, nbins=24, method='chaowangjost'):
+        cls.n_types = 1
+        cls.n_bins = nbins
+        cls.method = method
 
 
-# class MutualInformation(MutualInformationFactory):
-#
-#     def _fit(self, X, Y):
-#         if self.range is None:
-#             self.range = 2*[[min(min(X), min(Y)), max(max(X), max(Y))]]
-#         return mi(self.nbins, X, Y, range=self.range)
-#
-#     def __init__(self, shuffle=0, nbins=24, range=None):
-#         return None
+class DihedralMutualInformation(MutualInformationBase):
 
+    def _extract_data(self, traj):
+        return dihedrals(traj, types=self.types)
 
-# class DihedralMutualInformation(MutualInformation):
-#
-#     def _fit(self, X, Y):
-#         return mi()
-
-
-# class CartesianMutualInformation(MutualInformation):
-#
-#     def _fit(self, X, Y):
-#         return mi()
+    def __init__(self, types=['phi', 'psi'], **kwargs):
+        self.types = types
+        self.n_types = len(types)
+        super(DihedralMutualInformation, self).__init__(**kwargs)
