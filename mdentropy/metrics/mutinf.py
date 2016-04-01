@@ -1,6 +1,6 @@
 from .base import MetricBase
-from mdentropy.utils import dihedrals
-from mdentropy.core import mi, nmi
+from ..utils import dihedrals
+from ..core import mi, nmi
 
 import numpy as np
 from itertools import product
@@ -24,7 +24,7 @@ class MutualInformationBase(MetricBase):
                 if i == j and m == n:
                     yield 1.0
                 yield cls._est(cls.n_bins, cls.data[m][i], cls.data[n][j],
-                               method=cls.method)
+                               range=cls.range, method=cls.method)
 
         return sum(y(i, j))
 
@@ -52,9 +52,7 @@ class MutualInformationBase(MetricBase):
         return cls._mutinf()
 
     def __init__(cls, normed=False, **kwargs):
-        cls._est = mi
-        if normed:
-            cls._est = nmi
+        cls._est = nmi if normed else mi
 
         super(MutualInformationBase, cls).__init__(**kwargs)
 
@@ -64,8 +62,8 @@ class DihedralMutualInformation(MutualInformationBase):
     def _extract_data(self, traj):
         return dihedrals(traj, types=self.types)
 
-    def __init__(self, types=['phi', 'psi'], **kwargs):
-        self.types = types
-        self.n_types = len(types)
+    def __init__(self, types=None, **kwargs):
+        self.types = types or ['phi', 'psi']
+        self.n_types = len(self.types)
 
         super(DihedralMutualInformation, self).__init__(**kwargs)

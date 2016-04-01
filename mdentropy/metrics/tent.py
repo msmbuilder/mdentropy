@@ -1,6 +1,6 @@
 from .base import MetricBase
-from mdentropy.utils import dihedrals, shuffle
-from mdentropy.core import cmi, ncmi
+from ..utils import dihedrals, shuffle
+from ..core import cmi, ncmi
 
 import numpy as np
 from itertools import product
@@ -26,6 +26,7 @@ class TransferEntropyBase(MetricBase):
                                cls.data2[m][j],
                                cls.data1[n][i],
                                cls.data1[m][j],
+                               range=cls.range,
                                method=cls.method)
 
         return sum(y(i, j))
@@ -60,9 +61,7 @@ class TransferEntropyBase(MetricBase):
             yield cls.partial_transform(traj)
 
     def __init__(cls, normed=False, **kwargs):
-        cls._est = cmi
-        if normed:
-            cls._est = ncmi
+        cls._est = ncmi if normed else cmi
 
         super(TransferEntropyBase, cls).__init__(**kwargs)
 
@@ -72,8 +71,8 @@ class DihedralTransferEntropy(TransferEntropyBase):
     def _extract_data(self, traj):
         return dihedrals(traj, types=self.types)
 
-    def __init__(self, types=['phi', 'psi'], **kwargs):
-        self.types = types
-        self.n_types = len(types)
+    def __init__(self, types=None, **kwargs):
+        self.types = types or ['phi', 'psi']
+        self.n_types = len(self.types)
 
         super(DihedralTransferEntropy, self).__init__(**kwargs)

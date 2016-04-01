@@ -5,8 +5,8 @@ import tempfile
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
-from mdentropy.metrics import DihedralMutualInformation
-from mdentropy.core import mi, nmi
+from ..metrics import DihedralMutualInformation
+from ..core import mi, nmi
 
 import mdtraj as md
 from msmbuilder.example_datasets import FsPeptide
@@ -16,8 +16,8 @@ def test_mi():
     A = np.random.uniform(low=-180., high=180, size=1000)
     B = np.random.uniform(low=-180., high=180, size=1000)
 
-    MI1 = mi(24, A, B)
-    MI2 = mi(24, B, A)
+    MI1 = mi(24, A, B, range=[-180., 180.])
+    MI2 = mi(24, B, A, range=[-180., 180.])
 
     eq(MI1, MI2, 6)
 
@@ -26,8 +26,8 @@ def test_nmi():
     A = np.random.uniform(low=-180., high=180, size=1000)
     B = np.random.uniform(low=-180., high=180, size=1000)
 
-    MI1 = nmi(24, A, B)
-    MI2 = nmi(24, B, A)
+    MI1 = nmi(24, A, B, range=[-180., 180.])
+    MI2 = nmi(24, B, A, range=[-180., 180.])
 
     eq(MI1, MI2, 6)
 

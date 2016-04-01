@@ -21,9 +21,9 @@ class timing(object):
         return False
 
 
-def hist(nbins, r, *args):
+def hist(nbins, range, *args):
     data = np.vstack((args)).T
-    return np.histogramdd(data, bins=nbins, range=r)[0].flatten()
+    return np.histogramdd(data, bins=nbins, range=range)[0].flatten()
 
 
 def shuffle(df, n=1):
@@ -44,11 +44,12 @@ class Dihedrals(object):
         idx = [[traj.topology.atom(ati).residue.index
                 for ati in item['atominds']][1] for item in summary]
 
-        return pd.DataFrame(180*angles/np.pi, columns=idx)
+        return pd.DataFrame(180.*angles/np.pi, columns=idx)
 
     def __init__(self, type):
         self.type = type
 
 
-def dihedrals(traj, types=['phi', 'psi']):
+def dihedrals(traj, types=None):
+    types = types or ['phi', 'psi']
     return [Dihedrals(type)(traj) for type in types]

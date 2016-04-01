@@ -5,8 +5,8 @@ import tempfile
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
-from mdentropy.metrics import DihedralTransferEntropy
-from mdentropy.core import cmi, ce, ncmi
+from ..metrics import DihedralTransferEntropy
+from ..core import cmi, ce, ncmi
 
 import mdtraj as md
 from msmbuilder.example_datasets import FsPeptide

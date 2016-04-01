@@ -2,14 +2,18 @@ import numpy as np
 from scipy.stats import entropy as naive
 from scipy.stats.kde import gaussian_kde as gkde
 from scipy.special import psi
-from mdentropy.utils import hist
+from ..utils import hist
 
 
-def ent(nbins, r, method, *args):
+def ent(nbins, range, method, *args):
+    for i, arg in enumerate(args):
+        if range[i] is None:
+            range[i] = [min(arg), max(arg)]
+
     if method == 'kde':
-        return kde(r, *args, gride_size=nbins)
+        return kde(range, *args, gride_size=nbins)
 
-    bins = hist(nbins, r, *args)
+    bins = hist(nbins, range, *args)
 
     if method == 'chaowangjost':
         return chaowangjost(bins)
@@ -18,11 +22,11 @@ def ent(nbins, r, method, *args):
     return naive(bins)
 
 
-def kde(r, *args, gride_size=20):
+def kde(range, *args, gride_size=20):
     N = len(args)
     data = np.vstack((args))
     kde = gkde(data)
-    x = [np.linspace(i[0], i[1], gride_size) for i in r]
+    x = [np.linspace(i[0], i[1], gride_size) for i in range]
     G = np.meshgrid(*tuple(x))
     Z = np.reshape(kde(np.vstack(map(np.ravel, G))),
                    N*[gride_size])
@@ -55,6 +59,6 @@ def chaowangjost(bins):
     return cwj
 
 
-def ce(nbins, X, Y, r=[-180., 180.], method='kde'):
-    return (ent(nbins, 2*[r], method, X, Y) -
-            ent(nbins, [r], method, Y))
+def ce(nbins, X, Y, range=None, method='kde'):
+    return (ent(nbins, 2*[range], method, X, Y) -
+            ent(nbins, [range], method, Y))
