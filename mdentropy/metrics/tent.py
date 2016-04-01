@@ -10,6 +10,9 @@ from contextlib import closing
 
 
 class TransferEntropyBase(MetricBase):
+    """
+    Base transfer entropy object
+    """
 
     def _partial_tent(cls, p):
         i, j = p
@@ -67,7 +70,9 @@ class TransferEntropyBase(MetricBase):
 
 
 class DihedralTransferEntropy(TransferEntropyBase):
-
+    """
+    Transfer entropy calculations for dihedral angles
+    """
     def _extract_data(self, traj):
         traj1, traj2 = traj
         return (dihedrals(traj1, types=self.types),

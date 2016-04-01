@@ -11,6 +11,9 @@ from contextlib import closing
 
 
 class MutualInformationBase(MetricBase):
+    """
+    Base mutual information object
+    """
 
     def _partial_mutinf(cls, p):
         i, j = p
@@ -59,6 +62,9 @@ class MutualInformationBase(MetricBase):
 
 
 class DihedralMutualInformation(MutualInformationBase):
+    """
+    Mutual information calculations for dihedral angles
+    """
 
     def _extract_data(self, traj):
         return dihedrals(traj, types=self.types)

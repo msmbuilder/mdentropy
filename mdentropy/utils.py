@@ -21,12 +21,39 @@ class timing(object):
         return False
 
 
-def hist(nbins, rng, *args):
+def hist(n_bins, rng, *args):
+    """Convenience function for histogramming N-dimentional data
+
+    Parameters
+    ----------
+    n_bins : int
+        Number of bins.
+    rng : list of lists
+        List of min/max values to bin data over.
+    args : array_like, shape = (n_samples, )
+        Data of which to histogram.
+    Returns
+    -------
+    bins : array_like, shape = (n_bins, )
+    """
     data = np.vstack((args)).T
-    return np.histogramdd(data, bins=nbins, range=rng)[0].flatten()
+    return np.histogramdd(data, bins=n_bins, range=rng)[0].flatten()
 
 
 def shuffle(df, n=1):
+    """Convenience function for shuffling values in DataFrame objects
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        pandas DataFrame
+    n : int
+        Number of shuffling iterations.
+    Returns
+    -------
+    sdf : array_like, shape = (n_bins, )
+        shuffled DataFrame
+    """
     sdf = df.copy()
     sampler = np.random.permutation
     for _ in range(n):
@@ -36,6 +63,7 @@ def shuffle(df, n=1):
 
 
 class Dihedrals(object):
+    """Convenience class for extracting dihedral angle data as a DataFrame"""
     def __call__(self, traj):
         featurizer = DihedralFeaturizer(types=[self.type], sincos=False)
         angles = featurizer.partial_transform(traj)
@@ -51,5 +79,18 @@ class Dihedrals(object):
 
 
 def dihedrals(traj, types=None):
+    """Convenience function for extracting dihedral angle data as a list of
+    DataFrame objects
+
+    Parameters
+    ----------
+    traj : mdtraj.Trajectory
+        Trajectory
+    types : list
+        Types of dihedral data to extract (default: ['phi', 'psi']).
+    Returns
+    -------
+    dihedrals : list
+    """
     types = types or ['phi', 'psi']
     return [Dihedrals(tp)(traj) for tp in types]

@@ -5,15 +5,32 @@ from scipy.special import psi
 from ..utils import hist
 
 
-def ent(nbins, rng, method, *args):
+def ent(n_bins, rng, method, *args):
+    """Entropy calculation
+
+    Parameters
+    ----------
+    n_bins : int
+        Number of bins.
+    rng : list of lists
+        List of min/max values to bin data over.
+    method : {'kde', 'chaowangjost', 'grassberger', None}
+        Method used to calculate entropy.
+    args : array_like, shape = (n_samples, )
+        Data of which to calculate entropy. Each array must have the same
+        number of samples.
+    Returns
+    -------
+    entropy : float
+    """
     for i, arg in enumerate(args):
         if rng[i] is None:
             rng[i] = [min(arg), max(arg)]
 
     if method == 'kde':
-        return kde(rng, *args, gride_size=nbins)
+        return kde(rng, *args, gride_size=n_bins)
 
-    bins = hist(nbins, rng, *args)
+    bins = hist(n_bins, rng, *args)
 
     if method == 'chaowangjost':
         return chaowangjost(bins)
@@ -23,6 +40,21 @@ def ent(nbins, rng, method, *args):
 
 
 def kde(rng, *args, gride_size=20):
+    """Entropy calculation using Gaussian kernel density estimation.
+
+    Parameters
+    ----------
+    rng : list of lists
+        List of min/max values for each dimention.
+    args : array_like, shape = (n_samples, )
+        Data of which to calculate entropy. Each array must have the same
+        number of samples.
+    grid_size : int
+        Number of partitions along a dimension in the meshgrid.
+    Returns
+    -------
+    entropy : float
+    """
     n_dims = len(args)
     data = np.vstack((args))
     gkde = kernel(data)
@@ -34,6 +66,17 @@ def kde(rng, *args, gride_size=20):
 
 
 def grassberger(bins):
+    """Entropy calculation using Grassberger correction.
+    doi:10.1016/0375-9601(88)90193-4
+
+    Parameters
+    ----------
+    bins : list
+        Binned data
+    Returns
+    -------
+    entropy : float
+    """
     n = np.sum(bins)
     return np.sum(bins*(np.log(n) -
                         np.nan_to_num(psi(bins)) -
@@ -41,6 +84,17 @@ def grassberger(bins):
 
 
 def chaowangjost(bins):
+    """Entropy calculation using Chao, Wang, Jost correction.
+    doi: 10.1111/2041-210X.12108
+
+    Parameters
+    ----------
+    bins : list
+        Binned data
+    Returns
+    -------
+    entropy : float
+    """
     n = np.sum(bins)
     bc = np.bincount(bins.astype(int))
     if bc[2] == 0:
@@ -59,6 +113,24 @@ def chaowangjost(bins):
     return cwj
 
 
-def ce(nbins, x, y, rng=None, method='kde'):
-    return (ent(nbins, 2*[rng], method, x, y) -
-            ent(nbins, [rng], method, y))
+def ce(n_bins, x, y, rng=None, method='kde'):
+    """Condtional entropy calculation
+
+    Parameters
+    ----------
+    n_bins : int
+        Number of bins.
+    x : array_like, shape = (n_samples, )
+        Conditioned variable.
+    y : array_like, shape = (n_samples, )
+        Conditional variable.
+    rng : list
+        List of min/max values to bin data over.
+    method : {'kde', 'chaowangjost', 'grassberger', None}
+        Method used to calculate entropy.
+    Returns
+    -------
+    entropy : float
+    """
+    return (ent(n_bins, 2*[rng], method, x, y) -
+            ent(n_bins, [rng], method, y))
