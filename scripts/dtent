@@ -7,31 +7,25 @@ import mdtraj as md
 import pandas as pd
 from glob import glob
 from itertools import chain
-from itertools import product
-from contextlib import closing
-from multiprocessing import Pool
-from mdentropy.utils import timing, dihedrals, shuffle
-from mdentropy.tent import TransferEntropy
+
+from mdentropy.utils import timing
+from mdentropy.tent import DihedralTransferEntropy
 
 
-def run(current, past, nbins, iter, N, method):
-    cD = dihedrals(current)
-    pD = dihedrals(past)
-    n = np.unique(np.hstack(tuple(map(np.array, [df.columns for df in cD]))))
+def run(past, current, nbins, iter, N, method):
     R = []
+    tent = DihedralTransferEntropy(nbins=nbins, method=method, threads=N)
+    shuffled = False
     for i in range(iter+1):
-        g = TransferEntropy(nbins, cD, pD, method=method)
+        if i > 0:
+            shuffled = True
         with timing(i):
-            with closing(Pool(processes=N)) as pool:
-                CMI = np.reshape(pool.map(g, product(n, n)),
-                                 (n.size, n.size)).T
-                pool.terminate()
-            R.append(CMI)
-            cD = [shuffle(df) for df in cD]
+            R.append(tent.partial_transform((past, current),
+                     shuffled=shuffled))
     T = R[0]
     if iter > 0:
         T -= np.mean(R[1:], axis=0)
-    return pd.DataFrame(T - T.T, columns=n)
+    return pd.DataFrame(T - T.T, columns=tent.labels)
 
 
 def parse_cmdln():
@@ -54,8 +48,8 @@ def parse_cmdln():
                         default=None)
     parser.add_argument('-b', '--n-bins', dest='nbins',
                         help='Number of bins', default=24, type=int)
-    parser.add_argument('-n', '--n-proc', dest='N',
-                        help='Number of processors', default=12, type=int)
+    parser.add_argument('-n', '--n-threads', dest='N',
+                        help='Number of threads', default=None, type=int)
     parser.add_argument('-o', '--output', dest='out',
                         help='Name of output file.', default='tent.pkl')
     parser.add_argument('-m', '--method', dest='method',
@@ -74,6 +68,6 @@ if __name__ == "__main__":
               list(chain(*map(glob, expr2))))
     current = md.load(f1, top=options.top, stride=options.stride)
     past = md.load(f2, top=options.top, stride=options.stride)
-    D = run(current, past, options.nbins, options.iter, options.N,
+    D = run(past, current, options.nbins, options.iter, options.N,
             options.method)
     pickle.dump(D, open(options.out, 'wb'))

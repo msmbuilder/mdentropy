@@ -1,5 +1,5 @@
 numpy
 scipy
 pandas
-scikit-learn
+msmbuilder
 mdtraj
