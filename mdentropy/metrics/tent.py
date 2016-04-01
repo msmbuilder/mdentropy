@@ -1,14 +1,15 @@
+from .base import MetricBase
 from mdentropy.utils import dihedrals, shuffle
-from mdentropy.entropy import cmi, ncmi
+from mdentropy.core import cmi, ncmi
 
 import numpy as np
 from itertools import product
 
-from multiprocessing import cpu_count, Pool
+from multiprocessing import Pool
 from contextlib import closing
 
 
-class TransferEntropyBase(object):
+class TransferEntropyBase(MetricBase):
 
     def _partial_tent(cls, p):
         i, j = p
@@ -58,20 +59,12 @@ class TransferEntropyBase(object):
         for traj in trajs:
             yield cls.partial_transform(traj)
 
-    def __init__(cls, nbins=24, method='chaowangjost', normed=False,
-                 threads=None):
-        cls.n_types = 1
-        cls.data = None
-        cls.labels = None
-        cls.n_bins = nbins
-        cls.method = method
+    def __init__(cls, normed=False, **kwargs):
         cls._est = cmi
-        cls.n_threads = threads
-
         if normed:
             cls._est = ncmi
-        if threads is None:
-            cls.n_threads = int(cpu_count()/2)
+
+        super(TransferEntropyBase, cls).__init__(**kwargs)
 
 
 class DihedralTransferEntropy(TransferEntropyBase):
@@ -82,4 +75,5 @@ class DihedralTransferEntropy(TransferEntropyBase):
     def __init__(self, types=['phi', 'psi'], **kwargs):
         self.types = types
         self.n_types = len(types)
+
         super(DihedralTransferEntropy, self).__init__(**kwargs)

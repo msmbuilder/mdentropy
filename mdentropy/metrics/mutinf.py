@@ -1,15 +1,16 @@
-from mdentropy.utils import dihedrals, shuffle
-from mdentropy.entropy import mi, nmi
+from .base import MetricBase
+from mdentropy.utils import dihedrals
+from mdentropy.core import mi, nmi
 
 import numpy as np
 from itertools import product
 from itertools import combinations_with_replacement as combinations
 
-from multiprocessing import cpu_count, Pool
+from multiprocessing import Pool
 from contextlib import closing
 
 
-class MutualInformationBase(object):
+class MutualInformationBase(MetricBase):
 
     def _partial_mutinf(cls, p):
         i, j = p
@@ -43,9 +44,6 @@ class MutualInformationBase(object):
     def _extract_data(cls, traj):
         pass
 
-    def _shuffle(cls):
-        cls.data = shuffle(cls.data)
-
     def partial_transform(cls, traj, shuffle=False):
         cls.data = cls._extract_data(traj)
         cls.labels = np.unique(np.hstack([df.columns for df in cls.data]))
@@ -53,24 +51,12 @@ class MutualInformationBase(object):
             cls.shuffle()
         return cls._mutinf()
 
-    def transform(cls, trajs):
-        for traj in trajs:
-            yield cls.partial_transform(traj)
-
-    def __init__(cls, nbins=24, method='chaowangjost', normed=False,
-                 threads=None):
-        cls.n_types = 1
-        cls.data = None
-        cls.labels = None
-        cls.n_bins = nbins
-        cls.method = method
+    def __init__(cls, normed=False, **kwargs):
         cls._est = mi
-        cls.n_threads = int(cpu_count()/2)
-
         if normed:
             cls._est = nmi
-        if threads is not None:
-            cls.n_threads = threads
+
+        super(MutualInformationBase, cls).__init__(**kwargs)
 
 
 class DihedralMutualInformation(MutualInformationBase):
@@ -81,4 +67,5 @@ class DihedralMutualInformation(MutualInformationBase):
     def __init__(self, types=['phi', 'psi'], **kwargs):
         self.types = types
         self.n_types = len(types)
+
         super(DihedralMutualInformation, self).__init__(**kwargs)
