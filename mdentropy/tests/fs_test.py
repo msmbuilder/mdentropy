@@ -11,18 +11,19 @@ import mdtraj as md
 
 from msmbuilder.example_datasets import FsPeptide
 
-CWD = os.path.abspath(os.curdir)
-DIRNAME = tempfile.mkdtemp()
-FsPeptide(DIRNAME).get()
-
 
 def test_fs_mi():
 
-    try:
-        os.chdir(DIRNAME)
+    cwd = os.path.abspath(os.curdir)
+    dirname = tempfile.mkdtemp()
+    FsPeptide(dirname).get()
 
-        top = md.load(DIRNAME + 'fs_peptide/fs-peptide.pdb')
-        traj = md.load(DIRNAME + 'fs_peptide/trajectory-1.xtc', top=top)
+    try:
+        os.chdir(dirname)
+
+        top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
+        traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc',
+                       stride=10, top=top)
 
         mi = DihedralMutualInformation()
         M = mi.partial_transform(traj)
@@ -30,15 +31,25 @@ def test_fs_mi():
         eq(M[0, 1], M[1, 0])
 
     finally:
-        os.chdir(CWD)
+        os.chdir(cwd)
+        shutil.rmtree(dirname)
 
 
 def test_fs_tent():
-    try:
-        os.chdir(DIRNAME)
 
-        top = md.load(DIRNAME + '/fs_peptide/fs-peptide.pdb')
-        traj = md.load(DIRNAME + '/fs_peptide/trajectory-1.xtc', top=top)
+    cwd = os.path.abspath(os.curdir)
+    dirname = tempfile.mkdtemp()
+    FsPeptide(dirname).get()
+
+    try:
+        os.chdir(dirname)
+
+        top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
+        traj1 = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=10,
+                        top=top)
+        traj2 = md.load(dirname + '/fs_peptide/trajectory-2.xtc', stride=10,
+                        top=top)
+        traj = (traj1, traj2)
 
         tent = DihedralTransferEntropy()
         T = tent.partial_transform(traj)
@@ -47,5 +58,5 @@ def test_fs_tent():
             raise ValueError('Transfer entropy test failed')
 
     finally:
-        os.chdir(CWD)
-        shutil.rmtree(DIRNAME)
+        os.chdir(cwd)
+        shutil.rmtree(dirname)

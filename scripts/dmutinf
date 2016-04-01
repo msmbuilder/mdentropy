@@ -4,6 +4,7 @@ import pickle
 import argparse
 import numpy as np
 import mdtraj as md
+import pandas as pd
 from glob import glob
 from itertools import chain
 
@@ -13,16 +14,17 @@ from mdentropy.mutinf import DihedralMutualInformation
 
 def run(traj, nbins, iter, N, method):
     R = []
-    mi = DihedralMutualInformation(nbins=nbins, method=method)
+    mi = DihedralMutualInformation(nbins=nbins, method=method, threads=N)
     shuffle = False
     for i in range(iter+1):
         if i > 0:
             shuffle = True
         with timing(i):
             R.append(mi.partial_transform(traj, shuffle=shuffle))
+    M = R[0]
     if iter > 0:
-        return R[0] - np.mean(R[1:], axis=0)
-    return R[0]
+        M -= np.mean(R[1:], axis=0)
+    return pd.DataFrame(M, columns=mi.labels)
 
 
 def parse_cmdln():
@@ -38,9 +40,9 @@ def parse_cmdln():
                         help='File containing topology.', default=None)
     parser.add_argument('-b', '--n-bins', dest='nbins',
                         help='Number of bins', default=24, type=int)
-    parser.add_argument('-n', '--n-proc', dest='N',
-                        help='Number of processors to be used.',
-                        default=12, type=int)
+    parser.add_argument('-n', '--n-threads', dest='N',
+                        help='Number of threads to be used.',
+                        default=None, type=int)
     parser.add_argument('-r', '--stride', dest='stride',
                         help='Stride to use', default=100)
     parser.add_argument('-o', '--output', dest='out',

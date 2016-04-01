@@ -1,36 +1,43 @@
 from mdentropy.utils import dihedrals, shuffle
-from mdentropy.entropy import nmi
+from mdentropy.entropy import mi, nmi
 
 import numpy as np
 from itertools import product
 from itertools import combinations_with_replacement as combinations
 
+from multiprocessing import cpu_count, Pool
+from contextlib import closing
+
 
 class MutualInformationBase(object):
 
-    def _partial_mutinf(cls, i, j):
-        for m, n in product(range(cls.n_types),
-                            range(cls.n_types)):
-            if (i not in cls.data[m].columns or j not in cls.data[n].columns):
-                yield 0.0
-            if i == j and m == n:
-                yield 1.0
-            yield nmi(cls.n_bins, cls.data[m][i], cls.data[n][j],
-                      method=cls.method)
+    def _partial_mutinf(cls, p):
+        i, j = p
+
+        def y(i, j):
+            for m, n in product(range(cls.n_types),
+                                range(cls.n_types)):
+                if (i not in cls.data[m].columns or
+                        j not in cls.data[n].columns):
+                    yield 0.0
+                if i == j and m == n:
+                    yield 1.0
+                yield cls._est(cls.n_bins, cls.data[m][i], cls.data[n][j],
+                               method=cls.method)
+
+        return sum(y(i, j))
 
     def _mutinf(cls):
+        idx = np.triu_indices(cls.labels.size)
+        M = np.zeros((cls.labels.size, cls.labels.size))
 
-        def y(p):
-            i, j = p
-            return sum(cls._partial_mutinf(i, j))
+        with closing(Pool(processes=cls.n_threads)) as pool:
+            M[idx] = list(pool.map(cls._partial_mutinf,
+                                   combinations(cls.labels, 2)))
+            pool.terminate()
 
-        n = np.unique(np.hstack(tuple(map(np.array,
-                                          [df.columns for df in cls.data]))))
-
-        idx = np.triu_indices(n.size)
-        M = np.zeros((n.size, n.size))
-        M[idx] = list(map(y, combinations(n, 2)))
         M[idx[::-1]] = M[idx]
+
         return M
 
     def _extract_data(cls, traj):
@@ -41,6 +48,7 @@ class MutualInformationBase(object):
 
     def partial_transform(cls, traj, shuffle=False):
         cls.data = cls._extract_data(traj)
+        cls.labels = np.unique(np.hstack([df.columns for df in cls.data]))
         if shuffle:
             cls.shuffle()
         return cls._mutinf()
@@ -49,10 +57,20 @@ class MutualInformationBase(object):
         for traj in trajs:
             yield cls.partial_transform(traj)
 
-    def __init__(cls, nbins=24, method='chaowangjost'):
+    def __init__(cls, nbins=24, method='chaowangjost', normed=False,
+                 threads=None):
         cls.n_types = 1
+        cls.data = None
+        cls.labels = None
         cls.n_bins = nbins
         cls.method = method
+        cls._est = mi
+        cls.n_threads = int(cpu_count()/2)
+
+        if normed:
+            cls._est = nmi
+        if threads is not None:
+            cls.n_threads = threads
 
 
 class DihedralMutualInformation(MutualInformationBase):
