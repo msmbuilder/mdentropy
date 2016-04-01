@@ -26,7 +26,7 @@ class TransferEntropyBase(MetricBase):
                                cls.data2[m][j],
                                cls.data1[n][i],
                                cls.data1[m][j],
-                               range=cls.range,
+                               rng=cls.rng,
                                method=cls.method)
 
         return sum(y(i, j))
@@ -40,19 +40,17 @@ class TransferEntropyBase(MetricBase):
 
         return np.reshape(CMI, (cls.labels.size, cls.labels.size)).T
 
-    def _extract_data(cls, traj1, traj2):
+    def _extract_data(cls, traj):
         pass
 
     def _shuffle(cls):
         cls.data1 = shuffle(cls.data1)
         cls.data2 = shuffle(cls.data2)
 
-    def partial_transform(cls, traj, shuffle=False):
-        traj1, traj2 = traj
-        cls.data1 = cls._extract_data(traj1)
-        cls.data2 = cls._extract_data(traj2)
+    def partial_transform(cls, traj, shuffled=False):
+        cls.data1, cls.data2 = cls._extract_data(traj)
         cls.labels = np.unique(np.hstack([df.columns for df in cls.data1]))
-        if shuffle:
+        if shuffled:
             cls.shuffle()
         return cls._tent()
 
@@ -61,6 +59,8 @@ class TransferEntropyBase(MetricBase):
             yield cls.partial_transform(traj)
 
     def __init__(cls, normed=False, **kwargs):
+        cls.data1 = None
+        cls.data2 = None
         cls._est = ncmi if normed else cmi
 
         super(TransferEntropyBase, cls).__init__(**kwargs)
@@ -69,7 +69,9 @@ class TransferEntropyBase(MetricBase):
 class DihedralTransferEntropy(TransferEntropyBase):
 
     def _extract_data(self, traj):
-        return dihedrals(traj, types=self.types)
+        traj1, traj2 = traj
+        return (dihedrals(traj1, types=self.types),
+                dihedrals(traj2, types=self.types))
 
     def __init__(self, types=None, **kwargs):
         self.types = types or ['phi', 'psi']

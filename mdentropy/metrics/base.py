@@ -12,12 +12,12 @@ class MetricBase(object):
         for traj in trajs:
             yield cls.partial_transform(traj)
 
-    def __init__(cls, nbins=24, range=None, method='chaowangjost',
+    def __init__(cls, n_bins=24, rng=None, method='chaowangjost',
                  threads=None):
         cls.n_types = 1
         cls.data = None
         cls.labels = None
-        cls.n_bins = nbins
-        cls.range = range
+        cls.n_bins = n_bins
+        cls.rng = rng
         cls.method = method
         cls.n_threads = threads or int(cpu_count()/2)

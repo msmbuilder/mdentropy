@@ -15,12 +15,13 @@ from mdentropy.tent import DihedralTransferEntropy
 def run(past, current, nbins, iter, N, method):
     R = []
     tent = DihedralTransferEntropy(nbins=nbins, method=method, threads=N)
-    shuffle = False
+    shuffled = False
     for i in range(iter+1):
         if i > 0:
-            shuffle = True
+            shuffled = True
         with timing(i):
-            R.append(tent.partial_transform((past, current), shuffle=shuffle))
+            R.append(tent.partial_transform((past, current),
+                     shuffled=shuffled))
     T = R[0]
     if iter > 0:
         T -= np.mean(R[1:], axis=0)

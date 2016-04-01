@@ -24,7 +24,7 @@ class MutualInformationBase(MetricBase):
                 if i == j and m == n:
                     yield 1.0
                 yield cls._est(cls.n_bins, cls.data[m][i], cls.data[n][j],
-                               range=cls.range, method=cls.method)
+                               rng=cls.rng, method=cls.method)
 
         return sum(y(i, j))
 
@@ -44,14 +44,15 @@ class MutualInformationBase(MetricBase):
     def _extract_data(cls, traj):
         pass
 
-    def partial_transform(cls, traj, shuffle=False):
+    def partial_transform(cls, traj, shuffled=False):
         cls.data = cls._extract_data(traj)
         cls.labels = np.unique(np.hstack([df.columns for df in cls.data]))
-        if shuffle:
+        if shuffled:
             cls.shuffle()
         return cls._mutinf()
 
     def __init__(cls, normed=False, **kwargs):
+        cls.data = None
         cls._est = nmi if normed else mi
 
         super(MutualInformationBase, cls).__init__(**kwargs)

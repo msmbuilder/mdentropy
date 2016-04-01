@@ -17,9 +17,10 @@ def test_ncmi():
     B = np.random.uniform(low=-180., high=180, size=1000)
     C = np.random.uniform(low=-180., high=180, size=1000)
 
-    NCMI = ncmi(30, A, B, C)
+    NCMI = ncmi(30, A, B, C, rng=[-180., 180.])
 
-    eq(NCMI, cmi(30, A, B, C)/ce(30, A, C), 6)
+    eq(NCMI,
+       cmi(30, A, B, C, rng=[-180., 180.])/ce(30, A, C, rng=[-180., 180.]), 6)
 
 
 def test_dihedral_tent():

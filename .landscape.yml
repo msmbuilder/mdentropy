@@ -2,12 +2,6 @@ doc-warnings: yes
 test-warnings: no
 strictness: high
 max-line-length: 120
-uses:
-    - numpy
-    - pandas
-    - scipy
-    - msmbuilder
-    - mdtraj
 autodetect: yes
 requirements:
     - requirements.txt

@@ -15,12 +15,12 @@ from mdentropy.mutinf import DihedralMutualInformation
 def run(traj, nbins, iter, N, method):
     R = []
     mi = DihedralMutualInformation(nbins=nbins, method=method, threads=N)
-    shuffle = False
+    shuffled = False
     for i in range(iter+1):
         if i > 0:
-            shuffle = True
+            shuffled = True
         with timing(i):
-            R.append(mi.partial_transform(traj, shuffle=shuffle))
+            R.append(mi.partial_transform(traj, shuffled=shuffled))
     M = R[0]
     if iter > 0:
         M -= np.mean(R[1:], axis=0)

@@ -1,19 +1,19 @@
 import numpy as np
 from scipy.stats import entropy as naive
-from scipy.stats.kde import gaussian_kde as gkde
+from scipy.stats.kde import gaussian_kde as kernel
 from scipy.special import psi
 from ..utils import hist
 
 
-def ent(nbins, range, method, *args):
+def ent(nbins, rng, method, *args):
     for i, arg in enumerate(args):
-        if range[i] is None:
-            range[i] = [min(arg), max(arg)]
+        if rng[i] is None:
+            rng[i] = [min(arg), max(arg)]
 
     if method == 'kde':
-        return kde(range, *args, gride_size=nbins)
+        return kde(rng, *args, gride_size=nbins)
 
-    bins = hist(nbins, range, *args)
+    bins = hist(nbins, rng, *args)
 
     if method == 'chaowangjost':
         return chaowangjost(bins)
@@ -22,43 +22,43 @@ def ent(nbins, range, method, *args):
     return naive(bins)
 
 
-def kde(range, *args, gride_size=20):
-    N = len(args)
+def kde(rng, *args, gride_size=20):
+    n_dims = len(args)
     data = np.vstack((args))
-    kde = gkde(data)
-    x = [np.linspace(i[0], i[1], gride_size) for i in range]
-    G = np.meshgrid(*tuple(x))
-    Z = np.reshape(kde(np.vstack(map(np.ravel, G))),
-                   N*[gride_size])
-    return -np.nansum(Z*np.log2(Z))*np.product(np.diff(x)[:, 0])
+    gkde = kernel(data)
+    x = [np.linspace(i[0], i[1], gride_size) for i in rng]
+    grid = np.meshgrid(*tuple(x))
+    z = np.reshape(gkde(np.vstack(map(np.ravel, grid))),
+                   n_dims*[gride_size])
+    return -np.nansum(z*np.log2(z))*np.product(np.diff(x)[:, 0])
 
 
 def grassberger(bins):
-    N = np.sum(bins)
-    return np.sum(bins*(np.log(N) -
+    n = np.sum(bins)
+    return np.sum(bins*(np.log(n) -
                         np.nan_to_num(psi(bins)) -
-                        ((-1.)**bins/(bins + 1.))))/N
+                        ((-1.)**bins/(bins + 1.))))/n
 
 
 def chaowangjost(bins):
-    N = np.sum(bins)
+    n = np.sum(bins)
     bc = np.bincount(bins.astype(int))
     if bc[2] == 0:
         if bc[1] == 0:
             A = 1.
         else:
-            A = 2./((N - 1.) * (bc[1] - 1.) + 2.)
+            A = 2./((n - 1.) * (bc[1] - 1.) + 2.)
     else:
-        A = 2. * bc[2]/((N - 1.) * (bc[1] - 1.) + 2. * bc[2])
-    p = np.arange(1, int(N))
+        A = 2. * bc[2]/((n - 1.) * (bc[1] - 1.) + 2. * bc[2])
+    p = np.arange(1, int(n))
     p = 1./p * (1. - A)**p
-    cwj = np.sum(bins/N * (psi(N) - np.nan_to_num(psi(bins))))
+    cwj = np.sum(bins/n * (psi(n) - np.nan_to_num(psi(bins))))
     if bc[1] > 0 and A != 1.:
-        cwj += np.nan_to_num(bc[1]/N *
-                             (1 - A)**(1 - N * (-np.log(A) - np.sum(p))))
+        cwj += np.nan_to_num(bc[1]/n *
+                             (1 - A)**(1 - n * (-np.log(A) - np.sum(p))))
     return cwj
 
 
-def ce(nbins, X, Y, range=None, method='kde'):
-    return (ent(nbins, 2*[range], method, X, Y) -
-            ent(nbins, [range], method, Y))
+def ce(nbins, x, y, rng=None, method='kde'):
+    return (ent(nbins, 2*[rng], method, x, y) -
+            ent(nbins, [rng], method, y))

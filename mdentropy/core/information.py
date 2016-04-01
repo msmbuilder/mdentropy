@@ -2,26 +2,26 @@ from .entropy import ent, ce
 import numpy as np
 
 
-def mi(nbins, X, Y, range=None, method='kde'):
-    return (ent(nbins, [range], method, X) +
-            ent(nbins, [range], method, Y) -
-            ent(nbins, 2*[range], method, X, Y))
+def mi(nbins, x, y, rng=None, method='kde'):
+    return (ent(nbins, [rng], method, x) +
+            ent(nbins, [rng], method, y) -
+            ent(nbins, 2*[rng], method, x, y))
 
 
-def nmi(nbins, X, Y, range=None, method='kde'):
-    return np.nan_to_num(mi(nbins, X, Y, method=method, range=range) /
-                         np.sqrt(ent(nbins, [range], method, X) *
-                         ent(nbins, [range], method, Y)))
+def nmi(nbins, x, y, rng=None, method='kde'):
+    return np.nan_to_num(mi(nbins, x, y, method=method, rng=rng) /
+                         np.sqrt(ent(nbins, [rng], method, x) *
+                         ent(nbins, [rng], method, y)))
 
 
-def cmi(nbins, X, Y, Z, range=None, method='kde'):
-    return (ent(nbins, 2*[range], method, X, Z) +
-            ent(nbins, 2*[range], method, Y, Z) -
-            ent(nbins, [range], method, Z) -
-            ent(nbins, 3*[range], method, X, Y, Z))
+def cmi(nbins, x, y, z, rng=None, method='kde'):
+    return (ent(nbins, 2*[rng], method, x, z) +
+            ent(nbins, 2*[rng], method, y, z) -
+            ent(nbins, [rng], method, z) -
+            ent(nbins, 3*[rng], method, x, y, z))
 
 
-def ncmi(nbins, X, Y, Z, range=None, method='kde'):
-    return np.nan_to_num(1 + (ent(nbins, 2*[range], method, Y, Z) -
-                         ent(nbins, 3*[range], method, X, Y, Z)) /
-                         ce(nbins, X, Z, range=range, method=method))
+def ncmi(nbins, x, y, z, rng=None, method='kde'):
+    return np.nan_to_num(1 + (ent(nbins, 2*[rng], method, y, z) -
+                         ent(nbins, 3*[rng], method, x, y, z)) /
+                         ce(nbins, x, z, rng=rng, method=method))

@@ -8,8 +8,8 @@ from msmbuilder.featurizer import DihedralFeaturizer
 
 class timing(object):
     "Context manager for printing performance"
-    def __init__(self, iter):
-        self.iter = iter
+    def __init__(self, iteration):
+        self.iteration = iteration
 
     def __enter__(self):
         self.start = time.time()
@@ -17,13 +17,13 @@ class timing(object):
     def __exit__(self, ty, val, tb):
         end = time.time()
         print("Round %d : %0.3f seconds" %
-              (self.iter, end-self.start))
+              (self.iteration, end-self.start))
         return False
 
 
-def hist(nbins, range, *args):
+def hist(nbins, rng, *args):
     data = np.vstack((args)).T
-    return np.histogramdd(data, bins=nbins, range=range)[0].flatten()
+    return np.histogramdd(data, bins=nbins, range=rng)[0].flatten()
 
 
 def shuffle(df, n=1):
@@ -46,10 +46,10 @@ class Dihedrals(object):
 
         return pd.DataFrame(180.*angles/np.pi, columns=idx)
 
-    def __init__(self, type):
-        self.type = type
+    def __init__(self, tp):
+        self.type = tp
 
 
 def dihedrals(traj, types=None):
     types = types or ['phi', 'psi']
-    return [Dihedrals(type)(traj) for type in types]
+    return [Dihedrals(tp)(traj) for tp in types]
