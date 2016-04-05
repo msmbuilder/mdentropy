@@ -6,17 +6,13 @@ MDEntropy is a python library that allows users to perform
 """
 
 from setuptools import setup, find_packages
-from Cython.Build import cythonize
-import numpy as np
-from glob import glob
 
 classifiers = """\
     Development Status :: 3 - Alpha
     Intended Audience :: Science/Research
     License :: OSI Approved :: Apache Software License
     Programming Language :: Python
-    Programming Language :: Python :: 2.6
-    Programming Language :: Python :: 2.7
+    Programming Language :: Python :: 3.5
     Operating System :: Unix
     Operating System :: MacOS
     Operating System :: Microsoft :: Windows
@@ -37,7 +33,5 @@ setup(
                 "a few lines of Python code.",
     license="MIT",
     keywords="molecular dynamics entropy analysis",
-    url="http://github.com/cxhernandez/mdentropy",
-    ext_modules=cythonize(glob("mdentropy/*.pyx")),
-    include_dirs=[np.get_include()]
+    url="http://github.com/cxhernandez/mdentropy"
 )

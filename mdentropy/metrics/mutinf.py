@@ -1,5 +1,4 @@
-from .base import MetricBase
-from ..utils import dihedrals
+from .base import MetricBase, DihedralMetricBase
 from ..core import mi, nmi
 
 import numpy as np
@@ -44,9 +43,6 @@ class MutualInformationBase(MetricBase):
 
         return M
 
-    def _extract_data(cls, traj):
-        pass
-
     def partial_transform(cls, traj, shuffled=False):
         cls.data = cls._extract_data(traj)
         cls.labels = np.unique(np.hstack([df.columns for df in cls.data]))
@@ -61,13 +57,10 @@ class MutualInformationBase(MetricBase):
         super(MutualInformationBase, cls).__init__(**kwargs)
 
 
-class DihedralMutualInformation(MutualInformationBase):
+class DihedralMutualInformation(DihedralMetricBase, MutualInformationBase):
     """
     Mutual information calculations for dihedral angles
     """
-
-    def _extract_data(self, traj):
-        return dihedrals(traj, types=self.types)
 
     def __init__(self, types=None, **kwargs):
         self.types = types or ['phi', 'psi']

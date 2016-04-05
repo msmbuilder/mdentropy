@@ -24,6 +24,8 @@ def ent(n_bins, rng, method, *args):
     -------
     entropy : float
     """
+    if rng is None:
+        rng = len(args)*[None]
     for i, arg in enumerate(args):
         if rng[i] is None:
             rng[i] = [min(arg), max(arg)]

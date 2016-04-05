@@ -1,13 +1,10 @@
 from __future__ import print_function
 
 import time
-import pandas as pd
 import numpy as np
 from numpy import linspace, histogramdd, product, sum, array
 from scipy.stats import chi2
 from itertools import product as iterproduct
-
-from msmbuilder.featurizer import DihedralFeaturizer
 
 
 class timing(object):
@@ -44,31 +41,37 @@ def hist(n_bins, rng, *args):
     return np.histogramdd(data, bins=n_bins, range=rng)[0].flatten()
 
 
-def adaptive(*args, rng=None, min_partitions=4, alpha=None):
+def adaptive(*args, rng=None, alpha=None):
     """ Darbellay-Vajda adaptive partitioning
     doi:10.1109/18.761290
         Parameters
         ----------
-        n_bins : int
-            Number of bins.
-        rng : list of lists
-            List of min/max values to bin data over.
         args : array_like, shape = (n_samples, )
             Data of which to histogram.
+        rng : list of lists
+            List of min/max values to bin data over.
+        alpha : float
+            Chi-squared test criterion.
         Returns
         -------
         bins : array_like, shape = (n_bins, )
     """
     X = np.vstack(args).T
+
+    # Get number of dimensions
     n_dims = X.shape[1]
     dims = range(n_dims)
 
+    # If no ranges are supplied, initialize with min/max for each dimension
     if rng is None:
         rng = tuple((X[:, i].min(), X[:, i].max()) for i in dims)
 
     if alpha is None:
         alpha = 1/X.shape[0]
+    elif not (0. <= alpha < 1):
+        raise ValueError('alpha must be a float in [0, 1).')
 
+    # Estimate of X2 statistic
     def sX2(freq):
         return sum((freq - freq.mean())**2)/freq.mean()
 
@@ -78,86 +81,41 @@ def adaptive(*args, rng=None, min_partitions=4, alpha=None):
         nonlocal dims
         nonlocal x2
 
+        # Filter out data that is not in our initial partition
         Y = X[product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
                        for j, i in enumerate(rng)], 0).astype(bool), :]
 
-        part = [linspace(rng[i][0], rng[i][1], 3) for i in dims]
-
+        # Subdivide our partitions by the midpoint in each dimension
         partitions = set([])
+        part = [linspace(rng[i][0], rng[i][1], 3) for i in dims]
         newrng = set((tuple((part[i][j[i]], part[i][j[i]+1]) for i in dims)
                      for j in iterproduct(*(n_dims*[[0, 1]]))),)
+
+        # Calculate counts for new partitions
         freq = histogramdd(Y, bins=part)[0]
+
+        # Compare estimate to X2 statistic at given alpha
         chisq = (sX2(freq) >= x2)
+
+        # If not uniform proceed
         if chisq and False not in ((Y.max(0) - Y.min(0)).T > 0):
+
+            # For each new partition continue algorithm recursively
             for nr in newrng:
                 newpart = dvpartition(X, rng=nr)
                 for newp in newpart:
                     partitions.update(tuple((newp,)))
+
+        # Else if uniform and contains data, return current partition
         elif Y.shape[0] > 0:
             partitions = set(tuple((rng,)))
             counts += (Y.shape[0],)
         return partitions
+
     counts = ()
     x2 = chi2.ppf(1-alpha, 2**n_dims-1)
     dvpartition(X, rng)
     return array(counts).astype(int)
-
-
-def dvpartition(X, r=None, min_partitions=4, alpha=.05):
-
-    # Estimate of X2 statistic
-    def sX2(freq):
-        return np.sum((freq - freq.mean())**2)/freq.mean()
-
-    # Get number of dimensions
-    N = X.shape[1]
-
-    # If no ranges are supplied, initialize with min/max for each dimension
-    # Else filter out data that is not in our initial partition
-    if r is None:
-        r = [[X[:, i].min(), X[:, i].max()] for i in range(N)]
-    else:
-        Y = X[np.product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
-                          for j, i in enumerate(r)], 0).astype(bool), :]
-
-    # Subdivide our partitions by the midpoint in each dimension
-    part = np.array([np.linspace(r[i][0], r[i][1], 3) for i in range(N)])
-    partitions = []
-    newr = [[[part[i, j[i]], part[i, j[i]+1]] for i in range(N)]
-            for j in product(*(N*[[0, 1]]))]
-
-    # Calculate counts for new partitions
-    freq = np.histogramdd(Y, bins=part)[0]
-
-    # Compare estimate to X2 statistic at given alpha
-    # to determine if data in partition is not uniform.
-    # Skips check if alpha is set to None.
-    if alpha is not None:
-        chisq = (sX2(freq) > chi2.ppf(1-alpha, N-1))
-    else:
-        chisq = Y.shape[0] > 0
-
-    # If not uniform proceed
-    if (chisq and np.product([Y[:, i].min() != Y[:, i].max()
-                              for i in range(N)]).astype(bool)):
-
-        # For each new partition continue dvpartition recursively
-        for nr in newr:
-            newpart = dvpartition(X, r=nr, alpha=alpha)
-            for newp in newpart:
-                partitions.append(newp)
-    # If uniform and contains data, return current partition
-    # unless min_partitions is not satisfied. In that case,
-    # try a looser restriction on alpha.
-    elif Y.shape[0] > 0:
-        if min_partitions == 1:
-            partitions = [r]
-        while len(partitions) < min_partitions:
-            for nr in newr:
-                newpart = dvpartition(X, r=nr, alpha=min_partitions*alpha)
-                for newp in newpart:
-                    partitions.append(newp)
-    return partitions
 
 
 def shuffle(df, n=1):
@@ -180,37 +138,3 @@ def shuffle(df, n=1):
         sdf = sdf.apply(sampler, axis=0)
         sdf = sdf.apply(sampler, axis=1)
     return sdf
-
-
-class Dihedrals(object):
-    """Convenience class for extracting dihedral angle data as a DataFrame"""
-    def __call__(self, traj):
-        featurizer = DihedralFeaturizer(types=[self.type], sincos=False)
-        angles = featurizer.partial_transform(traj)
-        summary = featurizer.describe_features(traj)
-
-        idx = [[traj.topology.atom(ati).residue.index
-                for ati in item['atominds']][1] for item in summary]
-
-        return pd.DataFrame(180.*angles/np.pi, columns=idx)
-
-    def __init__(self, tp):
-        self.type = tp
-
-
-def dihedrals(traj, types=None):
-    """Convenience function for extracting dihedral angle data as a list of
-    DataFrame objects
-
-    Parameters
-    ----------
-    traj : mdtraj.Trajectory
-        Trajectory
-    types : list
-        Types of dihedral data to extract (default: ['phi', 'psi']).
-    Returns
-    -------
-    dihedrals : list
-    """
-    types = types or ['phi', 'psi']
-    return [Dihedrals(tp)(traj) for tp in types]
