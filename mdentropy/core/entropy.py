@@ -1,8 +1,9 @@
+from ..utils import hist, adaptive
+
 import numpy as np
 from scipy.stats import entropy as naive
 from scipy.stats.kde import gaussian_kde as kernel
 from scipy.special import psi
-from ..utils import hist
 
 
 def ent(n_bins, rng, method, *args):
@@ -23,14 +24,19 @@ def ent(n_bins, rng, method, *args):
     -------
     entropy : float
     """
+    if rng is None:
+        rng = len(args)*[None]
     for i, arg in enumerate(args):
         if rng[i] is None:
             rng[i] = [min(arg), max(arg)]
 
     if method == 'kde':
-        return kde(rng, *args, gride_size=n_bins)
+        return kde(rng, *args, gride_size=n_bins or 20)
 
-    bins = hist(n_bins, rng, *args)
+    if n_bins:
+        bins = hist(n_bins, rng, *args)
+    else:
+        bins = adaptive(rng=rng, *args)
 
     if method == 'chaowangjost':
         return chaowangjost(bins)

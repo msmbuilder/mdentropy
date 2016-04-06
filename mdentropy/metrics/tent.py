@@ -1,5 +1,5 @@
-from .base import MetricBase
-from ..utils import dihedrals, shuffle
+from .base import MetricBase, DihedralMetricBase
+from ..utils import shuffle
 from ..core import cmi, ncmi
 
 import numpy as np
@@ -43,15 +43,14 @@ class TransferEntropyBase(MetricBase):
 
         return np.reshape(CMI, (cls.labels.size, cls.labels.size)).T
 
-    def _extract_data(cls, traj):
-        pass
-
     def _shuffle(cls):
         cls.data1 = shuffle(cls.data1)
         cls.data2 = shuffle(cls.data2)
 
     def partial_transform(cls, traj, shuffled=False):
-        cls.data1, cls.data2 = cls._extract_data(traj)
+        traj1, traj2 = traj
+        cls.data1 = cls._extract_data(traj1)
+        cls.data2 = cls._extract_data(traj2)
         cls.labels = np.unique(np.hstack([df.columns for df in cls.data1]))
         if shuffled:
             cls.shuffle()
@@ -69,14 +68,10 @@ class TransferEntropyBase(MetricBase):
         super(TransferEntropyBase, cls).__init__(**kwargs)
 
 
-class DihedralTransferEntropy(TransferEntropyBase):
+class DihedralTransferEntropy(DihedralMetricBase, TransferEntropyBase):
     """
     Transfer entropy calculations for dihedral angles
     """
-    def _extract_data(self, traj):
-        traj1, traj2 = traj
-        return (dihedrals(traj1, types=self.types),
-                dihedrals(traj2, types=self.types))
 
     def __init__(self, types=None, **kwargs):
         self.types = types or ['phi', 'psi']

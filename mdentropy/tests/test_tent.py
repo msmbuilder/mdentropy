@@ -13,14 +13,14 @@ from msmbuilder.example_datasets import FsPeptide
 
 
 def test_ncmi():
-    A = np.random.uniform(low=-180., high=180, size=1000)
-    B = np.random.uniform(low=-180., high=180, size=1000)
-    C = np.random.uniform(low=-180., high=180, size=1000)
+    a = np.random.uniform(low=-180., high=180, size=1000)
+    b = np.random.uniform(low=-180., high=180, size=1000)
+    c = np.random.uniform(low=-180., high=180, size=1000)
 
-    NCMI = ncmi(30, A, B, C, rng=[-180., 180.])
+    NCMI = ncmi(30, a, b, c, rng=[-180., 180.])
 
     eq(NCMI,
-       cmi(30, A, B, C, rng=[-180., 180.])/ce(30, A, C, rng=[-180., 180.]), 6)
+       cmi(30, a, b, c, rng=[-180., 180.])/ce(30, a, c, rng=[-180., 180.]), 6)
 
 
 def test_dihedral_tent():
