@@ -53,7 +53,7 @@ class TransferEntropyBase(MetricBase):
         cls.data2 = cls._extract_data(traj2)
         cls.labels = np.unique(np.hstack([df.columns for df in cls.data1]))
         if shuffled:
-            cls.shuffle()
+            cls._shuffle()
         return cls._tent()
 
     def transform(cls, trajs):

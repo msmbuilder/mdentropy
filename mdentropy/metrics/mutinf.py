@@ -47,7 +47,7 @@ class MutualInformationBase(MetricBase):
         cls.data = cls._extract_data(traj)
         cls.labels = np.unique(np.hstack([df.columns for df in cls.data]))
         if shuffled:
-            cls.shuffle()
+            cls._shuffle()
         return cls._mutinf()
 
     def __init__(cls, normed=False, **kwargs):
