@@ -45,6 +45,12 @@ def test_dihedral_tent():
         if T[0, 1] == T[1, 0]:
             raise ValueError('Transfer entropy test failed')
 
+        _test_shuffle(tent, traj)
+
     finally:
         os.chdir(cwd)
         shutil.rmtree(dirname)
+
+
+def _test_shuffle(tent, traj):
+    tent.partial_transform(traj, shuffled=True)

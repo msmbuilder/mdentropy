@@ -50,6 +50,12 @@ def test_dihedral_mi():
 
         eq(M[0, 1], M[1, 0])
 
+        _test_shuffle(mi, traj)
+
     finally:
         os.chdir(cwd)
         shutil.rmtree(dirname)
+
+
+def _test_shuffle(mi, traj):
+    mi.partial_transform(traj, shuffled=True)
