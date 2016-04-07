@@ -14,7 +14,7 @@ from mdentropy.metrics import DihedralMutualInformation
 
 def run(traj, nbins, iter, N, method):
     R = []
-    mi = DihedralMutualInformation(nbins=nbins, method=method, threads=N)
+    mi = DihedralMutualInformation(n_bins=nbins, method=method, threads=N)
     shuffled = False
     for i in range(iter+1):
         if i > 0:
