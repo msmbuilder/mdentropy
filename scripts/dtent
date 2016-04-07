@@ -14,7 +14,7 @@ from mdentropy.metrics import DihedralTransferEntropy
 
 def run(past, current, nbins, iter, N, method):
     R = []
-    tent = DihedralTransferEntropy(nbins=nbins, method=method, threads=N)
+    tent = DihedralTransferEntropy(n_bins=nbins, method=method, threads=N)
     shuffled = False
     for i in range(iter+1):
         if i > 0:
