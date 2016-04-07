@@ -1,4 +1,4 @@
-from mdentropy.utils import shuffle
+from ..utils import shuffle
 
 from multiprocessing import cpu_count
 
@@ -11,7 +11,7 @@ from msmbuilder.featurizer import DihedralFeaturizer
 class MetricBase(object):
 
     def _shuffle(cls):
-        cls.data = shuffle(cls.data)
+        cls.data = [shuffle(df) for df in cls.data]
 
     def _extract_data(cls, traj):
         pass

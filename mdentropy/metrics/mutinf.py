@@ -23,10 +23,11 @@ class MutualInformationBase(MetricBase):
                 if (i not in cls.data[m].columns or
                         j not in cls.data[n].columns):
                     yield 0.0
-                if i == j and m == n:
+                elif i == j and m == n:
                     yield 1.0
-                yield cls._est(cls.n_bins, cls.data[m][i], cls.data[n][j],
-                               rng=cls.rng, method=cls.method)
+                else:
+                    yield cls._est(cls.n_bins, cls.data[m][i], cls.data[n][j],
+                                   rng=cls.rng, method=cls.method)
 
         return sum(y(i, j))
 
