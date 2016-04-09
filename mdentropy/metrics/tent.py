@@ -73,9 +73,3 @@ class DihedralTransferEntropy(DihedralMetricBase, TransferEntropyBase):
     """
     Transfer entropy calculations for dihedral angles
     """
-
-    def __init__(self, types=None, **kwargs):
-        self.types = types or ['phi', 'psi']
-        self.n_types = len(self.types)
-
-        super(DihedralTransferEntropy, self).__init__(**kwargs)

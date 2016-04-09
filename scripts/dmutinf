@@ -12,9 +12,11 @@ from mdentropy.utils import timing
 from mdentropy.metrics import DihedralMutualInformation
 
 
-def run(traj, nbins, iter, N, method):
+def run(traj, nbins, iter, N, types, method):
     R = []
-    mi = DihedralMutualInformation(n_bins=nbins, method=method, threads=N)
+    mi = DihedralMutualInformation(n_bins=nbins, types=types,
+                                   method=method, threads=N)
+
     shuffled = False
     for i in range(iter+1):
         if i > 0:
@@ -51,6 +53,12 @@ def parse_cmdln():
                         help='Entropy estimate method.',
                         choices=['chaowangjost', 'grassberger', 'kde'],
                         default='chaowangjost')
+    parser.add_argument('-d', '--dihedrals', dest='dihedrals',
+                        help='Dihedral angles to analyze.',
+                        nargs='+',
+                        choices=['phi', 'psi', 'omega', 'chi1',
+                                 'chi2', 'chi3', 'chi4'],
+                        default=['phi', 'psi'])
     args = parser.parse_args()
     return args
 
@@ -60,5 +68,6 @@ if __name__ == "__main__":
     expr = options.traj.replace(' ', '').split(',')
     files = list(chain(*map(glob, expr)))
     traj = md.load(files, top=options.top, stride=options.stride)
-    M = run(traj, options.nbins, options.iter, options.N, options.method)
+    M = run(traj, options.nbins, options.iter, options.N, options.dihedrals,
+            options.method)
     pickle.dump(M, open(options.out, 'wb'))
