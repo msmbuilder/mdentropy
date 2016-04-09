@@ -43,7 +43,7 @@ def parse_cmdln():
                         help='Number of shuffle iterations.',
                         default=10, type=int)
     parser.add_argument('-r', '--stride', dest='stride',
-                        help='Stride to use', default=100)
+                        help='Stride to use', default=1, type=int)
     parser.add_argument('-t', '--topology',
                         dest='top', help='File containing topology.',
                         default=None)
@@ -55,7 +55,8 @@ def parse_cmdln():
                         help='Name of output file.', default='tent.pkl')
     parser.add_argument('-m', '--method', dest='method',
                         help='Entropy estimate method.',
-                        choices=['chaowangjost', 'grassberger', 'kde'],
+                        choices=['chaowangjost', 'grassberger', 'kde',
+                                 'adaptive', 'naive'],
                         default='chaowangjost')
     parser.add_argument('-d', '--dihedrals', dest='dihedrals',
                         help='Dihedral angles to analyze.',
