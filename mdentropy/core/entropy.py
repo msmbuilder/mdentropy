@@ -1,5 +1,7 @@
 from ..utils import hist, adaptive
 
+from itertools import chain
+
 import numpy as np
 from scipy.stats import entropy as naive
 from scipy.stats.kde import gaussian_kde as kernel
@@ -17,14 +19,20 @@ def ent(n_bins, rng, method, *args):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', None}
         Method used to calculate entropy.
-    args : array_like, shape = (n_samples, )
+    args : numpy.ndarray, shape = (n_samples, ) or (n_features, n_samples)
         Data of which to calculate entropy. Each array must have the same
         number of samples.
     Returns
     -------
     entropy : float
     """
-    if rng is None:
+
+    args = list(chain(*[map(np.ndarray.flatten, np.split(arg, arg.shape[0]))
+                        if arg.ndim == 2
+                        else [arg]
+                        for arg in args]))
+
+    if rng is None or None in rng:
         rng = len(args)*[None]
     for i, arg in enumerate(args):
         if rng[i] is None:

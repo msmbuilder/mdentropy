@@ -17,23 +17,12 @@ class TransferEntropyBase(MetricBase):
     def _partial_tent(cls, p):
         i, j = p
 
-        def y(i, j):
-            for m, n in product(range(cls.n_types),
-                                range(cls.n_types)):
-                if (i not in cls.data1[m].columns or
-                        j not in cls.data2[n].columns):
-                    yield 0.0
-                elif i == j and m == n:
-                    yield 1.0
-                else:
-                    yield cls._est(cls.n_bins,
-                                   cls.data2[m][j],
-                                   cls.data1[n][i],
-                                   cls.data1[m][j],
-                                   rng=cls.rng,
-                                   method=cls.method)
-
-        return sum(y(i, j))
+        return cls._est(cls.n_bins,
+                        cls.data2[j].values.T,
+                        cls.data1[i].values.T,
+                        cls.data1[j].values.T,
+                        rng=cls.rng,
+                        method=cls.method)
 
     def _tent(cls):
 
@@ -45,16 +34,17 @@ class TransferEntropyBase(MetricBase):
         return np.reshape(CMI, (cls.labels.size, cls.labels.size)).T
 
     def _shuffle(cls):
-        cls.data1 = [shuffle(df) for df in cls.data1]
-        cls.data2 = [shuffle(df) for df in cls.data2]
+        cls.data1 = shuffle(cls.data1)
+        cls.data2 = shuffle(cls.data2)
 
     def partial_transform(cls, traj, shuffled=False):
         traj1, traj2 = traj
         cls.data1 = cls._extract_data(traj1)
         cls.data2 = cls._extract_data(traj2)
-        cls.labels = np.unique(np.hstack([df.columns for df in cls.data1]))
+        cls.labels = np.unique(cls.data1.columns.levels[0])
         if shuffled:
             cls._shuffle()
+
         return cls._tent()
 
     def transform(cls, trajs):

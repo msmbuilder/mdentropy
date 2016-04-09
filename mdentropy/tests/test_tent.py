@@ -33,10 +33,12 @@ def test_dihedral_tent():
         os.chdir(dirname)
 
         top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
+        idx = [at.index for at in top.topology.atoms
+               if at.residue.index in [4, 5, 6]]
         traj1 = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=10,
-                        top=top)
+                        top=top, atom_indices=idx)
         traj2 = md.load(dirname + '/fs_peptide/trajectory-2.xtc', stride=10,
-                        top=top)
+                        top=top, atom_indices=idx)
         traj = (traj1, traj2)
 
         tent = DihedralTransferEntropy()
