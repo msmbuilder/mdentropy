@@ -51,7 +51,8 @@ def parse_cmdln():
                         help='Name of output file.', default='mutinf.pkl')
     parser.add_argument('-m', '--method', dest='method',
                         help='Entropy estimate method.',
-                        choices=['chaowangjost', 'grassberger', 'kde'],
+                        choices=['chaowangjost', 'grassberger', 'kde',
+                                 'adaptive', 'naive'],
                         default='chaowangjost')
     parser.add_argument('-d', '--dihedrals', dest='dihedrals',
                         help='Dihedral angles to analyze.',
