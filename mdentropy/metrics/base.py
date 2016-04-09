@@ -43,3 +43,9 @@ class DihedralMetricBase(MetricBase):
                     for ati in item['atominds']][1] for item in summary]
             data.append(pd.DataFrame(180.*angles/np.pi, columns=idx))
         return data
+
+    def __init__(self, types=None, **kwargs):
+        self.types = types or ['phi', 'psi']
+        self.n_types = len(self.types)
+
+        super(DihedralMetricBase, self).__init__(**kwargs)
