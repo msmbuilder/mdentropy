@@ -41,7 +41,7 @@ def test_dihedral_tent():
                         top=top, atom_indices=idx)
         traj = (traj1, traj2)
 
-        tent = DihedralTransferEntropy()
+        tent = DihedralTransferEntropy(method='symbolic')
         T = tent.partial_transform(traj)
 
         if T[0, 1] == T[1, 0]:

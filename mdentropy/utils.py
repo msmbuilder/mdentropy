@@ -1,10 +1,12 @@
 from __future__ import print_function
 
 import time
-import numpy as np
-from numpy import linspace, histogramdd, product, sum, array
-from scipy.stats import chi2
 from itertools import product as iterproduct
+
+from numpy import sum as npsum
+from numpy import array, linspace, histogramdd, product, random, vstack
+
+from scipy.stats import chi2
 
 
 class timing(object):
@@ -37,8 +39,8 @@ def hist(n_bins, rng, *args):
     -------
     bins : array_like, shape = (n_bins, )
     """
-    data = np.vstack((args)).T
-    return np.histogramdd(data, bins=n_bins, range=rng)[0].flatten()
+    data = vstack((args)).T
+    return histogramdd(data, bins=n_bins, range=rng)[0].flatten()
 
 
 def adaptive(*args, rng=None, alpha=None):
@@ -56,7 +58,7 @@ def adaptive(*args, rng=None, alpha=None):
         -------
         bins : array_like, shape = (n_bins, )
     """
-    X = np.vstack(args).T
+    X = vstack(args).T
 
     # Get number of dimensions
     n_dims = X.shape[1]
@@ -73,7 +75,7 @@ def adaptive(*args, rng=None, alpha=None):
 
     # Estimate of X2 statistic
     def sX2(freq):
-        return sum((freq - freq.mean())**2)/freq.mean()
+        return npsum((freq - freq.mean())**2)/freq.mean()
 
     def dvpartition(X, rng):
         nonlocal n_dims
@@ -133,7 +135,7 @@ def shuffle(df, n=1):
         shuffled DataFrame
     """
     sdf = df.copy()
-    sampler = np.random.permutation
+    sampler = random.permutation
     for _ in range(n):
         sdf = sdf.apply(sampler, axis=0)
         sdf = sdf.apply(sampler, axis=1)
