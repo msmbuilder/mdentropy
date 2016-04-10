@@ -43,7 +43,7 @@ def parse_cmdln():
                         help='Number of shuffle iterations.',
                         default=10, type=int)
     parser.add_argument('-r', '--stride', dest='stride',
-                        help='Stride to use', default=100)
+                        help='Stride to use', default=1, type=int)
     parser.add_argument('-t', '--topology',
                         dest='top', help='File containing topology.',
                         default=None)
@@ -58,6 +58,7 @@ def parse_cmdln():
                         choices=['chaowangjost', 'grassberger', 'kde',
                                  'adaptive', 'symbolic', 'naive'],
                         default='symbolic')
+
     parser.add_argument('-d', '--dihedrals', dest='dihedrals',
                         help='Dihedral angles to analyze.',
                         nargs='+',

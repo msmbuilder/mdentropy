@@ -46,7 +46,7 @@ def parse_cmdln():
                         help='Number of threads to be used.',
                         default=None, type=int)
     parser.add_argument('-r', '--stride', dest='stride',
-                        help='Stride to use', default=100)
+                        help='Stride to use', default=1, type=int)
     parser.add_argument('-o', '--output', dest='out',
                         help='Name of output file.', default='mutinf.pkl')
     parser.add_argument('-m', '--method', dest='method',
@@ -54,6 +54,7 @@ def parse_cmdln():
                         choices=['chaowangjost', 'grassberger', 'kde',
                                  'adaptive', 'symbolic', 'naive'],
                         default='symbolic')
+
     parser.add_argument('-d', '--dihedrals', dest='dihedrals',
                         help='Dihedral angles to analyze.',
                         nargs='+',
