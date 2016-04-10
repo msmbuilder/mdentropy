@@ -4,7 +4,8 @@ import time
 from itertools import product as iterproduct
 
 from numpy import sum as npsum
-from numpy import array, linspace, histogramdd, product, random, vstack
+from numpy import (array, dtype, linspace, histogramdd, product, random,
+                   unique, void, vstack)
 
 from scipy.stats import chi2
 
@@ -140,3 +141,9 @@ def shuffle(df, n=1):
         sdf = sdf.apply(sampler, axis=0)
         sdf = sdf.apply(sampler, axis=1)
     return sdf
+
+
+def unique_row_count(a):
+    _, counts = unique(a.view(dtype((void, a.dtype.itemsize*a.shape[1]))),
+                       return_counts=True)
+    return counts

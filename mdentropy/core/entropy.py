@@ -1,12 +1,12 @@
-from ..utils import hist, adaptive
+from ..utils import hist, adaptive, unique_row_count
 
 from itertools import chain
 
 from numpy import ndarray
 from numpy import sum as npsum
-from numpy import (arange, bincount, diff, digitize, linspace, log, log2,
-                   meshgrid, nan_to_num, nansum, product, ravel, reshape,
-                   split, unique, vstack)
+from numpy import (arange, bincount, diff, digitize, empty, hstack, linspace,
+                   log, log2, meshgrid, nan_to_num, nansum, product, ravel,
+                   reshape, split, vstack)
 
 from scipy.stats import entropy as naive
 from scipy.stats.kde import gaussian_kde as kernel
@@ -78,13 +78,13 @@ def symbolic(n_bins, rng, *args):
     entropy : float
     """
 
-    labels = []
+    labels = empty(0).reshape(args[0].shape[0], 0)
     for i, arg in enumerate(args):
         partitions = linspace(rng[i][0], rng[i][1], n_bins+1)
-        label = list(map(str, digitize(arg, partitions)))
-        labels.append(label)
+        label = digitize(arg, partitions).reshape(-1, 1)
+        labels = hstack((labels, label))
 
-    _, bins = unique(list(map(','.join, zip(*labels))), return_counts=True)
+    bins = unique_row_count(labels)
 
     return grassberger(bins)
 
