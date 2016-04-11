@@ -41,8 +41,8 @@ class DihedralMetricBase(MetricBase):
             summary = featurizer.describe_features(traj)
             idx = [[traj.topology.atom(ati).residue.index
                     for ati in item['atominds']][1] for item in summary]
-            data.append(pd.DataFrame(180.*angles/np.pi,
-                                     columns=[idx, len(idx)*[tp]]))
+            data.append(pd.DataFrame(180. * angles / np.pi,
+                                     columns=[idx, len(idx) * [tp]]))
         return pd.concat(data, axis=1)
 
     def __init__(self, types=None, **kwargs):

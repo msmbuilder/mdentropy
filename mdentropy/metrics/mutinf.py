@@ -7,6 +7,8 @@ from itertools import combinations_with_replacement as combinations
 from multiprocessing import Pool
 from contextlib import closing
 
+__all__ = ['DihedralMutualInformation']
+
 
 class MutualInformationBase(MetricBase):
     """

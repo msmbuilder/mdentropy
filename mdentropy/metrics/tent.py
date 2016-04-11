@@ -8,6 +8,8 @@ from itertools import product
 from multiprocessing import Pool
 from contextlib import closing
 
+__all__ = ['DihedralTransferEntropy']
+
 
 class TransferEntropyBase(MetricBase):
     """

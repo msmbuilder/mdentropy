@@ -1,6 +1,8 @@
 from .entropy import ent, ce
 import numpy as np
 
+__all__ = ['mi', 'nmi', 'cmi', 'ncmi']
+
 
 def mi(nbins, x, y, rng=None, method='kde'):
     """Mutual information calculation
