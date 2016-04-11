@@ -31,7 +31,6 @@ def ent(n_bins, rng, method, *args):
     -------
     entropy : float
     """
-
     args = list(chain(*[map(ndarray.flatten, split(arg, arg.shape[0]))
                         if arg.ndim == 2
                         else [arg]
@@ -77,7 +76,6 @@ def symbolic(n_bins, rng, *args):
     -------
     entropy : float
     """
-
     labels = empty(0).reshape(args[0].shape[0], 0)
     for i, arg in enumerate(args):
         partitions = linspace(rng[i][0], rng[i][1], n_bins+1)
@@ -111,8 +109,8 @@ def kde(rng, *args, gride_size=20):
     x = [linspace(i[0], i[1], gride_size) for i in rng]
     grid = meshgrid(*tuple(x))
     z = reshape(gkde(vstack(map(ravel, grid))),
-                n_dims*[gride_size])
-    return -nansum(z*log2(z))*product(diff(x)[:, 0])
+                n_dims * [gride_size])
+    return -nansum(z * log2(z)) * product(diff(x)[:, 0])
 
 
 def grassberger(bins):
@@ -130,7 +128,7 @@ def grassberger(bins):
     n = npsum(bins)
     return npsum(bins*(log(n) -
                        nan_to_num(psi(bins)) -
-                       ((-1.)**bins/(bins + 1.))))/n
+                       ((-1.) ** bins/(bins + 1.))))/n
 
 
 def chaowangjost(bins):
@@ -155,11 +153,11 @@ def chaowangjost(bins):
     else:
         A = 2. * bc[2]/((n - 1.) * (bc[1] - 1.) + 2. * bc[2])
     p = arange(1, int(n))
-    p = 1./p * (1. - A)**p
+    p = 1./p * (1. - A) ** p
     cwj = npsum(bins/n * (psi(n) - nan_to_num(psi(bins))))
     if bc[1] > 0 and A != 1.:
         cwj += nan_to_num(bc[1]/n *
-                          (1 - A)**(1 - n * (-log(A) - npsum(p))))
+                          (1 - A) ** (1 - n * (-log(A) - npsum(p))))
     return cwj
 
 
@@ -182,5 +180,5 @@ def ce(n_bins, x, y, rng=None, method='kde'):
     -------
     entropy : float
     """
-    return (ent(n_bins, 2*[rng], method, x, y) -
+    return (ent(n_bins, 2 * [rng], method, x, y) -
             ent(n_bins, [rng], method, y))

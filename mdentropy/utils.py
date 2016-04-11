@@ -21,7 +21,7 @@ class timing(object):
     def __exit__(self, ty, val, tb):
         end = time.time()
         print("Round %d : %0.3f seconds" %
-              (self.iteration, end-self.start))
+              (self.iteration, end - self.start))
         return False
 
 
@@ -70,13 +70,13 @@ def adaptive(*args, rng=None, alpha=None):
         rng = tuple((X[:, i].min(), X[:, i].max()) for i in dims)
 
     if alpha is None:
-        alpha = 1/X.shape[0]
+        alpha = 1 / X.shape[0]
     elif not (0. <= alpha < 1):
         raise ValueError('alpha must be a float in [0, 1).')
 
     # Estimate of X2 statistic
     def sX2(freq):
-        return npsum((freq - freq.mean())**2)/freq.mean()
+        return npsum((freq - freq.mean()) ** 2)/freq.mean()
 
     def dvpartition(X, rng):
         nonlocal n_dims
@@ -85,14 +85,14 @@ def adaptive(*args, rng=None, alpha=None):
         nonlocal x2
 
         # Filter out data that is not in our initial partition
-        Y = X[product([(i[0] <= X[:, j])*(i[1] >= X[:, j])
+        Y = X[product([(i[0] <= X[:, j]) * (i[1] >= X[:, j])
                        for j, i in enumerate(rng)], 0).astype(bool), :]
 
         # Subdivide our partitions by the midpoint in each dimension
         partitions = set([])
         part = [linspace(rng[i][0], rng[i][1], 3) for i in dims]
-        newrng = set((tuple((part[i][j[i]], part[i][j[i]+1]) for i in dims)
-                     for j in iterproduct(*(n_dims*[[0, 1]]))),)
+        newrng = set((tuple((part[i][j[i]], part[i][j[i] + 1]) for i in dims)
+                     for j in iterproduct(*(n_dims * [[0, 1]]))),)
 
         # Calculate counts for new partitions
         freq = histogramdd(Y, bins=part)[0]
@@ -116,7 +116,7 @@ def adaptive(*args, rng=None, alpha=None):
         return partitions
 
     counts = ()
-    x2 = chi2.ppf(1-alpha, 2**n_dims-1)
+    x2 = chi2.ppf(1 - alpha, 2 ** n_dims-1)
     dvpartition(X, rng)
     return array(counts).astype(int)
 
@@ -144,6 +144,16 @@ def shuffle(df, n=1):
 
 
 def unique_row_count(a):
-    _, counts = unique(a.view(dtype((void, a.dtype.itemsize*a.shape[1]))),
+    """Convenience function for counting unique rows in a numpy.ndarray
+
+    Parameters
+    ----------
+    a : numpy.ndarray
+    Returns
+    -------
+    counts : array_like, shape = (n_bins, )
+        unique row counts
+    """
+    _, counts = unique(a.view(dtype((void, a.dtype.itemsize * a.shape[1]))),
                        return_counts=True)
     return counts

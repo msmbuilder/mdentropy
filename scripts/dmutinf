@@ -18,7 +18,7 @@ def run(traj, nbins, iter, N, types, method):
                                    method=method, threads=N)
 
     shuffled = False
-    for i in range(iter+1):
+    for i in range(iter + 1):
         if i > 0:
             shuffled = True
         with timing(i):

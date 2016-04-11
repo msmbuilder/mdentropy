@@ -4,7 +4,8 @@ import numpy as np
 from numpy.testing import assert_allclose as eq
 
 COV = np.array([[1., .3], [.3, 1.]])
-TRUE_ENTROPY = .5*COV.shape[0]*(1.+np.log(2.*np.pi)) + .5*np.linalg.det(COV)
+TRUE_ENTROPY = .5 * (COV.shape[0] * (1. + np.log(2. * np.pi)) +
+                     np.linalg.det(COV))
 
 a, b = np.random.multivariate_normal([0, 0], COV, size=1000).T
 RNG = [[a.min(), a.max()], [b.min(), b.max()]]
