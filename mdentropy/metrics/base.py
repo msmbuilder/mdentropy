@@ -11,7 +11,7 @@ from msmbuilder.featurizer import DihedralFeaturizer
 class MetricBase(object):
 
     def _shuffle(cls):
-        cls.data = [shuffle(df) for df in cls.data]
+        cls.data = shuffle(cls.data)
 
     def _extract_data(cls, traj):
         pass
@@ -41,8 +41,9 @@ class DihedralMetricBase(MetricBase):
             summary = featurizer.describe_features(traj)
             idx = [[traj.topology.atom(ati).residue.index
                     for ati in item['atominds']][1] for item in summary]
-            data.append(pd.DataFrame(180.*angles/np.pi, columns=idx))
-        return data
+            data.append(pd.DataFrame(180. * angles / np.pi,
+                                     columns=[idx, len(idx) * [tp]]))
+        return pd.concat(data, axis=1)
 
     def __init__(self, types=None, **kwargs):
         self.types = types or ['phi', 'psi']

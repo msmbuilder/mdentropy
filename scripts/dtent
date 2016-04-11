@@ -8,7 +8,7 @@ import pandas as pd
 from glob import glob
 from itertools import chain
 
-from mdentropy.utils import timing
+from mdentropy.utils import Timing
 from mdentropy.metrics import DihedralTransferEntropy
 
 
@@ -17,10 +17,10 @@ def run(past, current, nbins, iter, N, types, method):
     tent = DihedralTransferEntropy(n_bins=nbins, types=types,
                                    method=method, threads=N)
     shuffled = False
-    for i in range(iter+1):
+    for i in range(iter + 1):
         if i > 0:
             shuffled = True
-        with timing(i):
+        with Timing(i):
             R.append(tent.partial_transform((past, current),
                      shuffled=shuffled))
     T = R[0]
@@ -56,8 +56,9 @@ def parse_cmdln():
     parser.add_argument('-m', '--method', dest='method',
                         help='Entropy estimate method.',
                         choices=['chaowangjost', 'grassberger', 'kde',
-                                 'adaptive', 'naive'],
-                        default='chaowangjost')
+                                 'naive'],
+                        default='symbolic')
+
     parser.add_argument('-d', '--dihedrals', dest='dihedrals',
                         help='Dihedral angles to analyze.',
                         nargs='+',

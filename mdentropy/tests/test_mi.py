@@ -42,10 +42,12 @@ def test_dihedral_mi():
         os.chdir(dirname)
 
         top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
-        traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc',
-                       stride=10, top=top)
+        idx = [at.index for at in top.topology.atoms
+               if at.residue.index in [4, 5, 6]]
+        traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=10,
+                       top=top, atom_indices=idx)
 
-        mi = DihedralMutualInformation()
+        mi = DihedralMutualInformation(method='symbolic')
         M = mi.partial_transform(traj)
 
         eq(M[0, 1], M[1, 0])
