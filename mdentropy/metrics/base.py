@@ -5,7 +5,8 @@ from multiprocessing import cpu_count
 import pandas as pd
 import numpy as np
 
-from msmbuilder.featurizer import DihedralFeaturizer
+from msmbuilder.featurizer import (AlphaAngleFeaturizer, ContactFeaturizer,
+                                   DihedralFeaturizer)
 
 
 class MetricBase(object):
@@ -33,10 +34,13 @@ class MetricBase(object):
 
 class DihedralMetricBase(MetricBase):
 
+    def _featurizer(cls, **kwargs):
+        return DihedralFeaturizer(sincos=False, **kwargs)
+
     def _extract_data(cls, traj):
         data = []
         for tp in cls.types:
-            featurizer = DihedralFeaturizer(types=[tp], sincos=False)
+            featurizer = cls._featurizer(types=[tp])
             angles = featurizer.partial_transform(traj)
             summary = featurizer.describe_features(traj)
             idx = [[traj.topology.atom(ati).residue.index
@@ -50,3 +54,38 @@ class DihedralMetricBase(MetricBase):
         self.n_types = len(self.types)
 
         super(DihedralMetricBase, self).__init__(**kwargs)
+
+
+class AlphaAngleMetricBase(DihedralMetricBase):
+
+    def _featurizer(cls, **kwargs):
+        return AlphaAngleFeaturizer(sincos=False, **kwargs)
+
+    def __init__(self, **kwargs):
+        super(DihedralMetricBase, self).__init__(**kwargs)
+
+
+class ContactMetricBase(MetricBase):
+
+    def _extract_data(cls, traj):
+        contact = ContactFeaturizer(contact=cls.contact, scheme=cls.scheme,
+                                    ignore_nonprotein=cls.ignore_nonprotein)
+        distances = contact.partial_transform(traj)
+        summary = contact.describe_features(traj)
+        pairs = [item['resids'] for item in summary]
+        data = []
+        for res in np.unique(pairs):
+            idx = list(list(set(pair) - {res})[0]
+                       for pair in pairs if res in pair)
+            data.append(pd.DataFrame(distances[:, idx],
+                        columns=[len(idx)*[res], idx]))
+
+        return pd.concat(data, axis=1)
+
+    def __init__(cls, contact='all', scheme='closest-heavy',
+                 ignore_nonprotein=True, **kwargs):
+        cls.contact = contact
+        cls.scheme = scheme
+        cls.ignore_nonprotein = ignore_nonprotein
+
+        super(ContactMetricBase, cls).__init__(**kwargs)

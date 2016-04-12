@@ -5,7 +5,8 @@ import tempfile
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
-from ..metrics import DihedralTransferEntropy
+from ..metrics import (AlphaAngleTransferEntropy, ContactTransferEntropy,
+                       DihedralTransferEntropy)
 from ..core import cmi, ce, ncmi
 
 import mdtraj as md
@@ -42,18 +43,39 @@ def test_dihedral_tent():
                         top=top, atom_indices=idx)
         traj = (traj1, traj2)
 
-        tent = DihedralTransferEntropy(method='symbolic')
-        T = tent.partial_transform(traj)
-
-        if T[0, 1] == T[1, 0]:
-            raise ValueError('Transfer entropy test failed')
-
-        _test_shuffle(tent, traj)
+        _test_tent_alpha(traj)
+        _test_tent_contact(traj)
+        _test_tent_dihedral(traj)
 
     finally:
         os.chdir(cwd)
         shutil.rmtree(dirname)
 
 
-def _test_shuffle(tent, traj):
+def _test_tent_alpha(traj):
+    tent = AlphaAngleTransferEntropy()
+    T = tent.partial_transform(traj)
+
+    if T[0, 1] == T[1, 0]:
+        raise ValueError('Transfer entropy test failed')
+
+
+def _test_tent_contact(traj):
+    tent = ContactTransferEntropy()
+    T = tent.partial_transform(traj)
+
+    if T[0, 1] == T[1, 0]:
+        raise ValueError('Transfer entropy test failed')
+
+
+def _test_tent_dihedral(traj):
+    tent = DihedralTransferEntropy()
+    T = tent.partial_transform(traj)
+
+    if T[0, 1] == T[1, 0]:
+        raise ValueError('Transfer entropy test failed')
+    _test_tent_shuffle(tent, traj)
+
+
+def _test_tent_shuffle(tent, traj):
     tent.partial_transform(traj, shuffled=True)

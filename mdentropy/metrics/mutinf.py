@@ -1,4 +1,5 @@
-from .base import MetricBase, DihedralMetricBase
+from .base import (AlphaAngleMetricBase, ContactMetricBase, DihedralMetricBase,
+                   MetricBase)
 from ..core import mi, nmi
 
 import numpy as np
@@ -7,7 +8,8 @@ from itertools import combinations_with_replacement as combinations
 from multiprocessing import Pool
 from contextlib import closing
 
-__all__ = ['DihedralMutualInformation']
+__all__ = ['AlphaAngleMutualInformation', 'ContactMutualInformation',
+           'DihedralMutualInformation']
 
 
 class MutualInformationBase(MetricBase):
@@ -51,6 +53,18 @@ class MutualInformationBase(MetricBase):
         cls._est = nmi if normed else mi
 
         super(MutualInformationBase, cls).__init__(**kwargs)
+
+
+class AlphaAngleMutualInformation(AlphaAngleMetricBase, MutualInformationBase):
+    """
+    Mutual information calculations for alpha angles
+    """
+
+
+class ContactMutualInformation(ContactMetricBase, MutualInformationBase):
+    """
+    Mutual information calculations for contacts
+    """
 
 
 class DihedralMutualInformation(DihedralMetricBase, MutualInformationBase):

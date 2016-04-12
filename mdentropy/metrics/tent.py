@@ -1,4 +1,5 @@
-from .base import MetricBase, DihedralMetricBase
+from .base import (AlphaAngleMetricBase, ContactMetricBase, DihedralMetricBase,
+                   MetricBase)
 from ..utils import shuffle
 from ..core import cmi, ncmi
 
@@ -8,7 +9,8 @@ from itertools import product
 from multiprocessing import Pool
 from contextlib import closing
 
-__all__ = ['DihedralTransferEntropy']
+__all__ = ['AlphaAngleTransferEntropy', 'ContactTransferEntropy',
+           'DihedralTransferEntropy']
 
 
 class TransferEntropyBase(MetricBase):
@@ -59,6 +61,18 @@ class TransferEntropyBase(MetricBase):
         cls._est = ncmi if normed else cmi
 
         super(TransferEntropyBase, cls).__init__(**kwargs)
+
+
+class AlphaAngleTransferEntropy(AlphaAngleMetricBase, TransferEntropyBase):
+    """
+    Mutual information calculations for alpha angles
+    """
+
+
+class ContactTransferEntropy(ContactMetricBase, TransferEntropyBase):
+    """
+    Transfer entropy calculations for contacts
+    """
 
 
 class DihedralTransferEntropy(DihedralMetricBase, TransferEntropyBase):

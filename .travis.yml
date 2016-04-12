@@ -9,7 +9,7 @@ before_install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda install numpy scipy pandas scikit-learn nose
-  - conda install -c https://conda.binstar.org/omnia mdtraj msmbuilder nose-timer
+  - conda install -c omnia mdtraj msmbuilder nose-timer
 
 install:
   - python setup.py install
