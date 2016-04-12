@@ -43,9 +43,9 @@ def test_dihedral_tent():
                         top=top, atom_indices=idx)
         traj = (traj1, traj2)
 
-        _test_tent_alpha(traj)
-        _test_tent_contact(traj)
-        _test_tent_dihedral(traj)
+        yield _test_tent_alpha(traj)
+        yield _test_tent_contact(traj)
+        yield _test_tent_dihedral(traj)
 
     finally:
         os.chdir(cwd)

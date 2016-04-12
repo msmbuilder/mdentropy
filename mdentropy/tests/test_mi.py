@@ -48,9 +48,9 @@ def test_fs_mi():
         traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=10,
                        top=top, atom_indices=idx)
 
-        _test_mi_alpha(traj)
-        _test_mi_contact(traj)
-        _test_mi_dihedral(traj)
+        yield _test_mi_alpha(traj)
+        yield _test_mi_contact(traj)
+        yield _test_mi_dihedral(traj)
 
     finally:
         os.chdir(cwd)
