@@ -59,9 +59,10 @@ class DihedralMetricBase(MetricBase):
 class AlphaAngleMetricBase(DihedralMetricBase):
 
     def _featurizer(cls, **kwargs):
-        return AlphaAngleFeaturizer(sincos=False, **kwargs)
+        return AlphaAngleFeaturizer(sincos=False)
 
     def __init__(self, **kwargs):
+        self.types = ['alpha']
         super(DihedralMetricBase, self).__init__(**kwargs)
 
 
