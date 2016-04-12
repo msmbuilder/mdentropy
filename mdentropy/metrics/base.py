@@ -58,7 +58,7 @@ class DihedralMetricBase(MetricBase):
 
 class AlphaAngleMetricBase(DihedralMetricBase):
 
-    def _featurizer(cls, **kwargs):
+    def _featurizer(self, **kwargs):
         return AlphaAngleFeaturizer(sincos=False)
 
     def __init__(self, **kwargs):
@@ -68,9 +68,9 @@ class AlphaAngleMetricBase(DihedralMetricBase):
 
 class ContactMetricBase(MetricBase):
 
-    def _extract_data(cls, traj):
-        contact = ContactFeaturizer(contact=cls.contact, scheme=cls.scheme,
-                                    ignore_nonprotein=cls.ignore_nonprotein)
+    def _extract_data(self, traj):
+        contact = ContactFeaturizer(contact=self.contact, scheme=self.scheme,
+                                    ignore_nonprotein=self.ignore_nonprotein)
         distances = contact.partial_transform(traj)
         summary = contact.describe_features(traj)
         pairs = [item['resids'] for item in summary]
@@ -83,10 +83,10 @@ class ContactMetricBase(MetricBase):
 
         return pd.concat(data, axis=1)
 
-    def __init__(cls, contact='all', scheme='closest-heavy',
+    def __init__(self, contact='all', scheme='closest-heavy',
                  ignore_nonprotein=True, **kwargs):
-        cls.contact = contact
-        cls.scheme = scheme
-        cls.ignore_nonprotein = ignore_nonprotein
+        self.contact = contact
+        self.scheme = scheme
+        self.ignore_nonprotein = ignore_nonprotein
 
-        super(ContactMetricBase, cls).__init__(**kwargs)
+        super(ContactMetricBase, self).__init__(**kwargs)
