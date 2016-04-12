@@ -25,7 +25,7 @@ def test_ncmi():
     eq(NCMI, NCMI_REF, 6)
 
 
-def test_dihedral_tent():
+def test_fs_tent():
 
     cwd = os.path.abspath(os.curdir)
     dirname = tempfile.mkdtemp()
@@ -36,7 +36,7 @@ def test_dihedral_tent():
 
         top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
         idx = [at.index for at in top.topology.atoms
-               if at.residue.index in [4, 5, 6]]
+               if at.residue.index in [4, 5, 6, 7, 8]]
         traj1 = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=10,
                         top=top, atom_indices=idx)
         traj2 = md.load(dirname + '/fs_peptide/trajectory-2.xtc', stride=10,
