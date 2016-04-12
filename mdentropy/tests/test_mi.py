@@ -45,12 +45,12 @@ def test_fs_mi():
         top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
         idx = [at.index for at in top.topology.atoms
                if at.residue.index in [4, 5, 6, 7, 8]]
-        traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=10,
+        traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=100,
                        top=top, atom_indices=idx)
 
-        yield _test_mi_alpha(traj)
-        yield _test_mi_contact(traj)
-        yield _test_mi_dihedral(traj)
+        yield _test_mi_alpha, traj
+        yield _test_mi_contact, traj
+        yield _test_mi_dihedral, traj
 
     finally:
         os.chdir(cwd)
@@ -67,12 +67,14 @@ def _test_mi_alpha(traj):
 def _test_mi_contact(traj):
     mi = ContactMutualInformation()
     M = mi.partial_transform(traj)
+
     eq(M[0, 1], M[1, 0])
 
 
 def _test_mi_dihedral(traj):
     mi = DihedralMutualInformation()
     M = mi.partial_transform(traj)
+
     eq(M[0, 1], M[1, 0])
     _test_mi_shuffle(mi, traj)
 

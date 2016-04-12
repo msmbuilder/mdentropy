@@ -37,15 +37,15 @@ def test_fs_tent():
         top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
         idx = [at.index for at in top.topology.atoms
                if at.residue.index in [4, 5, 6, 7, 8]]
-        traj1 = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=10,
+        traj1 = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=100,
                         top=top, atom_indices=idx)
-        traj2 = md.load(dirname + '/fs_peptide/trajectory-2.xtc', stride=10,
+        traj2 = md.load(dirname + '/fs_peptide/trajectory-2.xtc', stride=100,
                         top=top, atom_indices=idx)
         traj = (traj1, traj2)
 
-        yield _test_tent_alpha(traj)
-        yield _test_tent_contact(traj)
-        yield _test_tent_dihedral(traj)
+        yield _test_tent_alpha, traj
+        yield _test_tent_contact, traj
+        yield _test_tent_dihedral, traj
 
     finally:
         os.chdir(cwd)
@@ -56,25 +56,23 @@ def _test_tent_alpha(traj):
     tent = AlphaAngleTransferEntropy()
     T = tent.partial_transform(traj)
 
-    if T[0, 1] == T[1, 0]:
-        raise ValueError('Transfer entropy test failed')
+    assert T[0, 1] != T[1, 0]
 
 
 def _test_tent_contact(traj):
     tent = ContactTransferEntropy()
     T = tent.partial_transform(traj)
 
-    if T[0, 1] == T[1, 0]:
-        raise ValueError('Transfer entropy test failed')
+    assert T[0, 1] != T[1, 0]
 
 
 def _test_tent_dihedral(traj):
     tent = DihedralTransferEntropy()
     T = tent.partial_transform(traj)
 
-    if T[0, 1] == T[1, 0]:
-        raise ValueError('Transfer entropy test failed')
     _test_tent_shuffle(tent, traj)
+
+    assert T[0, 1] != T[1, 0]
 
 
 def _test_tent_shuffle(tent, traj):

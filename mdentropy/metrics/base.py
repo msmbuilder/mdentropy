@@ -69,23 +69,26 @@ class AlphaAngleMetricBase(DihedralMetricBase):
 class ContactMetricBase(MetricBase):
 
     def _extract_data(self, traj):
-        contact = ContactFeaturizer(contact=self.contact, scheme=self.scheme,
+        contact = ContactFeaturizer(contacts=self.contacts, scheme=self.scheme,
                                     ignore_nonprotein=self.ignore_nonprotein)
         distances = contact.partial_transform(traj)
         summary = contact.describe_features(traj)
         pairs = [item['resids'] for item in summary]
+        resids = np.unique(pairs)
         data = []
-        for res in np.unique(pairs):
-            idx = list(list(set(pair) - {res})[0]
-                       for pair in pairs if res in pair)
-            data.append(pd.DataFrame(distances[:, idx],
-                        columns=[len(idx)*[res], idx]))
+        for resid in resids:
+            idx = list(list(set(pair) - {resid})[0]
+                       for pair in pairs if resid in pair)
+            mapping = np.array([True if resid in pair else False
+                                for pair in pairs])
+            data.append(pd.DataFrame(distances[:, mapping],
+                        columns=[idx, len(idx) * [resid]]))
 
         return pd.concat(data, axis=1)
 
-    def __init__(self, contact='all', scheme='closest-heavy',
+    def __init__(self, contacts='all', scheme='closest-heavy',
                  ignore_nonprotein=True, **kwargs):
-        self.contact = contact
+        self.contacts = contacts
         self.scheme = scheme
         self.ignore_nonprotein = ignore_nonprotein
 
