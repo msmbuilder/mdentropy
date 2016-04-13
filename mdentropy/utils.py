@@ -5,22 +5,24 @@ import time
 from numpy import dtype, random, unique, void
 
 
-__all__ = ['shuffle', 'Timing', 'unique_row_count']
+__all__ = ['floor_threshold', 'shuffle', 'Timing', 'unique_row_count']
 
 
 class Timing(object):
     "Context manager for printing performance"
-    def __init__(self, iteration):
+    def __init__(self, iteration, verbose=False):
         self.iteration = iteration
         self.start = None
+        self.verbose = verbose
 
     def __enter__(self):
         self.start = time.time()
 
     def __exit__(self, ty, val, tb):
         end = time.time()
-        print("Round %d : %0.3f seconds" %
-              (self.iteration, end - self.start))
+        if self.verbose:
+            print("Round %d : %0.3f seconds" %
+                  (self.iteration, end - self.start))
         return False
 
 
@@ -60,3 +62,9 @@ def unique_row_count(arr):
     _, counts = unique(arr.view(dtype((void, arr.dtype.itemsize *
                                        arr.shape[1]))), return_counts=True)
     return counts
+
+
+def floor_threshold(arr, threshold=0.):
+    new_arr = arr.copy()
+    new_arr[arr < threshold] = threshold
+    return new_arr

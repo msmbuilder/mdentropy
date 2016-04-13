@@ -44,7 +44,7 @@ def test_fs_mi():
 
         top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
         idx = [at.index for at in top.topology.atoms
-               if at.residue.index in [4, 5, 6, 7, 8]]
+               if at.residue.index in [3, 4, 5, 6, 7, 8]]
         traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=100,
                        top=top, atom_indices=idx)
 
@@ -62,7 +62,7 @@ def _test_mi_alpha(traj):
     M = mi.partial_transform(traj)
 
     uidx = np.triu_indices(mi.labels.size)
-    lidx = np.triu_indices(mi.labels.size)
+    lidx = np.tril_indices(mi.labels.size)
 
     eq(M[uidx], M[lidx])
 
@@ -72,7 +72,7 @@ def _test_mi_contact(traj):
     M = mi.partial_transform(traj)
 
     uidx = np.triu_indices(mi.labels.size)
-    lidx = np.triu_indices(mi.labels.size)
+    lidx = np.tril_indices(mi.labels.size)
 
     eq(M[uidx], M[lidx])
 
@@ -82,7 +82,7 @@ def _test_mi_dihedral(traj):
     M = mi.partial_transform(traj)
 
     uidx = np.triu_indices(mi.labels.size)
-    lidx = np.triu_indices(mi.labels.size)
+    lidx = np.tril_indices(mi.labels.size)
 
     eq(M[uidx], M[lidx])
     _test_mi_shuffle(mi, traj)

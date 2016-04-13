@@ -1,4 +1,5 @@
-from ..utils import shuffle
+from ..utils import floor_threshold, Timing
+from ..utils import shuffle as shuffle_data
 
 from multiprocessing import cpu_count
 
@@ -9,12 +10,12 @@ from msmbuilder.featurizer import (AlphaAngleFeaturizer, ContactFeaturizer,
                                    DihedralFeaturizer)
 
 
-class MetricBase(object):
+class BaseMetric(object):
 
     """Base metric object"""
 
     def _shuffle(cls):
-        cls.shuffled_data = shuffle(cls.data)
+        cls.shuffled_data = shuffle_data(cls.shuffled_data)
 
     def _extract_data(cls, traj):
         pass
@@ -22,23 +23,27 @@ class MetricBase(object):
     def _exec(cls):
         pass
 
-    def partial_transform(cls, traj, shuffle=0):
+    def _before_exec(cls, traj):
         cls.data = cls._extract_data(traj)
         cls.shuffled_data = cls.data
         cls.labels = np.unique(cls.data.columns.levels[0])
 
+    def partial_transform(cls, traj, shuffle=0, verbose=False):
+        cls._before_exec(traj)
         result = cls._exec()
-        for _ in range(shuffle):
-            cls._shuffle()
-            result -= cls._exec()
+        correction = np.zeros_like(result)
+        for i in range(shuffle):
+            with Timing(i, verbose=verbose):
+                cls._shuffle()
+                correction += cls._exec()
 
-        return result
+        return floor_threshold(result - np.nan_to_num(correction / shuffle))
 
     def transform(cls, trajs):
         for traj in trajs:
             yield cls.partial_transform(traj)
 
-    def __init__(cls, n_bins=24, rng=None, method='chaowangjost',
+    def __init__(cls, n_bins=24, rng=None, method='grassberger',
                  threads=None):
         cls.n_types = 1
         cls.data = None
@@ -50,7 +55,7 @@ class MetricBase(object):
         cls.n_threads = threads or int(cpu_count()/2)
 
 
-class DihedralMetricBase(MetricBase):
+class DihedralBaseMetric(BaseMetric):
 
     """Base dihedral metric object"""
 
@@ -73,10 +78,10 @@ class DihedralMetricBase(MetricBase):
         self.types = types or ['phi', 'psi']
         self.n_types = len(self.types)
 
-        super(DihedralMetricBase, self).__init__(**kwargs)
+        super(DihedralBaseMetric, self).__init__(**kwargs)
 
 
-class AlphaAngleMetricBase(DihedralMetricBase):
+class AlphaAngleBaseMetric(DihedralBaseMetric):
 
     """Base alpha angle metric object"""
 
@@ -86,10 +91,10 @@ class AlphaAngleMetricBase(DihedralMetricBase):
     def __init__(self, **kwargs):
         self.types = ['alpha']
 
-        super(AlphaAngleMetricBase, self).__init__(**kwargs)
+        super(AlphaAngleBaseMetric, self).__init__(**kwargs)
 
 
-class ContactMetricBase(MetricBase):
+class ContactBaseMetric(BaseMetric):
 
     """Base contact metric object"""
 
@@ -117,4 +122,4 @@ class ContactMetricBase(MetricBase):
         self.scheme = scheme
         self.ignore_nonprotein = ignore_nonprotein
 
-        super(ContactMetricBase, self).__init__(**kwargs)
+        super(ContactBaseMetric, self).__init__(**kwargs)

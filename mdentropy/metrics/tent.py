@@ -1,6 +1,6 @@
 from ..core import cmi, ncmi
-from .base import (AlphaAngleMetricBase, ContactMetricBase, DihedralMetricBase,
-                   MetricBase)
+from .base import (AlphaAngleBaseMetric, ContactBaseMetric, DihedralBaseMetric,
+                   BaseMetric)
 
 
 import numpy as np
@@ -13,7 +13,7 @@ __all__ = ['AlphaAngleTransferEntropy', 'ContactTransferEntropy',
            'DihedralTransferEntropy']
 
 
-class TransferEntropyBase(MetricBase):
+class TransferEntropyBase(BaseMetric):
 
     """Base transfer entropy object"""
 
@@ -35,25 +35,18 @@ class TransferEntropyBase(MetricBase):
 
         return np.reshape(CMI, (self.labels.size, self.labels.size)).T
 
-    def partial_transform(cls, traj, shuffle=0):
+    def _before_exec(self, traj):
         traj1, traj2 = traj
-        cls.data1 = cls._extract_data(traj1)
-        cls.data2 = cls._extract_data(traj2)
-        cls.shuffled_data = cls.data1
-        cls.labels = np.unique(cls.data1.columns.levels[0])
-
-        result = cls._exec()
-        for _ in range(shuffle):
-            cls._shuffle()
-            result -= cls._exec()
-
-        return result
+        self.data1 = self._extract_data(traj1)
+        self.data2 = self._extract_data(traj2)
+        self.shuffled_data = self.data1
+        self.labels = np.unique(self.data1.columns.levels[0])
 
     def transform(self, trajs):
         for traj in trajs:
             yield self.partial_transform(traj)
 
-    def __init__(self, normed=False, **kwargs):
+    def __init__(self, normed=True, **kwargs):
         self.data1 = None
         self.data2 = None
         self._est = ncmi if normed else cmi
@@ -61,16 +54,16 @@ class TransferEntropyBase(MetricBase):
         super(TransferEntropyBase, self).__init__(**kwargs)
 
 
-class AlphaAngleTransferEntropy(AlphaAngleMetricBase, TransferEntropyBase):
+class AlphaAngleTransferEntropy(AlphaAngleBaseMetric, TransferEntropyBase):
 
     """Mutual information calculations for alpha angles"""
 
 
-class ContactTransferEntropy(ContactMetricBase, TransferEntropyBase):
+class ContactTransferEntropy(ContactBaseMetric, TransferEntropyBase):
 
     """Transfer entropy calculations for contacts"""
 
 
-class DihedralTransferEntropy(DihedralMetricBase, TransferEntropyBase):
+class DihedralTransferEntropy(DihedralBaseMetric, TransferEntropyBase):
 
     """Transfer entropy calculations for dihedral angles"""

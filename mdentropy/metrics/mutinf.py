@@ -1,6 +1,6 @@
 from ..core import mi, nmi
-from .base import (AlphaAngleMetricBase, ContactMetricBase, DihedralMetricBase,
-                   MetricBase)
+from .base import (AlphaAngleBaseMetric, ContactBaseMetric, DihedralBaseMetric,
+                   BaseMetric)
 
 import numpy as np
 from itertools import combinations_with_replacement as combinations
@@ -12,7 +12,7 @@ __all__ = ['AlphaAngleMutualInformation', 'ContactMutualInformation',
            'DihedralMutualInformation']
 
 
-class MutualInformationBase(MetricBase):
+class MutualInformationBase(BaseMetric):
 
     """Base mutual information object"""
 
@@ -39,23 +39,23 @@ class MutualInformationBase(MetricBase):
 
         return M
 
-    def __init__(self, normed=False, **kwargs):
+    def __init__(self, normed=True, **kwargs):
         self.data = None
         self._est = nmi if normed else mi
 
         super(MutualInformationBase, self).__init__(**kwargs)
 
 
-class AlphaAngleMutualInformation(AlphaAngleMetricBase, MutualInformationBase):
+class AlphaAngleMutualInformation(AlphaAngleBaseMetric, MutualInformationBase):
 
     """Mutual information calculations for alpha angles"""
 
 
-class ContactMutualInformation(ContactMetricBase, MutualInformationBase):
+class ContactMutualInformation(ContactBaseMetric, MutualInformationBase):
 
     """Mutual information calculations for contacts"""
 
 
-class DihedralMutualInformation(DihedralMetricBase, MutualInformationBase):
+class DihedralMutualInformation(DihedralBaseMetric, MutualInformationBase):
 
     """Mutual information calculations for dihedral angles"""
