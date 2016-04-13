@@ -5,9 +5,9 @@ import tempfile
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
+from ..core import mi, nmi
 from ..metrics import (AlphaAngleMutualInformation, ContactMutualInformation,
                        DihedralMutualInformation)
-from ..core import mi, nmi
 
 import mdtraj as md
 from msmbuilder.example_datasets import FsPeptide
@@ -61,22 +61,30 @@ def _test_mi_alpha(traj):
     mi = AlphaAngleMutualInformation()
     M = mi.partial_transform(traj)
 
-    eq(M[0, 1], M[1, 0])
+    uidx = np.triu_indices(mi.labels.size)
+    lidx = np.triu_indices(mi.labels.size)
+
+    eq(M[uidx], M[lidx])
 
 
 def _test_mi_contact(traj):
     mi = ContactMutualInformation()
     M = mi.partial_transform(traj)
 
-    eq(M[0, 1], M[1, 0])
+    uidx = np.triu_indices(mi.labels.size)
+    lidx = np.triu_indices(mi.labels.size)
+
+    eq(M[uidx], M[lidx])
 
 
 def _test_mi_dihedral(traj):
     mi = DihedralMutualInformation()
     M = mi.partial_transform(traj)
 
-    eq(M[0, 1], M[1, 0])
-    _test_mi_shuffle(mi, traj)
+    uidx = np.triu_indices(mi.labels.size)
+    lidx = np.triu_indices(mi.labels.size)
+
+    eq(M[uidx], M[lidx])
 
 
 def _test_mi_shuffle(mi, traj):

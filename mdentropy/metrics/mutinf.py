@@ -21,7 +21,7 @@ class MutualInformationBase(MetricBase):
 
         return self._est(self.n_bins,
                          self.data[i].values.T,
-                         self.data[j].values.T,
+                         self.shuffled_data[j].values.T,
                          rng=self.rng,
                          method=self.method)
 
@@ -44,6 +44,8 @@ class MutualInformationBase(MetricBase):
         self.labels = np.unique(self.data.columns.levels[0])
         if shuffled:
             self._shuffle()
+        else:
+            self.shuffled_data = self.data
 
         return self._mutinf()
 

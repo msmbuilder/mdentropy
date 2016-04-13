@@ -5,9 +5,9 @@ import tempfile
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
+from ..core import cmi, ce, ncmi
 from ..metrics import (AlphaAngleTransferEntropy, ContactTransferEntropy,
                        DihedralTransferEntropy)
-from ..core import cmi, ce, ncmi
 
 import mdtraj as md
 from msmbuilder.example_datasets import FsPeptide
@@ -56,23 +56,38 @@ def _test_tent_alpha(traj):
     tent = AlphaAngleTransferEntropy()
     T = tent.partial_transform(traj)
 
-    assert T[0, 1] != T[1, 0]
+    uidx = np.triu_indices(tent.labels.size)
+    lidx = np.triu_indices(tent.labels.size)
+
+    diff = (T[uidx] - T[lidx]).ravel()
+
+    eq(diff, np.zeros(diff.shape[0]))
+    _test_tent_shuffle(tent, traj)
 
 
 def _test_tent_contact(traj):
     tent = ContactTransferEntropy()
     T = tent.partial_transform(traj)
 
-    assert T[0, 1] != T[1, 0]
+    uidx = np.triu_indices(tent.labels.size)
+    lidx = np.triu_indices(tent.labels.size)
+
+    diff = (T[uidx] - T[lidx]).ravel()
+
+    eq(diff, np.zeros(diff.shape[0]))
 
 
 def _test_tent_dihedral(traj):
     tent = DihedralTransferEntropy()
     T = tent.partial_transform(traj)
 
-    _test_tent_shuffle(tent, traj)
+    uidx = np.triu_indices(tent.labels.size)
+    lidx = np.triu_indices(tent.labels.size)
 
-    assert T[0, 1] != T[1, 0]
+    diff = (T[uidx] - T[lidx]).ravel()
+
+    eq(diff, np.zeros(diff.shape[0]))
+    _test_tent_shuffle(tent, traj)
 
 
 def _test_tent_shuffle(tent, traj):

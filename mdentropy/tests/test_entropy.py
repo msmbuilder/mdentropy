@@ -24,7 +24,7 @@ def test_grassberger():
 
 
 def test_adaptive():
-    eq(ent(None, RNG, 'grassberger', a, b), TRUE_ENTROPY, rtol=.2)
+    eq(ent(None, RNG, 'grassberger', a, b), TRUE_ENTROPY, rtol=.4)
 
 
 def test_naive():

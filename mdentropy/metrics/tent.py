@@ -22,8 +22,8 @@ class TransferEntropyBase(MetricBase):
 
         return self._est(self.n_bins,
                          self.data2[j].values.T,
-                         self.data1[i].values.T,
-                         self.data1[j].values.T,
+                         self.shuffled_data[i].values.T,
+                         self.shuffled_data[j].values.T,
                          rng=self.rng,
                          method=self.method)
 
@@ -37,7 +37,6 @@ class TransferEntropyBase(MetricBase):
         return np.reshape(CMI, (self.labels.size, self.labels.size)).T
 
     def _shuffle(self):
-        self.data1 = shuffle(self.data1)
         self.data2 = shuffle(self.data2)
 
     def partial_transform(self, traj, shuffled=False):
@@ -47,6 +46,8 @@ class TransferEntropyBase(MetricBase):
         self.labels = np.unique(self.data1.columns.levels[0])
         if shuffled:
             self._shuffle()
+        else:
+            self.shuffled_data = self.data2
 
         return self._tent()
 

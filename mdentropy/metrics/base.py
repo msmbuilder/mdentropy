@@ -14,7 +14,7 @@ class MetricBase(object):
     """Base metric object"""
 
     def _shuffle(cls):
-        cls.data = shuffle(cls.data)
+        cls.shuffled_data = shuffle(cls.data)
 
     def _extract_data(cls, traj):
         pass
@@ -27,6 +27,7 @@ class MetricBase(object):
                  threads=None):
         cls.n_types = 1
         cls.data = None
+        cls.shuffled_data = None
         cls.labels = None
         cls.n_bins = n_bins
         cls.rng = rng
