@@ -85,7 +85,13 @@ def _test_mi_dihedral(traj):
     lidx = np.triu_indices(mi.labels.size)
 
     eq(M[uidx], M[lidx])
+    _test_mi_shuffle(mi, traj)
 
 
 def _test_mi_shuffle(mi, traj):
-    mi.partial_transform(traj, shuffled=True)
+    M = mi.partial_transform(traj, shuffle=0)
+    MS = mi.partial_transform(traj, shuffle=1)
+
+    error = np.abs(M - MS).ravel()
+
+    assert any(error > 1E-6)

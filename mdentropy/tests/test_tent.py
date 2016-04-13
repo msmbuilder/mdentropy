@@ -59,10 +59,9 @@ def _test_tent_alpha(traj):
     uidx = np.triu_indices(tent.labels.size)
     lidx = np.triu_indices(tent.labels.size)
 
-    diff = (T[uidx] - T[lidx]).ravel()
+    error = np.abs(T[uidx] - T[lidx]).ravel()
 
-    eq(diff, np.zeros(diff.shape[0]))
-    _test_tent_shuffle(tent, traj)
+    assert any(error > 1E-6)
 
 
 def _test_tent_contact(traj):
@@ -72,9 +71,9 @@ def _test_tent_contact(traj):
     uidx = np.triu_indices(tent.labels.size)
     lidx = np.triu_indices(tent.labels.size)
 
-    diff = (T[uidx] - T[lidx]).ravel()
+    error = np.abs(T[uidx] - T[lidx]).ravel()
 
-    eq(diff, np.zeros(diff.shape[0]))
+    assert any(error > 1E-6)
 
 
 def _test_tent_dihedral(traj):
@@ -84,11 +83,16 @@ def _test_tent_dihedral(traj):
     uidx = np.triu_indices(tent.labels.size)
     lidx = np.triu_indices(tent.labels.size)
 
-    diff = (T[uidx] - T[lidx]).ravel()
+    error = np.abs(T[uidx] - T[lidx]).ravel()
 
-    eq(diff, np.zeros(diff.shape[0]))
+    assert any(error > 1E-6)
     _test_tent_shuffle(tent, traj)
 
 
 def _test_tent_shuffle(tent, traj):
-    tent.partial_transform(traj, shuffled=True)
+    T = tent.partial_transform(traj, shuffle=0)
+    TS = tent.partial_transform(traj, shuffle=1)
+
+    error = np.abs(T - TS).ravel()
+
+    assert any(error > 1E-6)
