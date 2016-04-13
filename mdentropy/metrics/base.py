@@ -10,6 +10,7 @@ from msmbuilder.featurizer import (AlphaAngleFeaturizer, ContactFeaturizer,
 
 
 class MetricBase(object):
+    """Base metric object"""
 
     def _shuffle(cls):
         cls.data = shuffle(cls.data)
@@ -33,14 +34,15 @@ class MetricBase(object):
 
 
 class DihedralMetricBase(MetricBase):
+    """Base dihedral metric object"""
 
-    def _featurizer(cls, **kwargs):
+    def _featurizer(self, **kwargs):
         return DihedralFeaturizer(sincos=False, **kwargs)
 
-    def _extract_data(cls, traj):
+    def _extract_data(self, traj):
         data = []
-        for tp in cls.types:
-            featurizer = cls._featurizer(types=[tp])
+        for tp in self.types:
+            featurizer = self._featurizer(types=[tp])
             angles = featurizer.partial_transform(traj)
             summary = featurizer.describe_features(traj)
             idx = [[traj.topology.atom(ati).residue.index
@@ -57,16 +59,19 @@ class DihedralMetricBase(MetricBase):
 
 
 class AlphaAngleMetricBase(DihedralMetricBase):
+    """Base alpha angle metric object"""
 
     def _featurizer(self, **kwargs):
         return AlphaAngleFeaturizer(sincos=False)
 
     def __init__(self, **kwargs):
         self.types = ['alpha']
-        super(DihedralMetricBase, self).__init__(**kwargs)
+
+        super(AlphaAngleMetricBase, self).__init__(**kwargs)
 
 
 class ContactMetricBase(MetricBase):
+    """Base contact metric object"""
 
     def _extract_data(self, traj):
         contact = ContactFeaturizer(contacts=self.contacts, scheme=self.scheme,
