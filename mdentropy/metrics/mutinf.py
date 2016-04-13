@@ -26,18 +26,21 @@ class MutualInformationBase(BaseMetric):
                          method=self.method)
 
     def _exec(self):
-        uidx = np.triu_indices(self.labels.size)
-        lidx = np.tril_indices(self.labels.size)
         M = np.zeros((self.labels.size, self.labels.size))
+        triu = np.zeros((int((self.labels.size**2 + self.labels.size)/2),))
 
         with closing(Pool(processes=self.n_threads)) as pool:
-            M[uidx] = list(pool.map(self._partial_mutinf,
-                                    combinations(self.labels, 2)))
+            vals = pool.map(self._partial_mutinf,
+                            combinations(self.labels, 2))
             pool.terminate()
 
-        M[lidx] = M[uidx]
+        for i, el in enumerate(vals):
+            triu[i] = el
 
-        return M
+        idx = np.triu_indices_from(M)
+        M[idx] = triu
+
+        return M + M.T - np.diag(M.diagonal())
 
     def __init__(self, normed=True, **kwargs):
         self.data = None

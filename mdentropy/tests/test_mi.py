@@ -61,30 +61,21 @@ def _test_mi_alpha(traj):
     mi = AlphaAngleMutualInformation()
     M = mi.partial_transform(traj)
 
-    uidx = np.triu_indices(mi.labels.size)
-    lidx = np.tril_indices(mi.labels.size)
-
-    eq(M[uidx], M[lidx])
+    eq(M - M.T, 0)
 
 
 def _test_mi_contact(traj):
     mi = ContactMutualInformation()
     M = mi.partial_transform(traj)
 
-    uidx = np.triu_indices(mi.labels.size)
-    lidx = np.tril_indices(mi.labels.size)
-
-    eq(M[uidx], M[lidx])
+    eq(M - M.T, 0)
 
 
 def _test_mi_dihedral(traj):
     mi = DihedralMutualInformation()
     M = mi.partial_transform(traj)
 
-    uidx = np.triu_indices(mi.labels.size)
-    lidx = np.tril_indices(mi.labels.size)
-
-    eq(M[uidx], M[lidx])
+    eq(M - M.T, 0)
     _test_mi_shuffle(mi, traj)
 
 

@@ -56,9 +56,7 @@ def _test_tent_alpha(traj):
     tent = AlphaAngleTransferEntropy()
     T = tent.partial_transform(traj)
 
-    uidx = np.triu_indices(T.shape[0])
-    lidx = np.tril_indices(T.shape[0])
-    error = np.abs(T[uidx] - T[lidx])
+    error = np.abs(T - T.T).ravel()
 
     assert any(error > 1E-6)
 
@@ -67,9 +65,7 @@ def _test_tent_contact(traj):
     tent = ContactTransferEntropy()
     T = tent.partial_transform(traj)
 
-    uidx = np.triu_indices(T.shape[0])
-    lidx = np.tril_indices(T.shape[0])
-    error = np.abs(T[uidx] - T[lidx])
+    error = np.abs(T - T.T).ravel()
 
     assert any(error > 1E-6)
 
@@ -78,9 +74,7 @@ def _test_tent_dihedral(traj):
     tent = DihedralTransferEntropy()
     T = tent.partial_transform(traj)
 
-    uidx = np.triu_indices(T.shape[0])
-    lidx = np.tril_indices(T.shape[0])
-    error = np.abs(T[uidx] - T[lidx])
+    error = np.abs(T - T.T).ravel()
 
     assert any(error > 1E-6)
     _test_tent_shuffle(tent, traj)
