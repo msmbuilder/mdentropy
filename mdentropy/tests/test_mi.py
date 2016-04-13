@@ -5,7 +5,8 @@ import tempfile
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
-from ..metrics import DihedralMutualInformation
+from ..metrics import (AlphaAngleMutualInformation, ContactMutualInformation,
+                       DihedralMutualInformation)
 from ..core import mi, nmi
 
 import mdtraj as md
@@ -32,7 +33,7 @@ def test_nmi():
     eq(MI1, MI2, 6)
 
 
-def test_dihedral_mi():
+def test_fs_mi():
 
     cwd = os.path.abspath(os.curdir)
     dirname = tempfile.mkdtemp()
@@ -43,21 +44,40 @@ def test_dihedral_mi():
 
         top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
         idx = [at.index for at in top.topology.atoms
-               if at.residue.index in [4, 5, 6]]
-        traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=10,
+               if at.residue.index in [4, 5, 6, 7, 8]]
+        traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=100,
                        top=top, atom_indices=idx)
 
-        mi = DihedralMutualInformation(method='symbolic')
-        M = mi.partial_transform(traj)
-
-        eq(M[0, 1], M[1, 0])
-
-        _test_shuffle(mi, traj)
+        yield _test_mi_alpha, traj
+        yield _test_mi_contact, traj
+        yield _test_mi_dihedral, traj
 
     finally:
         os.chdir(cwd)
         shutil.rmtree(dirname)
 
 
-def _test_shuffle(mi, traj):
+def _test_mi_alpha(traj):
+    mi = AlphaAngleMutualInformation()
+    M = mi.partial_transform(traj)
+
+    eq(M[0, 1], M[1, 0])
+
+
+def _test_mi_contact(traj):
+    mi = ContactMutualInformation()
+    M = mi.partial_transform(traj)
+
+    eq(M[0, 1], M[1, 0])
+
+
+def _test_mi_dihedral(traj):
+    mi = DihedralMutualInformation()
+    M = mi.partial_transform(traj)
+
+    eq(M[0, 1], M[1, 0])
+    _test_mi_shuffle(mi, traj)
+
+
+def _test_mi_shuffle(mi, traj):
     mi.partial_transform(traj, shuffled=True)

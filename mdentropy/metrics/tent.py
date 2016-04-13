@@ -1,4 +1,5 @@
-from .base import MetricBase, DihedralMetricBase
+from .base import (AlphaAngleMetricBase, ContactMetricBase, DihedralMetricBase,
+                   MetricBase)
 from ..utils import shuffle
 from ..core import cmi, ncmi
 
@@ -8,60 +9,65 @@ from itertools import product
 from multiprocessing import Pool
 from contextlib import closing
 
-__all__ = ['DihedralTransferEntropy']
+__all__ = ['AlphaAngleTransferEntropy', 'ContactTransferEntropy',
+           'DihedralTransferEntropy']
 
 
 class TransferEntropyBase(MetricBase):
-    """
-    Base transfer entropy object
-    """
+    """Base transfer entropy object"""
 
-    def _partial_tent(cls, p):
+    def _partial_tent(self, p):
         i, j = p
 
-        return cls._est(cls.n_bins,
-                        cls.data2[j].values.T,
-                        cls.data1[i].values.T,
-                        cls.data1[j].values.T,
-                        rng=cls.rng,
-                        method=cls.method)
+        return self._est(self.n_bins,
+                         self.data2[j].values.T,
+                         self.data1[i].values.T,
+                         self.data1[j].values.T,
+                         rng=self.rng,
+                         method=self.method)
 
-    def _tent(cls):
+    def _tent(self):
 
-        with closing(Pool(processes=cls.n_threads)) as pool:
-            CMI = list(pool.map(cls._partial_tent,
-                                product(cls.labels, cls.labels)))
+        with closing(Pool(processes=self.n_threads)) as pool:
+            CMI = list(pool.map(self._partial_tent,
+                                product(self.labels, self.labels)))
             pool.terminate()
 
-        return np.reshape(CMI, (cls.labels.size, cls.labels.size)).T
+        return np.reshape(CMI, (self.labels.size, self.labels.size)).T
 
-    def _shuffle(cls):
-        cls.data1 = shuffle(cls.data1)
-        cls.data2 = shuffle(cls.data2)
+    def _shuffle(self):
+        self.data1 = shuffle(self.data1)
+        self.data2 = shuffle(self.data2)
 
-    def partial_transform(cls, traj, shuffled=False):
+    def partial_transform(self, traj, shuffled=False):
         traj1, traj2 = traj
-        cls.data1 = cls._extract_data(traj1)
-        cls.data2 = cls._extract_data(traj2)
-        cls.labels = np.unique(cls.data1.columns.levels[0])
+        self.data1 = self._extract_data(traj1)
+        self.data2 = self._extract_data(traj2)
+        self.labels = np.unique(self.data1.columns.levels[0])
         if shuffled:
-            cls._shuffle()
+            self._shuffle()
 
-        return cls._tent()
+        return self._tent()
 
-    def transform(cls, trajs):
+    def transform(self, trajs):
         for traj in trajs:
-            yield cls.partial_transform(traj)
+            yield self.partial_transform(traj)
 
-    def __init__(cls, normed=False, **kwargs):
-        cls.data1 = None
-        cls.data2 = None
-        cls._est = ncmi if normed else cmi
+    def __init__(self, normed=False, **kwargs):
+        self.data1 = None
+        self.data2 = None
+        self._est = ncmi if normed else cmi
 
-        super(TransferEntropyBase, cls).__init__(**kwargs)
+        super(TransferEntropyBase, self).__init__(**kwargs)
+
+
+class AlphaAngleTransferEntropy(AlphaAngleMetricBase, TransferEntropyBase):
+    """Mutual information calculations for alpha angles"""
+
+
+class ContactTransferEntropy(ContactMetricBase, TransferEntropyBase):
+    """Transfer entropy calculations for contacts"""
 
 
 class DihedralTransferEntropy(DihedralMetricBase, TransferEntropyBase):
-    """
-    Transfer entropy calculations for dihedral angles
-    """
+    """Transfer entropy calculations for dihedral angles"""

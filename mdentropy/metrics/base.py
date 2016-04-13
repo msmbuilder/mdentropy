@@ -5,10 +5,12 @@ from multiprocessing import cpu_count
 import pandas as pd
 import numpy as np
 
-from msmbuilder.featurizer import DihedralFeaturizer
+from msmbuilder.featurizer import (AlphaAngleFeaturizer, ContactFeaturizer,
+                                   DihedralFeaturizer)
 
 
 class MetricBase(object):
+    """Base metric object"""
 
     def _shuffle(cls):
         cls.data = shuffle(cls.data)
@@ -32,11 +34,15 @@ class MetricBase(object):
 
 
 class DihedralMetricBase(MetricBase):
+    """Base dihedral metric object"""
 
-    def _extract_data(cls, traj):
+    def _featurizer(self, **kwargs):
+        return DihedralFeaturizer(sincos=False, **kwargs)
+
+    def _extract_data(self, traj):
         data = []
-        for tp in cls.types:
-            featurizer = DihedralFeaturizer(types=[tp], sincos=False)
+        for tp in self.types:
+            featurizer = self._featurizer(types=[tp])
             angles = featurizer.partial_transform(traj)
             summary = featurizer.describe_features(traj)
             idx = [[traj.topology.atom(ati).residue.index
@@ -50,3 +56,45 @@ class DihedralMetricBase(MetricBase):
         self.n_types = len(self.types)
 
         super(DihedralMetricBase, self).__init__(**kwargs)
+
+
+class AlphaAngleMetricBase(DihedralMetricBase):
+    """Base alpha angle metric object"""
+
+    def _featurizer(self, **kwargs):
+        return AlphaAngleFeaturizer(sincos=False)
+
+    def __init__(self, **kwargs):
+        self.types = ['alpha']
+
+        super(AlphaAngleMetricBase, self).__init__(**kwargs)
+
+
+class ContactMetricBase(MetricBase):
+    """Base contact metric object"""
+
+    def _extract_data(self, traj):
+        contact = ContactFeaturizer(contacts=self.contacts, scheme=self.scheme,
+                                    ignore_nonprotein=self.ignore_nonprotein)
+        distances = contact.partial_transform(traj)
+        summary = contact.describe_features(traj)
+        pairs = [item['resids'] for item in summary]
+        resids = np.unique(pairs)
+        data = []
+        for resid in resids:
+            idx = list(list(set(pair) - {resid})[0]
+                       for pair in pairs if resid in pair)
+            mapping = np.array([True if resid in pair else False
+                                for pair in pairs])
+            data.append(pd.DataFrame(distances[:, mapping],
+                        columns=[idx, len(idx) * [resid]]))
+
+        return pd.concat(data, axis=1)
+
+    def __init__(self, contacts='all', scheme='closest-heavy',
+                 ignore_nonprotein=True, **kwargs):
+        self.contacts = contacts
+        self.scheme = scheme
+        self.ignore_nonprotein = ignore_nonprotein
+
+        super(ContactMetricBase, self).__init__(**kwargs)
