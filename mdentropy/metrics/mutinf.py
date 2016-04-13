@@ -13,6 +13,7 @@ __all__ = ['AlphaAngleMutualInformation', 'ContactMutualInformation',
 
 
 class MutualInformationBase(MetricBase):
+
     """Base mutual information object"""
 
     def _partial_mutinf(self, p):
@@ -54,12 +55,15 @@ class MutualInformationBase(MetricBase):
 
 
 class AlphaAngleMutualInformation(AlphaAngleMetricBase, MutualInformationBase):
+
     """Mutual information calculations for alpha angles"""
 
 
 class ContactMutualInformation(ContactMetricBase, MutualInformationBase):
+
     """Mutual information calculations for contacts"""
 
 
 class DihedralMutualInformation(DihedralMetricBase, MutualInformationBase):
+
     """Mutual information calculations for dihedral angles"""

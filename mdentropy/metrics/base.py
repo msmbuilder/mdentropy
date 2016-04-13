@@ -10,6 +10,7 @@ from msmbuilder.featurizer import (AlphaAngleFeaturizer, ContactFeaturizer,
 
 
 class MetricBase(object):
+
     """Base metric object"""
 
     def _shuffle(cls):
@@ -34,6 +35,7 @@ class MetricBase(object):
 
 
 class DihedralMetricBase(MetricBase):
+
     """Base dihedral metric object"""
 
     def _featurizer(self, **kwargs):
@@ -59,6 +61,7 @@ class DihedralMetricBase(MetricBase):
 
 
 class AlphaAngleMetricBase(DihedralMetricBase):
+
     """Base alpha angle metric object"""
 
     def _featurizer(self, **kwargs):
@@ -71,6 +74,7 @@ class AlphaAngleMetricBase(DihedralMetricBase):
 
 
 class ContactMetricBase(MetricBase):
+
     """Base contact metric object"""
 
     def _extract_data(self, traj):

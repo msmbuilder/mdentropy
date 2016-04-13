@@ -14,6 +14,7 @@ __all__ = ['AlphaAngleTransferEntropy', 'ContactTransferEntropy',
 
 
 class TransferEntropyBase(MetricBase):
+
     """Base transfer entropy object"""
 
     def _partial_tent(self, p):
@@ -62,12 +63,15 @@ class TransferEntropyBase(MetricBase):
 
 
 class AlphaAngleTransferEntropy(AlphaAngleMetricBase, TransferEntropyBase):
+
     """Mutual information calculations for alpha angles"""
 
 
 class ContactTransferEntropy(ContactMetricBase, TransferEntropyBase):
+
     """Transfer entropy calculations for contacts"""
 
 
 class DihedralTransferEntropy(DihedralMetricBase, TransferEntropyBase):
+
     """Transfer entropy calculations for dihedral angles"""
