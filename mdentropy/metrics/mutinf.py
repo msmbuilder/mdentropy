@@ -1,6 +1,6 @@
+from ..core import mi, nmi
 from .base import (AlphaAngleMetricBase, ContactMetricBase, DihedralMetricBase,
                    MetricBase)
-from ..core import mi, nmi
 
 import numpy as np
 from itertools import combinations_with_replacement as combinations
@@ -25,29 +25,19 @@ class MutualInformationBase(MetricBase):
                          rng=self.rng,
                          method=self.method)
 
-    def _mutinf(self):
-
-        idx = np.triu_indices(self.labels.size)
+    def _exec(self):
+        uidx = np.triu_indices(self.labels.size)
+        lidx = np.tril_indices(self.labels.size)
         M = np.zeros((self.labels.size, self.labels.size))
 
         with closing(Pool(processes=self.n_threads)) as pool:
-            M[idx] = list(pool.map(self._partial_mutinf,
-                                   combinations(self.labels, 2)))
+            M[uidx] = list(pool.map(self._partial_mutinf,
+                                    combinations(self.labels, 2)))
             pool.terminate()
 
-        M[idx[::-1]] = M[idx]
+        M[lidx] = M[uidx]
 
         return M
-
-    def partial_transform(self, traj, shuffled=False):
-        self.data = self._extract_data(traj)
-        self.labels = np.unique(self.data.columns.levels[0])
-        if shuffled:
-            self._shuffle()
-        else:
-            self.shuffled_data = self.data
-
-        return self._mutinf()
 
     def __init__(self, normed=False, **kwargs):
         self.data = None

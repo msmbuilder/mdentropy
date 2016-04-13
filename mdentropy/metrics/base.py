@@ -19,6 +19,21 @@ class MetricBase(object):
     def _extract_data(cls, traj):
         pass
 
+    def _exec(cls):
+        pass
+
+    def partial_transform(cls, traj, shuffle=0):
+        cls.data = cls._extract_data(traj)
+        cls.shuffled_data = cls.data
+        cls.labels = np.unique(cls.data.columns.levels[0])
+
+        result = cls._exec()
+        for _ in range(shuffle):
+            cls._shuffle()
+            result -= cls._exec()
+
+        return result
+
     def transform(cls, trajs):
         for traj in trajs:
             yield cls.partial_transform(traj)

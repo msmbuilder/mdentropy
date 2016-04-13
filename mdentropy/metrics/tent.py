@@ -1,7 +1,7 @@
+from ..core import cmi, ncmi
 from .base import (AlphaAngleMetricBase, ContactMetricBase, DihedralMetricBase,
                    MetricBase)
-from ..utils import shuffle
-from ..core import cmi, ncmi
+
 
 import numpy as np
 from itertools import product
@@ -27,8 +27,7 @@ class TransferEntropyBase(MetricBase):
                          rng=self.rng,
                          method=self.method)
 
-    def _tent(self):
-
+    def _exec(self):
         with closing(Pool(processes=self.n_threads)) as pool:
             CMI = list(pool.map(self._partial_tent,
                                 product(self.labels, self.labels)))
@@ -36,20 +35,19 @@ class TransferEntropyBase(MetricBase):
 
         return np.reshape(CMI, (self.labels.size, self.labels.size)).T
 
-    def _shuffle(self):
-        self.data2 = shuffle(self.data2)
-
-    def partial_transform(self, traj, shuffled=False):
+    def partial_transform(cls, traj, shuffle=0):
         traj1, traj2 = traj
-        self.data1 = self._extract_data(traj1)
-        self.data2 = self._extract_data(traj2)
-        self.labels = np.unique(self.data1.columns.levels[0])
-        if shuffled:
-            self._shuffle()
-        else:
-            self.shuffled_data = self.data2
+        cls.data1 = cls._extract_data(traj1)
+        cls.data2 = cls._extract_data(traj2)
+        cls.shuffled_data = cls.data1
+        cls.labels = np.unique(cls.data1.columns.levels[0])
 
-        return self._tent()
+        result = cls._exec()
+        for _ in range(shuffle):
+            cls._shuffle()
+            result -= cls._exec()
+
+        return result
 
     def transform(self, trajs):
         for traj in trajs:
