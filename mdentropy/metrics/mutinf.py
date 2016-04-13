@@ -27,15 +27,15 @@ class MutualInformationBase(BaseMetric):
 
     def _exec(self):
         M = np.zeros((self.labels.size, self.labels.size))
-        triu = np.zeros((int((self.labels.size**2 + self.labels.size)/2),))
+        triu = np.zeros((int((self.labels.size ** 2 + self.labels.size) / 2),))
 
         with closing(Pool(processes=self.n_threads)) as pool:
-            vals = pool.map(self._partial_mutinf,
-                            combinations(self.labels, 2))
+            values = pool.map(self._partial_mutinf,
+                              combinations(self.labels, 2))
             pool.terminate()
 
-        for i, el in enumerate(vals):
-            triu[i] = el
+        for i, value in enumerate(values):
+            triu[i] = value
 
         idx = np.triu_indices_from(M)
         M[idx] = triu
@@ -43,8 +43,24 @@ class MutualInformationBase(BaseMetric):
         return M + M.T - np.diag(M.diagonal())
 
     def __init__(self, normed=True, **kwargs):
-        self.data = None
         self._est = nmi if normed else mi
+        self.partial_transform.__func__.__doc__ = """
+        Partial transform a mdtraj.Trajectory into an n_residue by n_residue
+            matrix of mutual information scores.
+
+            Parameters
+            ----------
+            traj : mdtraj.Trajectory
+                Trajectory to transform
+            shuffle : int
+                Number of shuffle iterations (default: 0)
+            verbose : bool
+                Whether to display performance
+            Returns
+            -------
+            result : np.ndarray, shape = (n_residue, n_residue)
+                Mutual information matrix
+        """
 
         super(MutualInformationBase, self).__init__(**kwargs)
 

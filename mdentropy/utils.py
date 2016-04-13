@@ -53,7 +53,7 @@ def unique_row_count(arr):
 
     Parameters
     ----------
-    a : numpy.ndarray
+    arr : numpy.ndarray
     Returns
     -------
     counts : array_like, shape = (n_bins, )
@@ -65,6 +65,16 @@ def unique_row_count(arr):
 
 
 def floor_threshold(arr, threshold=0.):
+    """Convenience funtion for thresholding to a lower bound
+
+    Parameters
+    ----------
+    arr : numpy.ndarray
+    Returns
+    -------
+    new_arr : numpy.ndarray
+        thresholded array
+    """
     new_arr = arr.copy()
     new_arr[arr < threshold] = threshold
     return new_arr

@@ -21,7 +21,7 @@ class TransferEntropyBase(BaseMetric):
         i, j = p
 
         return self._est(self.n_bins,
-                         self.data2[j].values.T,
+                         self.data[j].values.T,
                          self.shuffled_data[i].values.T,
                          self.shuffled_data[j].values.T,
                          rng=self.rng,
@@ -37,19 +37,29 @@ class TransferEntropyBase(BaseMetric):
 
     def _before_exec(self, traj):
         traj1, traj2 = traj
-        self.data1 = self._extract_data(traj1)
-        self.data2 = self._extract_data(traj2)
-        self.shuffled_data = self.data1
-        self.labels = np.unique(self.data1.columns.levels[0])
-
-    def transform(self, trajs):
-        for traj in trajs:
-            yield self.partial_transform(traj)
+        self.data = self._extract_data(traj2)
+        self.shuffled_data = self._extract_data(traj1)
+        self.labels = np.unique(self.data.columns.levels[0])
 
     def __init__(self, normed=True, **kwargs):
-        self.data1 = None
-        self.data2 = None
         self._est = ncmi if normed else cmi
+        self.partial_transform.__func__.__doc__ = """
+        Partial transform a mdtraj.Trajectory into an n_residue by n_residue
+            matrix of transfer entropy scores.
+
+            Parameters
+            ----------
+            traj : tuple
+                Pair of trajectories to transform (state0, state1)
+            shuffle : int
+                Number of shuffle iterations (default: 0)
+            verbose : bool
+                Whether to display performance
+            Returns
+            -------
+            result : np.ndarray, shape = (n_residue, n_residue)
+                Transfer entropy matrix
+        """
 
         super(TransferEntropyBase, self).__init__(**kwargs)
 
