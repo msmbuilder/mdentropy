@@ -5,9 +5,9 @@ import tempfile
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
+from ..core import mi, nmi
 from ..metrics import (AlphaAngleMutualInformation, ContactMutualInformation,
                        DihedralMutualInformation)
-from ..core import mi, nmi
 
 import mdtraj as md
 from msmbuilder.example_datasets import FsPeptide
@@ -44,7 +44,7 @@ def test_fs_mi():
 
         top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
         idx = [at.index for at in top.topology.atoms
-               if at.residue.index in [4, 5, 6, 7, 8]]
+               if at.residue.index in [3, 4, 5, 6, 7, 8]]
         traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=100,
                        top=top, atom_indices=idx)
 
@@ -61,23 +61,28 @@ def _test_mi_alpha(traj):
     mi = AlphaAngleMutualInformation()
     M = mi.partial_transform(traj)
 
-    eq(M[0, 1], M[1, 0])
+    eq(M - M.T, 0)
 
 
 def _test_mi_contact(traj):
     mi = ContactMutualInformation()
     M = mi.partial_transform(traj)
 
-    eq(M[0, 1], M[1, 0])
+    eq(M - M.T, 0)
 
 
 def _test_mi_dihedral(traj):
     mi = DihedralMutualInformation()
     M = mi.partial_transform(traj)
 
-    eq(M[0, 1], M[1, 0])
+    eq(M - M.T, 0)
     _test_mi_shuffle(mi, traj)
 
 
 def _test_mi_shuffle(mi, traj):
-    mi.partial_transform(traj, shuffled=True)
+    M = mi.partial_transform(traj, shuffle=0)
+    MS = mi.partial_transform(traj, shuffle=1)
+
+    error = np.abs(M - MS).ravel()
+
+    assert any(error > 1E-6)

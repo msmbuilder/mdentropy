@@ -58,7 +58,7 @@ def ent(n_bins, rng, method, *args):
     return naive(counts)
 
 
-def ce(n_bins, x, y, rng=None, method='kde'):
+def ce(n_bins, x, y, rng=None, method='grassberger'):
     """Condtional entropy calculation
 
     Parameters

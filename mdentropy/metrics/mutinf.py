@@ -1,6 +1,6 @@
-from .base import (AlphaAngleMetricBase, ContactMetricBase, DihedralMetricBase,
-                   MetricBase)
 from ..core import mi, nmi
+from .base import (AlphaAngleBaseMetric, ContactBaseMetric, DihedralBaseMetric,
+                   BaseMetric)
 
 import numpy as np
 from itertools import combinations_with_replacement as combinations
@@ -12,7 +12,8 @@ __all__ = ['AlphaAngleMutualInformation', 'ContactMutualInformation',
            'DihedralMutualInformation']
 
 
-class MutualInformationBase(MetricBase):
+class MutualInformationBase(BaseMetric):
+
     """Base mutual information object"""
 
     def _partial_mutinf(self, p):
@@ -20,46 +21,60 @@ class MutualInformationBase(MetricBase):
 
         return self._est(self.n_bins,
                          self.data[i].values.T,
-                         self.data[j].values.T,
+                         self.shuffled_data[j].values.T,
                          rng=self.rng,
                          method=self.method)
 
-    def _mutinf(self):
-
-        idx = np.triu_indices(self.labels.size)
+    def _exec(self):
         M = np.zeros((self.labels.size, self.labels.size))
+        triu = np.zeros((int((self.labels.size ** 2 + self.labels.size) / 2),))
 
         with closing(Pool(processes=self.n_threads)) as pool:
-            M[idx] = list(pool.map(self._partial_mutinf,
-                                   combinations(self.labels, 2)))
+            values = pool.map(self._partial_mutinf,
+                              combinations(self.labels, 2))
             pool.terminate()
 
-        M[idx[::-1]] = M[idx]
+        for i, value in enumerate(values):
+            triu[i] = value
 
-        return M
+        idx = np.triu_indices_from(M)
+        M[idx] = triu
 
-    def partial_transform(self, traj, shuffled=False):
-        self.data = self._extract_data(traj)
-        self.labels = np.unique(self.data.columns.levels[0])
-        if shuffled:
-            self._shuffle()
+        return M + M.T - np.diag(M.diagonal())
 
-        return self._mutinf()
-
-    def __init__(self, normed=False, **kwargs):
-        self.data = None
+    def __init__(self, normed=True, **kwargs):
         self._est = nmi if normed else mi
+        self.partial_transform.__func__.__doc__ = """
+        Partial transform a mdtraj.Trajectory into an n_residue by n_residue
+            matrix of mutual information scores.
+
+            Parameters
+            ----------
+            traj : mdtraj.Trajectory
+                Trajectory to transform
+            shuffle : int
+                Number of shuffle iterations (default: 0)
+            verbose : bool
+                Whether to display performance
+            Returns
+            -------
+            result : np.ndarray, shape = (n_residue, n_residue)
+                Mutual information matrix
+        """
 
         super(MutualInformationBase, self).__init__(**kwargs)
 
 
-class AlphaAngleMutualInformation(AlphaAngleMetricBase, MutualInformationBase):
+class AlphaAngleMutualInformation(AlphaAngleBaseMetric, MutualInformationBase):
+
     """Mutual information calculations for alpha angles"""
 
 
-class ContactMutualInformation(ContactMetricBase, MutualInformationBase):
+class ContactMutualInformation(ContactBaseMetric, MutualInformationBase):
+
     """Mutual information calculations for contacts"""
 
 
-class DihedralMutualInformation(DihedralMetricBase, MutualInformationBase):
+class DihedralMutualInformation(DihedralBaseMetric, MutualInformationBase):
+
     """Mutual information calculations for dihedral angles"""

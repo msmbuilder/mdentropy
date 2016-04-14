@@ -5,9 +5,9 @@ import tempfile
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
+from ..core import cmi, ce, ncmi
 from ..metrics import (AlphaAngleTransferEntropy, ContactTransferEntropy,
                        DihedralTransferEntropy)
-from ..core import cmi, ce, ncmi
 
 import mdtraj as md
 from msmbuilder.example_datasets import FsPeptide
@@ -36,7 +36,7 @@ def test_fs_tent():
 
         top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
         idx = [at.index for at in top.topology.atoms
-               if at.residue.index in [4, 5, 6, 7, 8]]
+               if at.residue.index in [3, 4, 5, 6, 7, 8]]
         traj1 = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=100,
                         top=top, atom_indices=idx)
         traj2 = md.load(dirname + '/fs_peptide/trajectory-2.xtc', stride=100,
@@ -56,24 +56,34 @@ def _test_tent_alpha(traj):
     tent = AlphaAngleTransferEntropy()
     T = tent.partial_transform(traj)
 
-    assert T[0, 1] != T[1, 0]
+    error = np.abs(T - T.T).ravel()
+
+    assert any(error > 1E-6)
 
 
 def _test_tent_contact(traj):
     tent = ContactTransferEntropy()
     T = tent.partial_transform(traj)
 
-    assert T[0, 1] != T[1, 0]
+    error = np.abs(T - T.T).ravel()
+
+    assert any(error > 1E-6)
 
 
 def _test_tent_dihedral(traj):
     tent = DihedralTransferEntropy()
     T = tent.partial_transform(traj)
 
-    _test_tent_shuffle(tent, traj)
+    error = np.abs(T - T.T).ravel()
 
-    assert T[0, 1] != T[1, 0]
+    assert any(error > 1E-6)
+    _test_tent_shuffle(tent, traj)
 
 
 def _test_tent_shuffle(tent, traj):
-    tent.partial_transform(traj, shuffled=True)
+    T = tent.partial_transform(traj, shuffle=0)
+    TS = tent.partial_transform(traj, shuffle=1)
+
+    error = np.abs(T - TS).ravel()
+
+    assert any(error > 1E-6)

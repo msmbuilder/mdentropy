@@ -4,7 +4,7 @@ import numpy as np
 __all__ = ['mi', 'nmi', 'cmi', 'ncmi']
 
 
-def mi(nbins, x, y, rng=None, method='kde'):
+def mi(nbins, x, y, rng=None, method='grassberger'):
     """Mutual information calculation
 
     Parameters
@@ -28,7 +28,7 @@ def mi(nbins, x, y, rng=None, method='kde'):
             ent(nbins, 2 * [rng], method, x, y))
 
 
-def nmi(nbins, x, y, rng=None, method='kde'):
+def nmi(nbins, x, y, rng=None, method='grassberger'):
     """Normalized mutual information calculation
 
     Parameters
@@ -52,7 +52,7 @@ def nmi(nbins, x, y, rng=None, method='kde'):
                          ent(nbins, [rng], method, y)))
 
 
-def cmi(nbins, x, y, z, rng=None, method='kde'):
+def cmi(nbins, x, y, z, rng=None, method='grassberger'):
     """Conditional mutual information calculation
 
     Parameters
@@ -79,7 +79,7 @@ def cmi(nbins, x, y, z, rng=None, method='kde'):
             ent(nbins, 3 * [rng], method, x, y, z))
 
 
-def ncmi(nbins, x, y, z, rng=None, method='kde'):
+def ncmi(nbins, x, y, z, rng=None, method='grassberger'):
     """Normalized conditional mutual information calculation
 
     Parameters

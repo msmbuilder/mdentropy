@@ -2,30 +2,20 @@
 
 import pickle
 import argparse
-import numpy as np
 import mdtraj as md
 import pandas as pd
 from glob import glob
 from itertools import chain
 
-from mdentropy.utils import Timing
 from mdentropy.metrics import DihedralTransferEntropy
 
 
 def run(past, current, nbins, iter, N, types, method):
-    R = []
     tent = DihedralTransferEntropy(n_bins=nbins, types=types,
                                    method=method, threads=N)
-    shuffled = False
-    for i in range(iter + 1):
-        if i > 0:
-            shuffled = True
-        with Timing(i):
-            R.append(tent.partial_transform((past, current),
-                     shuffled=shuffled))
-    T = R[0]
-    if iter > 0:
-        T -= np.mean(R[1:], axis=0)
+
+    T = tent.partial_transform((past, current), shuffled=iter, verbose=True)
+
     return pd.DataFrame(T, columns=tent.labels)
 
 
@@ -57,8 +47,7 @@ def parse_cmdln():
                         help='Entropy estimate method.',
                         choices=['chaowangjost', 'grassberger', 'kde',
                                  'naive'],
-                        default='symbolic')
-
+                        default='grassberger')
     parser.add_argument('-d', '--dihedrals', dest='dihedrals',
                         help='Dihedral angles to analyze.',
                         nargs='+',

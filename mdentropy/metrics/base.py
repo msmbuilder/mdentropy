@@ -1,4 +1,5 @@
-from ..utils import shuffle
+from ..utils import floor_threshold, Timing
+from ..utils import shuffle as shuffle_data
 
 from multiprocessing import cpu_count
 
@@ -9,31 +10,83 @@ from msmbuilder.featurizer import (AlphaAngleFeaturizer, ContactFeaturizer,
                                    DihedralFeaturizer)
 
 
-class MetricBase(object):
+class BaseMetric(object):
+
     """Base metric object"""
 
-    def _shuffle(cls):
-        cls.data = shuffle(cls.data)
+    def _shuffle(self):
+        self.shuffled_data = shuffle_data(self.shuffled_data)
 
-    def _extract_data(cls, traj):
+    def _extract_data(self, traj):
         pass
 
-    def transform(cls, trajs):
+    def _exec(self):
+        pass
+
+    def _before_exec(self, traj):
+        self.data = self._extract_data(traj)
+        self.shuffled_data = self.data
+        self.labels = np.unique(self.data.columns.levels[0])
+
+    def partial_transform(self, traj, shuffle=0, verbose=False):
+        """Transform a single mdtraj.Trajectory into an array of metric scores.
+
+        Parameters
+        ----------
+        traj : mdtraj.Trajectory
+            Trajectory to transform
+        shuffle : int
+            Number of shuffle iterations (default: 0)
+        verbose : bool
+            Whether to display performance
+        Returns
+        -------
+        result : np.ndarray
+            Scoring matrix
+        """
+        self._before_exec(traj)
+        result = self._exec()
+        correction = np.zeros_like(result)
+        for i in range(shuffle):
+            with Timing(i, verbose=verbose):
+                self._shuffle()
+                correction += self._exec()
+
+        return floor_threshold(result - np.nan_to_num(correction / shuffle))
+
+    def transform(self, trajs, shuffle=0, verbose=False):
+        """Invokes partial_transform over a list of mdtraj.Trajectory objects
+
+        Parameters
+        ----------
+        trajs : list
+            List of trajectories to transform
+        shuffle : int
+            Number of shuffle iterations (default: 0)
+        verbose : bool
+            Whether to display performance
+        Returns
+        -------
+        result : array_like
+            List of scoring matrices
+        """
         for traj in trajs:
-            yield cls.partial_transform(traj)
+            yield self.partial_transform(traj, shuffle=shuffle,
+                                         verbose=verbose)
 
-    def __init__(cls, n_bins=24, rng=None, method='chaowangjost',
+    def __init__(self, n_bins=24, rng=None, method='grassberger',
                  threads=None):
-        cls.n_types = 1
-        cls.data = None
-        cls.labels = None
-        cls.n_bins = n_bins
-        cls.rng = rng
-        cls.method = method
-        cls.n_threads = threads or int(cpu_count()/2)
+        self.data = None
+        self.shuffled_data = None
+        self.labels = None
+        self.n_bins = n_bins
+        self.rng = rng
+        self.method = method
+        self.n_threads = threads or int(cpu_count() / 2)
 
 
-class DihedralMetricBase(MetricBase):
+class DihedralBaseMetric(BaseMetric):
+
     """Base dihedral metric object"""
 
     def _featurizer(self, **kwargs):
@@ -53,12 +106,12 @@ class DihedralMetricBase(MetricBase):
 
     def __init__(self, types=None, **kwargs):
         self.types = types or ['phi', 'psi']
-        self.n_types = len(self.types)
 
-        super(DihedralMetricBase, self).__init__(**kwargs)
+        super(DihedralBaseMetric, self).__init__(**kwargs)
 
 
-class AlphaAngleMetricBase(DihedralMetricBase):
+class AlphaAngleBaseMetric(DihedralBaseMetric):
+
     """Base alpha angle metric object"""
 
     def _featurizer(self, **kwargs):
@@ -67,10 +120,11 @@ class AlphaAngleMetricBase(DihedralMetricBase):
     def __init__(self, **kwargs):
         self.types = ['alpha']
 
-        super(AlphaAngleMetricBase, self).__init__(**kwargs)
+        super(AlphaAngleBaseMetric, self).__init__(**kwargs)
 
 
-class ContactMetricBase(MetricBase):
+class ContactBaseMetric(BaseMetric):
+
     """Base contact metric object"""
 
     def _extract_data(self, traj):
@@ -97,4 +151,4 @@ class ContactMetricBase(MetricBase):
         self.scheme = scheme
         self.ignore_nonprotein = ignore_nonprotein
 
-        super(ContactMetricBase, self).__init__(**kwargs)
+        super(ContactBaseMetric, self).__init__(**kwargs)

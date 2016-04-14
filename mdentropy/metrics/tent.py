@@ -1,7 +1,7 @@
-from .base import (AlphaAngleMetricBase, ContactMetricBase, DihedralMetricBase,
-                   MetricBase)
-from ..utils import shuffle
 from ..core import cmi, ncmi
+from .base import (AlphaAngleBaseMetric, ContactBaseMetric, DihedralBaseMetric,
+                   BaseMetric)
+
 
 import numpy as np
 from itertools import product
@@ -13,21 +13,21 @@ __all__ = ['AlphaAngleTransferEntropy', 'ContactTransferEntropy',
            'DihedralTransferEntropy']
 
 
-class TransferEntropyBase(MetricBase):
+class TransferEntropyBase(BaseMetric):
+
     """Base transfer entropy object"""
 
     def _partial_tent(self, p):
         i, j = p
 
         return self._est(self.n_bins,
-                         self.data2[j].values.T,
-                         self.data1[i].values.T,
-                         self.data1[j].values.T,
+                         self.data[j].values.T,
+                         self.shuffled_data[i].values.T,
+                         self.shuffled_data[j].values.T,
                          rng=self.rng,
                          method=self.method)
 
-    def _tent(self):
-
+    def _exec(self):
         with closing(Pool(processes=self.n_threads)) as pool:
             CMI = list(pool.map(self._partial_tent,
                                 product(self.labels, self.labels)))
@@ -35,39 +35,45 @@ class TransferEntropyBase(MetricBase):
 
         return np.reshape(CMI, (self.labels.size, self.labels.size)).T
 
-    def _shuffle(self):
-        self.data1 = shuffle(self.data1)
-        self.data2 = shuffle(self.data2)
-
-    def partial_transform(self, traj, shuffled=False):
+    def _before_exec(self, traj):
         traj1, traj2 = traj
-        self.data1 = self._extract_data(traj1)
-        self.data2 = self._extract_data(traj2)
-        self.labels = np.unique(self.data1.columns.levels[0])
-        if shuffled:
-            self._shuffle()
+        self.data = self._extract_data(traj2)
+        self.shuffled_data = self._extract_data(traj1)
+        self.labels = np.unique(self.data.columns.levels[0])
 
-        return self._tent()
-
-    def transform(self, trajs):
-        for traj in trajs:
-            yield self.partial_transform(traj)
-
-    def __init__(self, normed=False, **kwargs):
-        self.data1 = None
-        self.data2 = None
+    def __init__(self, normed=True, **kwargs):
         self._est = ncmi if normed else cmi
+        self.partial_transform.__func__.__doc__ = """
+        Partial transform a mdtraj.Trajectory into an n_residue by n_residue
+            matrix of transfer entropy scores.
+
+            Parameters
+            ----------
+            traj : tuple
+                Pair of trajectories to transform (state0, state1)
+            shuffle : int
+                Number of shuffle iterations (default: 0)
+            verbose : bool
+                Whether to display performance
+            Returns
+            -------
+            result : np.ndarray, shape = (n_residue, n_residue)
+                Transfer entropy matrix
+        """
 
         super(TransferEntropyBase, self).__init__(**kwargs)
 
 
-class AlphaAngleTransferEntropy(AlphaAngleMetricBase, TransferEntropyBase):
+class AlphaAngleTransferEntropy(AlphaAngleBaseMetric, TransferEntropyBase):
+
     """Mutual information calculations for alpha angles"""
 
 
-class ContactTransferEntropy(ContactMetricBase, TransferEntropyBase):
+class ContactTransferEntropy(ContactBaseMetric, TransferEntropyBase):
+
     """Transfer entropy calculations for contacts"""
 
 
-class DihedralTransferEntropy(DihedralMetricBase, TransferEntropyBase):
+class DihedralTransferEntropy(DihedralBaseMetric, TransferEntropyBase):
+
     """Transfer entropy calculations for dihedral angles"""
