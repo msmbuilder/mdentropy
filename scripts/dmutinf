@@ -14,7 +14,7 @@ def run(traj, nbins, iter, N, types, method):
     mi = DihedralMutualInformation(n_bins=nbins, types=types,
                                    method=method, threads=N)
 
-    M = mi.partial_transform(traj, shuffled=iter, verbose=True)
+    M = mi.partial_transform(traj, shuffle=iter, verbose=True)
 
     return pd.DataFrame(M, columns=mi.labels)
 
