@@ -44,7 +44,7 @@ def parse_cmdln():
     parser.add_argument('-m', '--method', dest='method',
                         help='Entropy estimate method.',
                         choices=['chaowangjost', 'grassberger', 'kde',
-                                 'naive'],
+                                 'knn', 'naive'],
                         default='grassberger')
     parser.add_argument('-d', '--dihedrals', dest='dihedrals',
                         help='Dihedral angles to analyze.',
