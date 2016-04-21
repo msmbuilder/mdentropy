@@ -6,13 +6,15 @@ import mdtraj as md
 import pandas as pd
 from glob import glob
 from itertools import chain
+from numpy import pi
 
 from mdentropy.metrics import DihedralMutualInformation
 
 
 def run(traj, nbins, iter, N, types, method):
     mi = DihedralMutualInformation(n_bins=nbins, types=types,
-                                   method=method, threads=N)
+                                   method=method, threads=N,
+                                   rng=[-pi, pi])
 
     M = mi.partial_transform(traj, shuffle=iter, verbose=True)
 

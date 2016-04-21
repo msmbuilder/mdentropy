@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import time
 
-from numpy import dtype, random, unique, void
+from numpy import dtype, nan_to_num, random, unique, void
 
 
 __all__ = ['floor_threshold', 'shuffle', 'Timing', 'unique_row_count']
@@ -75,6 +75,6 @@ def floor_threshold(arr, threshold=0.):
     new_arr : numpy.ndarray
         thresholded array
     """
-    new_arr = arr.copy()
+    new_arr = nan_to_num(arr.copy())
     new_arr[arr < threshold] = threshold
     return new_arr

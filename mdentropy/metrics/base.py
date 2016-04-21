@@ -20,13 +20,16 @@ class BaseMetric(object):
     def _extract_data(self, traj):
         pass
 
-    def _exec(self):
-        pass
-
     def _before_exec(self, traj):
         self.data = self._extract_data(traj)
         self.shuffled_data = self.data
         self.labels = np.unique(self.data.columns.levels[0])
+
+    def _exec(self):
+        pass
+
+    def _floored_exec(self):
+        return floor_threshold(self._exec())
 
     def partial_transform(self, traj, shuffle=0, verbose=False):
         """Transform a single mdtraj.Trajectory into an array of metric scores.
@@ -45,14 +48,14 @@ class BaseMetric(object):
             Scoring matrix
         """
         self._before_exec(traj)
-        result = self._exec()
+        result = self._floored_exec()
         correction = np.zeros_like(result)
         for i in range(shuffle):
             with Timing(i, verbose=verbose):
                 self._shuffle()
-                correction += self._exec()
+                correction += self._floored_exec()
 
-        return floor_threshold(result - np.nan_to_num(correction / shuffle))
+        return floor_threshold(result - (correction / shuffle))
 
     def transform(self, trajs, shuffle=0, verbose=False):
         """Invokes partial_transform over a list of mdtraj.Trajectory objects

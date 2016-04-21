@@ -6,13 +6,15 @@ import mdtraj as md
 import pandas as pd
 from glob import glob
 from itertools import chain
+from numpy import pi
 
 from mdentropy.metrics import DihedralTransferEntropy
 
 
 def run(past, current, nbins, iter, N, types, method):
     tent = DihedralTransferEntropy(n_bins=nbins, types=types,
-                                   method=method, threads=N)
+                                   method=method, threads=N,
+                                   rng=[-pi, pi])
 
     T = tent.partial_transform((past, current), shuffle=iter, verbose=True)
 

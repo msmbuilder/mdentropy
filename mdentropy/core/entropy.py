@@ -5,12 +5,14 @@ from itertools import chain
 from numpy import ndarray
 from numpy import sum as npsum
 from numpy import (arange, bincount, diff, linspace, log, log2,
-                   meshgrid, nan_to_num, nansum, product, ravel, reshape,
-                   split, vstack)
+                   meshgrid, nan_to_num, nansum, product, ravel,
+                   split, vstack, exp)
 
 from scipy.stats import entropy as naive
-from scipy.stats.kde import gaussian_kde as kernel
 from scipy.special import psi
+
+
+from sklearn.neighbors import KernelDensity
 
 __all__ = ['ent', 'ce']
 
@@ -46,7 +48,7 @@ def ent(n_bins, rng, method, *args):
             rng[i] = (min(arg), max(arg))
 
     if method == 'kde':
-        return kde_ent(rng, *args, gride_size=n_bins or 20)
+        return kde_ent(rng, *args, grid_size=n_bins or 20)
 
     counts = symbolic(n_bins, rng, *args)
 
@@ -81,29 +83,23 @@ def ce(n_bins, x, y, rng=None, method='grassberger'):
             ent(n_bins, [rng], method, y))
 
 
-def kde_ent(rng, *args, gride_size=20):
-    """Entropy calculation using Gaussian kernel density estimation.
-
-    Parameters
-    ----------
-    rng : list of lists
-        List of min/max values for each dimention.
-    args : array_like, shape = (n_samples, )
-        Data of which to calculate entropy. Each array must have the same
-        number of samples.
-    grid_size : int
-        Number of partitions along a dimension in the meshgrid.
-    Returns
-    -------
-    entropy : float
-    """
+def kde_ent(rng, *args, grid_size=20, **kwargs):
+    """Kernel Density Estimation with Scikit-learn"""
     n_dims = len(args)
-    data = vstack((args))
-    gkde = kernel(data)
-    space = [linspace(i[0], i[1], gride_size) for i in rng]
+    data = vstack((args)).T
+    n_samples = data.shape[0]
+
+    bandwidth = (n_samples * (n_dims + 2) / 4.)**(-1. / (n_dims + 4.))
+    kde_skl = KernelDensity(bandwidth=bandwidth, **kwargs)
+    kde_skl.fit(data)
+
+    space = [linspace(i[0], i[1], grid_size) for i in rng]
     grid = meshgrid(*tuple(space))
-    pr = reshape(gkde(vstack(map(ravel, grid))),
-                 n_dims * [gride_size])
+
+    # score_samples() returns the log-likelihood of the samples
+    log_pdf = kde_skl.score_samples(vstack(map(ravel, grid)).T)
+    pr = exp(log_pdf)
+
     return -nansum(pr * log2(pr)) * product(diff(space)[:, 0])
 
 
