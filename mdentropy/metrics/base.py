@@ -55,7 +55,7 @@ class BaseMetric(object):
                 self._shuffle()
                 correction += self._floored_exec()
 
-        return floor_threshold(result - (correction / shuffle))
+        return floor_threshold(result - np.nan_to_num(correction / shuffle))
 
     def transform(self, trajs, shuffle=0, verbose=False):
         """Invokes partial_transform over a list of mdtraj.Trajectory objects
@@ -103,12 +103,13 @@ class DihedralBaseMetric(BaseMetric):
             summary = featurizer.describe_features(traj)
             idx = [[traj.topology.atom(ati).residue.index
                     for ati in item['atominds']][1] for item in summary]
-            data.append(pd.DataFrame(180. * angles / np.pi,
-                                     columns=[idx, len(idx) * [tp]]))
+            data.append(pd.DataFrame((angles + np.pi) % (2. * np.pi),
+                        columns=[idx, len(idx) * [tp]]))
         return pd.concat(data, axis=1)
 
-    def __init__(self, types=None, **kwargs):
+    def __init__(self, types=None, rng=None, **kwargs):
         self.types = types or ['phi', 'psi']
+        self.rng = rng or [0., 2 * np.pi]
 
         super(DihedralBaseMetric, self).__init__(**kwargs)
 

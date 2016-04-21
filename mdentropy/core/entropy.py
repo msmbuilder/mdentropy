@@ -43,7 +43,8 @@ def ent(n_bins, rng, method, *args):
                         for arg in args]))
 
     if method == 'knn':
-        return knn_ent(*args, k=n_bins or 3)
+        return knn_ent(*args, k=n_bins or 3,
+                       boxsize=diff(rng).max() if rng[0] else None)
 
     if rng is None or None in rng:
         rng = len(args)*[None]
@@ -65,7 +66,7 @@ def ent(n_bins, rng, method, *args):
     return naive(counts)
 
 
-def ce(n_bins, x, y, rng=None, method='grassberger'):
+def ce(n_bins, x, y, rng=None, method='knn'):
     """Condtional entropy calculation
 
     Parameters
@@ -88,7 +89,7 @@ def ce(n_bins, x, y, rng=None, method='grassberger'):
             ent(n_bins, [rng], method, y))
 
 
-def knn_ent(*args, k=3):
+def knn_ent(*args, k=3, boxsize=None):
     """ The classic K-L k-nearest neighbor continuous entropy estimator
         x should be a list of vectors, e.g. x = [[1.3], [3.7], [5.1], [2.4]]
         if x is a one-dimensional scalar and we have four samples
@@ -98,7 +99,7 @@ def knn_ent(*args, k=3):
     n_dims = data.shape[1]
 
     data += EPS * random.rand(n_samples, n_dims)
-    tree = cKDTree(data)
+    tree = cKDTree(data, boxsize=boxsize)
     nn = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in data]
     const = psi(n_samples) - psi(k) + n_dims * log(2)
 

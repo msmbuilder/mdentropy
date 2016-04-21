@@ -6,7 +6,6 @@ import mdtraj as md
 import pandas as pd
 from glob import glob
 from itertools import chain
-from numpy import pi
 
 from mdentropy.metrics import DihedralMutualInformation
 
@@ -14,7 +13,7 @@ from mdentropy.metrics import DihedralMutualInformation
 def run(traj, nbins, iter, N, types, method):
     mi = DihedralMutualInformation(n_bins=nbins, types=types,
                                    method=method, threads=N,
-                                   rng=[-pi, pi], normed=False)
+                                   normed=True)
 
     M = mi.partial_transform(traj, shuffle=iter, verbose=True)
 
@@ -45,7 +44,7 @@ def parse_cmdln():
                         help='Entropy estimate method.',
                         choices=['chaowangjost', 'grassberger', 'kde',
                                  'knn', 'naive'],
-                        default='grassberger')
+                        default='knn')
     parser.add_argument('-d', '--dihedrals', dest='dihedrals',
                         help='Dihedral angles to analyze.',
                         nargs='+',
