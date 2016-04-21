@@ -50,8 +50,8 @@ def knn_mi(x, y, k=3):
     # Find nearest neighbors in joint space, p=inf means max-norm
     tree = cKDTree(points)
     dvec = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in points]
-    a, b, c, d = (avgdigamma(x, dvec), avgdigamma(y, dvec),
-                  psi(k), psi(x.shape[0]))
+    a, b, c, d = (avgdigamma(x.T, dvec), avgdigamma(y.T, dvec),
+                  psi(k), psi(points.shape[0]))
     return (-a - b + c + d) / log(2)
 
 
@@ -118,13 +118,13 @@ def knn_cmi(x, y, z, k=3):
     x += EPS * random.rand(x.shape[0], x.shape[1])
     y += EPS * random.rand(y.shape[0], y.shape[1])
     z += EPS * random.rand(z.shape[0], z.shape[1])
-    points = vstack((x, y)).T
+    points = vstack((x, y, z)).T
     # Find nearest neighbors in joint space, p=inf means max-norm
     tree = cKDTree(points)
     dvec = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in points]
     a, b, c, d = (avgdigamma(vstack((x, z)).T, dvec),
                   avgdigamma(vstack((y, z)).T, dvec),
-                  avgdigamma(z, dvec), psi(k))
+                  avgdigamma(z.T, dvec), psi(k))
     return (-a - b + c + d) / log(2)
 
 
