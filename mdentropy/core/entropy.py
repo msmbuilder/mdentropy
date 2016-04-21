@@ -4,8 +4,8 @@ from itertools import chain
 
 from numpy import ndarray
 from numpy import sum as npsum
-from numpy import (arange, bincount, diff, finfo, linspace, log, log2,
-                   meshgrid, nan_to_num, nansum, product,
+from numpy import (arange, bincount, diff, finfo, float32, linspace,
+                   log, log2, meshgrid, nan_to_num, nansum, product,
                    random, ravel, split, vstack, exp)
 
 from scipy.spatial import cKDTree
@@ -16,7 +16,7 @@ from scipy.special import psi
 from sklearn.neighbors import KernelDensity
 
 __all__ = ['ent', 'ce']
-EPS = finfo(float).eps
+EPS = finfo(float32).eps
 
 
 def ent(n_bins, rng, method, *args):

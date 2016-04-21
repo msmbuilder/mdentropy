@@ -1,13 +1,13 @@
 from .entropy import ent, ce
 from ..utils import avgdigamma
 
-from numpy import finfo, log, nan_to_num, random, sqrt, vstack
+from numpy import finfo, float32, log, nan_to_num, random, sqrt, vstack
 
 from scipy.spatial import cKDTree
 from scipy.special import psi
 
 __all__ = ['mi', 'nmi', 'cmi', 'ncmi']
-EPS = finfo(float).eps
+EPS = finfo(float32).eps
 
 
 def mi(n_bins, x, y, rng=None, method='grassberger'):

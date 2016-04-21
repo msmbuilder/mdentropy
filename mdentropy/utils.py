@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import time
 
-from numpy import dtype, finfo, nan_to_num, random, unique, void
+from numpy import dtype, finfo, float32, nan_to_num, random, unique, void
 
 from scipy.spatial import cKDTree
 from scipy.special import digamma
@@ -10,7 +10,7 @@ from scipy.special import digamma
 
 __all__ = ['floor_threshold', 'shuffle', 'Timing', 'unique_row_count',
            'avgdigamma']
-EPS = finfo(float).eps
+EPS = finfo(float32).eps
 
 
 class Timing(object):
