@@ -1,10 +1,16 @@
 from .entropy import ent, ce
-import numpy as np
+from ..utils import avgdigamma
+
+from numpy import finfo, log, nan_to_num, random, sqrt, vstack
+
+from scipy.spatial import cKDTree
+from scipy.special import psi
 
 __all__ = ['mi', 'nmi', 'cmi', 'ncmi']
+EPS = finfo(float).eps
 
 
-def mi(nbins, x, y, rng=None, method='grassberger'):
+def mi(n_bins, x, y, rng=None, method='grassberger'):
     """Mutual information calculation
 
     Parameters
@@ -23,12 +29,33 @@ def mi(nbins, x, y, rng=None, method='grassberger'):
     -------
     entropy : float
     """
-    return (ent(nbins, [rng], method, x) +
-            ent(nbins, [rng], method, y) -
-            ent(nbins, 2 * [rng], method, x, y))
+    if method == 'knn':
+        return knn_mi(x, y, k=n_bins)
+
+    return (ent(n_bins, [rng], method, x) +
+            ent(n_bins, [rng], method, y) -
+            ent(n_bins, 2 * [rng], method, x, y))
 
 
-def nmi(nbins, x, y, rng=None, method='grassberger'):
+def knn_mi(x, y, k=3):
+    """ Mutual information of x and y
+        x, y should be a list of vectors, e.g. x = [[1.3], [3.7], [5.1], [2.4]]
+        if x is a one-dimensional scalar and we have four samples
+    """
+    # small noise to break degeneracy, see doc.
+
+    x += EPS * random.rand(x.shape[0], x.shape[1])
+    y += EPS * random.rand(y.shape[0], y.shape[1])
+    points = vstack((x, y)).T
+    # Find nearest neighbors in joint space, p=inf means max-norm
+    tree = cKDTree(points)
+    dvec = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in points]
+    a, b, c, d = (avgdigamma(x, dvec), avgdigamma(y, dvec),
+                  psi(k), psi(x.shape[0]))
+    return (-a - b + c + d) / log(2)
+
+
+def nmi(n_bins, x, y, rng=None, method='grassberger'):
     """Normalized mutual information calculation
 
     Parameters
@@ -47,12 +74,12 @@ def nmi(nbins, x, y, rng=None, method='grassberger'):
     -------
     entropy : float
     """
-    return np.nan_to_num(mi(nbins, x, y, method=method, rng=rng) /
-                         np.sqrt(ent(nbins, [rng], method, x) *
-                         ent(nbins, [rng], method, y)))
+    return nan_to_num(mi(n_bins, x, y, method=method, rng=rng) /
+                      sqrt(ent(n_bins, [rng], method, x) *
+                      ent(n_bins, [rng], method, y)))
 
 
-def cmi(nbins, x, y, z, rng=None, method='grassberger'):
+def cmi(n_bins, x, y, z, rng=None, method='grassberger'):
     """Conditional mutual information calculation
 
     Parameters
@@ -73,13 +100,35 @@ def cmi(nbins, x, y, z, rng=None, method='grassberger'):
     -------
     entropy : float
     """
-    return (ent(nbins, 2 * [rng], method, x, z) +
-            ent(nbins, 2 * [rng], method, y, z) -
-            ent(nbins, [rng], method, z) -
-            ent(nbins, 3 * [rng], method, x, y, z))
+    if method == 'knn':
+        return knn_cmi(x, y, z, k=n_bins)
+
+    return (ent(n_bins, 2 * [rng], method, x, z) +
+            ent(n_bins, 2 * [rng], method, y, z) -
+            ent(n_bins, [rng], method, z) -
+            ent(n_bins, 3 * [rng], method, x, y, z))
 
 
-def ncmi(nbins, x, y, z, rng=None, method='grassberger'):
+def knn_cmi(x, y, z, k=3):
+    """ Mutual information of x and y, conditioned on z
+        x, y, z should be a list of vectors, e.g. x = [[1.3], [3.7], [5.1], [2.4]]
+        if x is a one-dimensional scalar and we have four samples
+    """
+    # small noise to break degeneracy, see doc.
+    x += EPS * random.rand(x.shape[0], x.shape[1])
+    y += EPS * random.rand(y.shape[0], y.shape[1])
+    z += EPS * random.rand(z.shape[0], z.shape[1])
+    points = vstack((x, y)).T
+    # Find nearest neighbors in joint space, p=inf means max-norm
+    tree = cKDTree(points)
+    dvec = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in points]
+    a, b, c, d = (avgdigamma(vstack((x, z)).T, dvec),
+                  avgdigamma(vstack((y, z)).T, dvec),
+                  avgdigamma(z, dvec), psi(k))
+    return (-a - b + c + d) / log(2)
+
+
+def ncmi(n_bins, x, y, z, rng=None, method='grassberger'):
     """Normalized conditional mutual information calculation
 
     Parameters
@@ -100,6 +149,10 @@ def ncmi(nbins, x, y, z, rng=None, method='grassberger'):
     -------
     entropy : float
     """
-    return np.nan_to_num(1 + (ent(nbins, 2 * [rng], method, y, z) -
-                         ent(nbins, 3 * [rng], method, x, y, z)) /
-                         ce(nbins, x, z, rng=rng, method=method))
+
+    return (cmi(n_bins, x, y, z, rng=rng, method=method) /
+            ce(n_bins, x, z, rng=rng, method=method))
+
+    # return nan_to_num(1 + (ent(n_bins, 2 * [rng], method, y, z) -
+    #                   ent(n_bins, 3 * [rng], method, x, y, z)) /
+    #                   ce(n_bins, x, z, rng=rng, method=method))

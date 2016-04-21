@@ -4,7 +4,7 @@ from itertools import chain
 
 from numpy import ndarray
 from numpy import sum as npsum
-from numpy import (arange, bincount, diff, linspace, log, log2,
+from numpy import (arange, bincount, diff, finfo, linspace, log, log2,
                    meshgrid, nan_to_num, nansum, product,
                    random, ravel, split, vstack, exp)
 
@@ -16,6 +16,7 @@ from scipy.special import psi
 from sklearn.neighbors import KernelDensity
 
 __all__ = ['ent', 'ce']
+EPS = finfo(float).eps
 
 
 def ent(n_bins, rng, method, *args):
@@ -96,11 +97,11 @@ def knn_ent(*args, k=3):
     n_samples = data.shape[0]
     n_dims = data.shape[1]
 
-    intens = 1e-6  # small noise to break degeneracy, see doc.
-    data = [pt + intens * random.rand(n_dims) for pt in data]
+    data += EPS * random.rand(n_samples, n_dims)
     tree = cKDTree(data)
     nn = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in data]
     const = psi(n_samples) - psi(k) + n_dims * log(2)
+
     return (const + n_dims * log(nn).mean())/log(2)
 
 

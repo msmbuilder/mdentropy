@@ -2,10 +2,15 @@ from __future__ import print_function
 
 import time
 
-from numpy import dtype, nan_to_num, random, unique, void
+from numpy import dtype, finfo, nan_to_num, random, unique, void
+
+from scipy.spatial import cKDTree
+from scipy.special import digamma
 
 
-__all__ = ['floor_threshold', 'shuffle', 'Timing', 'unique_row_count']
+__all__ = ['floor_threshold', 'shuffle', 'Timing', 'unique_row_count',
+           'avgdigamma']
+EPS = finfo(float).eps
 
 
 class Timing(object):
@@ -78,3 +83,19 @@ def floor_threshold(arr, threshold=0.):
     new_arr = nan_to_num(arr.copy())
     new_arr[arr < threshold] = threshold
     return new_arr
+
+
+def avgdigamma(points, dvec):
+    # This part finds number of neighbors in some radius in the marginal space
+    # returns expectation value of <psi(nx)>
+    n_samples = points.shape[0]
+    tree = cKDTree(points)
+    avg = 0.
+    for i in range(n_samples):
+        dist = dvec[i]
+        # subtlety, we don't include the boundary point,
+        # but we are implicitly adding 1 to kraskov def bc center point is included
+        n_points = len(tree.query_ball_point(points[i], dist - EPS,
+                       p=float('inf')))
+        avg += digamma(n_points) / n_samples
+    return avg
