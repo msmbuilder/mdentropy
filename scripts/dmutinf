@@ -14,7 +14,7 @@ from mdentropy.metrics import DihedralMutualInformation
 def run(traj, nbins, iter, N, types, method):
     mi = DihedralMutualInformation(n_bins=nbins, types=types,
                                    method=method, threads=N,
-                                   rng=[-pi, pi])
+                                   rng=[-pi, pi], normed=False)
 
     M = mi.partial_transform(traj, shuffle=iter, verbose=True)
 
