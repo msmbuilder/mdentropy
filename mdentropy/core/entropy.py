@@ -41,6 +41,9 @@ def ent(n_bins, rng, method, *args):
                         else [arg]
                         for arg in args]))
 
+    if method == 'knn':
+        return knn_ent(*args, k=n_bins or 3)
+
     if rng is None or None in rng:
         rng = len(args)*[None]
 
@@ -50,8 +53,6 @@ def ent(n_bins, rng, method, *args):
 
     if method == 'kde':
         return kde_ent(rng, *args, grid_size=n_bins or 20)
-    if method == 'knn':
-        return knn_ent(*args, k=n_bins or 3)
 
     counts = symbolic(n_bins, rng, *args)
 
