@@ -90,9 +90,20 @@ def ce(n_bins, x, y, rng=None, method='knn'):
 
 
 def knn_ent(*args, k=3, boxsize=None):
-    """ The classic K-L k-nearest neighbor continuous entropy estimator
-        x should be a list of vectors, e.g. x = [[1.3], [3.7], [5.1], [2.4]]
-        if x is a one-dimensional scalar and we have four samples
+    """Entropy calculation
+
+    Parameters
+    ----------
+    args : numpy.ndarray, shape = (n_samples, ) or (n_features, n_samples)
+        Data of which to calculate entropy. Each array must have the same
+        number of samples.
+    k : int
+        Number of bins.
+    boxsize : float (or None)
+        Wrap space between [0., boxsize)
+    Returns
+    -------
+    entropy : float
     """
     data = vstack((args)).T
     n_samples = data.shape[0]

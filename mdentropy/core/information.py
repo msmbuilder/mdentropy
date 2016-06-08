@@ -39,9 +39,21 @@ def mi(n_bins, x, y, rng=None, method='knn'):
 
 
 def knn_mi(x, y, k=3,  boxsize=None):
-    """ Mutual information of x and y
-        x, y should be a list of vectors, e.g. x = [[1.3], [3.7], [5.1], [2.4]]
-        if x is a one-dimensional scalar and we have four samples
+    """Entropy calculation
+
+    Parameters
+    ----------
+    x : array_like, shape = (n_samples, )
+        Independent variable
+    y : array_like, shape = (n_samples, )
+        Independent variable
+    k : int
+        Number of bins.
+    boxsize : float (or None)
+        Wrap space between [0., boxsize)
+    Returns
+    -------
+    mi : float
     """
     # small noise to break degeneracy, see doc.
 
@@ -112,9 +124,23 @@ def cmi(n_bins, x, y, z, rng=None, method='knn'):
 
 
 def knn_cmi(x, y, z, k=3, boxsize=None):
-    """ Mutual information of x and y, conditioned on z
-        x, y, z should be a list of vectors, e.g. x = [[1.3], [3.7], [5.1], [2.4]]
-        if x is a one-dimensional scalar and we have four samples
+    """Entropy calculation
+
+    Parameters
+    ----------
+    x : array_like, shape = (n_samples, )
+        Conditioned variable
+    y : array_like, shape = (n_samples, )
+        Conditioned variable
+    z : array_like, shape = (n_samples, )
+        Conditional variable
+    k : int
+        Number of bins.
+    boxsize : float (or None)
+        Wrap space between [0., boxsize)
+    Returns
+    -------
+    cmi : float
     """
     # small noise to break degeneracy, see doc.
     x += EPS * random.rand(x.shape[0], x.shape[1])
@@ -149,7 +175,7 @@ def ncmi(n_bins, x, y, z, rng=None, method='knn'):
         Method used to calculate entropy.
     Returns
     -------
-    entropy : float
+    ncmi : float
     """
 
     return (cmi(n_bins, x, y, z, rng=rng, method=method) /

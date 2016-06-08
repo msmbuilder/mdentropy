@@ -77,7 +77,7 @@ class BaseMetric(object):
             yield self.partial_transform(traj, shuffle=shuffle,
                                          verbose=verbose)
 
-    def __init__(self, n_bins=24, rng=None, method='grassberger',
+    def __init__(self, n_bins=3, rng=None, method='knn',
                  threads=None):
         self.data = None
         self.shuffled_data = None

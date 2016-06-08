@@ -86,15 +86,27 @@ def floor_threshold(arr, threshold=0.):
 
 
 def avgdigamma(points, dvec):
-    # This part finds number of neighbors in some radius in the marginal space
-    # returns expectation value of <psi(nx)>
+    """Convenience function for finding expectation value of <psi(nx)> given
+    some number of neighbors in some radius in a marginal space.
+
+    Parameters
+    ----------
+    points : numpy.ndarray
+    dvec : array_like (n_points,)
+    Returns
+    -------
+    avgdigamma : float
+        expectation value of <psi(nx)>
+    """
     n_samples = points.shape[0]
     tree = cKDTree(points)
+
     avg = 0.
     for i in range(n_samples):
         dist = dvec[i]
-        # subtlety, we don't include the boundary point,
-        # but we are implicitly adding 1 to kraskov def bc center point is included
+        # we don't include the boundary point,
+        # but implicitly add 1 to kraskov def
+        # because center point should be included
         n_points = len(tree.query_ball_point(points[i], dist - EPS,
                        p=float('inf')))
         avg += digamma(n_points) / n_samples
