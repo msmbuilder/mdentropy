@@ -2,7 +2,7 @@ from .entropy import ent, ce
 from ..utils import avgdigamma
 
 from numpy import (atleast_2d, diff, finfo, float32, log, nan_to_num, random,
-                   sqrt, hstack)
+                   sqrt, hstack, vstack)
 
 from scipy.spatial import cKDTree
 from scipy.special import psi
@@ -62,7 +62,7 @@ def knn_mi(x, y, k=None,  boxsize=None):
     y += EPS * random.rand(*y.shape)
     points = hstack((x, y))
 
-    k = k if k else int(points.shape[0] * 0.1)
+    k = k if k else int(points.shape[0] * 0.01)
 
     # Find nearest neighbors in joint space, p=inf means max-norm
     tree = cKDTree(points, boxsize=boxsize)
@@ -152,13 +152,13 @@ def knn_cmi(x, y, z, k=None, boxsize=None):
     z += EPS * random.rand(*z.shape)
     points = hstack((x, y, z))
 
-    k = k if k else int(points.shape[0] * 0.1)
+    k = k if k else int(points.shape[0] * 0.01)
 
     # Find nearest neighbors in joint space, p=inf means max-norm
     tree = cKDTree(points, boxsize=boxsize)
     dvec = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in points]
-    a, b, c, d = (avgdigamma(hstack((x, z)), dvec),
-                  avgdigamma(hstack((y, z)), dvec),
+    a, b, c, d = (avgdigamma(vstack((x, z)).T, dvec),
+                  avgdigamma(vstack((y, z)).T, dvec),
                   avgdigamma(atleast_2d(z).reshape(points.shape[0], -1), dvec),
                   psi(k))
     return (-a - b + c + d) / log(2)

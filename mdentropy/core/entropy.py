@@ -108,7 +108,7 @@ def knn_ent(*args, k=None, boxsize=None):
     """
     data = vstack((args)).T
     n_samples = data.shape[0]
-    k = k if k else int(n_samples * 0.1)
+    k = k if k else int(n_samples * 0.01)
     n_dims = data.shape[1]
 
     data += EPS * random.rand(n_samples, n_dims)
