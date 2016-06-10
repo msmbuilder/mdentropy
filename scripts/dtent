@@ -39,7 +39,7 @@ def parse_cmdln():
                         dest='top', help='File containing topology.',
                         default=None)
     parser.add_argument('-b', '--n-bins', dest='nbins',
-                        help='Number of bins', default=3, type=int)
+                        help='Number of bins', default=None, type=int)
     parser.add_argument('-n', '--n-threads', dest='N',
                         help='Number of threads', default=None, type=int)
     parser.add_argument('-o', '--output', dest='out',
