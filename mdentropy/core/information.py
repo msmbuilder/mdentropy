@@ -62,7 +62,7 @@ def knn_mi(x, y, k=None,  boxsize=None):
     y += EPS * random.rand(*y.shape)
     points = hstack((x, y))
 
-    k = k if k else int(points.shape[0] * 0.01)
+    k = k if k else max(3, int(points.shape[0] * 0.01))
 
     # Find nearest neighbors in joint space, p=inf means max-norm
     tree = cKDTree(points, boxsize=boxsize)
@@ -152,7 +152,7 @@ def knn_cmi(x, y, z, k=None, boxsize=None):
     z += EPS * random.rand(*z.shape)
     points = hstack((x, y, z))
 
-    k = k if k else int(points.shape[0] * 0.01)
+    k = k if k else max(3, int(points.shape[0] * 0.01))
 
     # Find nearest neighbors in joint space, p=inf means max-norm
     tree = cKDTree(points, boxsize=boxsize)
