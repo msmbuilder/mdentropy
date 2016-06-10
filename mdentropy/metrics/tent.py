@@ -21,9 +21,9 @@ class TransferEntropyBase(BaseMetric):
         i, j = p
 
         return self._est(self.n_bins,
-                         self.data[j].values.T,
-                         self.shuffled_data[i].values.T,
-                         self.shuffled_data[j].values.T,
+                         self.data[j].values,
+                         self.shuffled_data[i].values,
+                         self.shuffled_data[j].values,
                          rng=self.rng,
                          method=self.method)
 

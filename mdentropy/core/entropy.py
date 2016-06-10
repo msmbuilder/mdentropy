@@ -4,9 +4,9 @@ from itertools import chain
 
 from numpy import ndarray
 from numpy import sum as npsum
-from numpy import (arange, bincount, diff, finfo, float32, linspace,
-                   log, log2, meshgrid, nan_to_num, nansum, product,
-                   random, ravel, split, vstack, exp)
+from numpy import (atleast_2d, arange, bincount, diff, finfo, float32,
+                   hsplit, linspace, log, log2, meshgrid, nan_to_num, nansum,
+                   product, random, ravel, vstack, exp)
 
 from scipy.spatial import cKDTree
 from scipy.stats import entropy as naive
@@ -28,22 +28,23 @@ def ent(n_bins, rng, method, *args):
         Number of bins.
     rng : list of lists
         List of min/max values to bin data over.
-    method : {'kde', 'chaowangjost', 'grassberger', None}
+    method : {'kde', 'chaowangjost', 'grassberger', 'knn', None}
         Method used to calculate entropy.
-    args : numpy.ndarray, shape = (n_samples, ) or (n_features, n_samples)
+    args : numpy.ndarray, shape = (n_samples, ) or (n_samples, n_dims)
         Data of which to calculate entropy. Each array must have the same
         number of samples.
     Returns
     -------
     entropy : float
     """
-    args = list(chain(*[map(ndarray.flatten, split(arg, arg.shape[0]))
+    args = [args] if isinstance(args, ndarray) else args
+    args = list(chain(*[map(ravel, hsplit(arg, arg.shape[1]))
                         if arg.ndim == 2
-                        else [arg]
+                        else atleast_2d(arg)
                         for arg in args]))
 
     if method == 'knn':
-        return knn_ent(*args, k=n_bins or 3,
+        return knn_ent(*args, k=n_bins,
                        boxsize=diff(rng).max() if rng[0] else None)
 
     if rng is None or None in rng:
@@ -73,9 +74,9 @@ def ce(n_bins, x, y, rng=None, method='knn'):
     ----------
     n_bins : int
         Number of bins.
-    x : array_like, shape = (n_samples, )
+    x : array_like, shape = (n_samples, n_dims)
         Conditioned variable.
-    y : array_like, shape = (n_samples, )
+    y : array_like, shape = (n_samples, n_dims)
         Conditional variable.
     rng : list
         List of min/max values to bin data over.
@@ -89,12 +90,12 @@ def ce(n_bins, x, y, rng=None, method='knn'):
             ent(n_bins, [rng], method, y))
 
 
-def knn_ent(*args, k=3, boxsize=None):
+def knn_ent(*args, k=None, boxsize=None):
     """Entropy calculation
 
     Parameters
     ----------
-    args : numpy.ndarray, shape = (n_samples, ) or (n_features, n_samples)
+    args : numpy.ndarray, shape = (n_samples, ) or (n_samples, n_dims)
         Data of which to calculate entropy. Each array must have the same
         number of samples.
     k : int
@@ -107,6 +108,7 @@ def knn_ent(*args, k=3, boxsize=None):
     """
     data = vstack((args)).T
     n_samples = data.shape[0]
+    k = k if k else int(n_samples * 0.1)
     n_dims = data.shape[1]
 
     data += EPS * random.rand(n_samples, n_dims)

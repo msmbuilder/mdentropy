@@ -20,8 +20,8 @@ class MutualInformationBase(BaseMetric):
         i, j = p
 
         return self._est(self.n_bins,
-                         self.data[i].values.T,
-                         self.shuffled_data[j].values.T,
+                         self.data[i].values,
+                         self.shuffled_data[j].values,
                          rng=self.rng,
                          method=self.method)
 
