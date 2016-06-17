@@ -16,7 +16,8 @@ def test_kde():
 
 
 def test_knn():
-    eq(ent(3, RNG, 'knn', a, b), TRUE_ENTROPY, rtol=.4)
+    eq(ent(3, [None], 'knn', a.reshape(-1, 1), b.reshape(-1, 1)), TRUE_ENTROPY,
+       rtol=.4)
 
 
 def test_chaowangjost():
