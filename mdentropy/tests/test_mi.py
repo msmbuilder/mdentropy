@@ -14,8 +14,8 @@ from msmbuilder.example_datasets import FsPeptide
 
 
 def test_mi():
-    a = np.random.uniform(low=-180., high=180, size=1000).reshape(-1, 1)
-    b = np.random.uniform(low=-180., high=180, size=1000).reshape(-1, 1)
+    a = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
+    b = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
 
     MI1 = mi(10, a, b)
     MI2 = mi(10, b, a)
@@ -24,8 +24,8 @@ def test_mi():
 
 
 def test_nmi():
-    a = np.random.uniform(low=-180., high=180, size=1000).reshape(-1, 1)
-    b = np.random.uniform(low=-180., high=180, size=1000).reshape(-1, 1)
+    a = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
+    b = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
 
     MI1 = nmi(24, a, b)
     MI2 = nmi(24, b, a)

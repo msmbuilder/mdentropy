@@ -14,9 +14,9 @@ from msmbuilder.example_datasets import FsPeptide
 
 
 def test_ncmi():
-    a = np.random.uniform(low=-180., high=180, size=1000).reshape(-1, 1)
-    b = np.random.uniform(low=-180., high=180, size=1000).reshape(-1, 1)
-    c = np.random.uniform(low=-180., high=180, size=1000).reshape(-1, 1)
+    a = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
+    b = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
+    c = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
 
     NCMI_REF = (cmi(10, a, b, c) /
                 ce(10, a, c))
