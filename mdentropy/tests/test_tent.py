@@ -14,13 +14,13 @@ from msmbuilder.example_datasets import FsPeptide
 
 
 def test_ncmi():
-    a = np.random.uniform(low=-180., high=180, size=1000)
-    b = np.random.uniform(low=-180., high=180, size=1000)
-    c = np.random.uniform(low=-180., high=180, size=1000)
+    a = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
+    b = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
+    c = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
 
-    NCMI_REF = (cmi(30, a, b, c, rng=[-180., 180.]) /
-                ce(30, a, c, rng=[-180., 180.]))
-    NCMI = ncmi(30, a, b, c, rng=[-180., 180.])
+    NCMI_REF = (cmi(10, a, b, c) /
+                ce(10, a, c))
+    NCMI = ncmi(10, a, b, c)
 
     eq(NCMI, NCMI_REF, 6)
 

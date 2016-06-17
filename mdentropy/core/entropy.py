@@ -4,15 +4,19 @@ from itertools import chain
 
 from numpy import ndarray
 from numpy import sum as npsum
-from numpy import (arange, bincount, diff, linspace, log, log2,
-                   meshgrid, nan_to_num, nansum, product, ravel, reshape,
-                   split, vstack)
+from numpy import (atleast_2d, arange, bincount, diff, finfo, float32,
+                   hsplit, linspace, log, log2, meshgrid, nan_to_num, nansum,
+                   product, random, ravel, vstack, exp)
 
+from scipy.spatial import cKDTree
 from scipy.stats import entropy as naive
-from scipy.stats.kde import gaussian_kde as kernel
 from scipy.special import psi
 
+
+from sklearn.neighbors import KernelDensity
+
 __all__ = ['ent', 'ce']
+EPS = finfo(float32).eps
 
 
 def ent(n_bins, rng, method, *args):
@@ -24,19 +28,24 @@ def ent(n_bins, rng, method, *args):
         Number of bins.
     rng : list of lists
         List of min/max values to bin data over.
-    method : {'kde', 'chaowangjost', 'grassberger', None}
+    method : {'kde', 'chaowangjost', 'grassberger', 'knn', None}
         Method used to calculate entropy.
-    args : numpy.ndarray, shape = (n_samples, ) or (n_features, n_samples)
+    args : numpy.ndarray, shape = (n_samples, ) or (n_samples, n_dims)
         Data of which to calculate entropy. Each array must have the same
         number of samples.
     Returns
     -------
     entropy : float
     """
-    args = list(chain(*[map(ndarray.flatten, split(arg, arg.shape[0]))
+    args = [args] if isinstance(args, ndarray) else args
+    args = list(chain(*[map(ravel, hsplit(arg, arg.shape[1]))
                         if arg.ndim == 2
-                        else [arg]
+                        else atleast_2d(arg)
                         for arg in args]))
+
+    if method == 'knn':
+        return knn_ent(*args, k=n_bins,
+                       boxsize=diff(rng).max() if rng[0] else None)
 
     if rng is None or None in rng:
         rng = len(args)*[None]
@@ -46,7 +55,7 @@ def ent(n_bins, rng, method, *args):
             rng[i] = (min(arg), max(arg))
 
     if method == 'kde':
-        return kde_ent(rng, *args, gride_size=n_bins or 20)
+        return kde_ent(rng, *args, grid_size=n_bins or 20)
 
     counts = symbolic(n_bins, rng, *args)
 
@@ -58,16 +67,16 @@ def ent(n_bins, rng, method, *args):
     return naive(counts)
 
 
-def ce(n_bins, x, y, rng=None, method='grassberger'):
+def ce(n_bins, x, y, rng=None, method='knn'):
     """Condtional entropy calculation
 
     Parameters
     ----------
     n_bins : int
         Number of bins.
-    x : array_like, shape = (n_samples, )
+    x : array_like, shape = (n_samples, n_dims)
         Conditioned variable.
-    y : array_like, shape = (n_samples, )
+    y : array_like, shape = (n_samples, n_dims)
         Conditional variable.
     rng : list
         List of min/max values to bin data over.
@@ -81,29 +90,52 @@ def ce(n_bins, x, y, rng=None, method='grassberger'):
             ent(n_bins, [rng], method, y))
 
 
-def kde_ent(rng, *args, gride_size=20):
-    """Entropy calculation using Gaussian kernel density estimation.
+def knn_ent(*args, k=None, boxsize=None):
+    """Entropy calculation
 
     Parameters
     ----------
-    rng : list of lists
-        List of min/max values for each dimention.
-    args : array_like, shape = (n_samples, )
+    args : numpy.ndarray, shape = (n_samples, ) or (n_samples, n_dims)
         Data of which to calculate entropy. Each array must have the same
         number of samples.
-    grid_size : int
-        Number of partitions along a dimension in the meshgrid.
+    k : int
+        Number of bins.
+    boxsize : float (or None)
+        Wrap space between [0., boxsize)
     Returns
     -------
     entropy : float
     """
-    n_dims = len(args)
-    data = vstack((args))
-    gkde = kernel(data)
-    space = [linspace(i[0], i[1], gride_size) for i in rng]
+    data = vstack((args)).T
+    n_samples = data.shape[0]
+    k = k if k else max(3, int(data.shape[0] * 0.01))
+    n_dims = data.shape[1]
+
+    data += EPS * random.rand(n_samples, n_dims)
+    tree = cKDTree(data, boxsize=boxsize)
+    nn = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in data]
+    const = psi(n_samples) - psi(k) + n_dims * log(2)
+
+    return (const + n_dims * log(nn).mean())/log(2)
+
+
+def kde_ent(rng, *args, grid_size=20, **kwargs):
+    """Kernel Density Estimation with Scikit-learn"""
+    data = vstack((args)).T
+    n_samples = data.shape[0]
+    n_dims = data.shape[1]
+
+    bandwidth = (n_samples * (n_dims + 2) / 4.)**(-1. / (n_dims + 4.))
+    kde_skl = KernelDensity(bandwidth=bandwidth, **kwargs)
+    kde_skl.fit(data)
+
+    space = [linspace(i[0], i[1], grid_size) for i in rng]
     grid = meshgrid(*tuple(space))
-    pr = reshape(gkde(vstack(map(ravel, grid))),
-                 n_dims * [gride_size])
+
+    # score_samples() returns the log-likelihood of the samples
+    log_pdf = kde_skl.score_samples(vstack(map(ravel, grid)).T)
+    pr = exp(log_pdf)
+
     return -nansum(pr * log2(pr)) * product(diff(space)[:, 0])
 
 

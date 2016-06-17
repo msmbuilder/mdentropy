@@ -12,7 +12,8 @@ from mdentropy.metrics import DihedralMutualInformation
 
 def run(traj, nbins, iter, N, types, method):
     mi = DihedralMutualInformation(n_bins=nbins, types=types,
-                                   method=method, threads=N)
+                                   method=method, threads=N,
+                                   normed=True)
 
     M = mi.partial_transform(traj, shuffle=iter, verbose=True)
 
@@ -31,7 +32,7 @@ def parse_cmdln():
     parser.add_argument('-t', '--topology', dest='top',
                         help='File containing topology.', default=None)
     parser.add_argument('-b', '--n-bins', dest='nbins',
-                        help='Number of bins', default=24, type=int)
+                        help='Number of bins', default=None, type=int)
     parser.add_argument('-n', '--n-threads', dest='N',
                         help='Number of threads to be used.',
                         default=None, type=int)
@@ -42,8 +43,8 @@ def parse_cmdln():
     parser.add_argument('-m', '--method', dest='method',
                         help='Entropy estimate method.',
                         choices=['chaowangjost', 'grassberger', 'kde',
-                                 'naive'],
-                        default='grassberger')
+                                 'knn', 'naive'],
+                        default='knn')
     parser.add_argument('-d', '--dihedrals', dest='dihedrals',
                         help='Dihedral angles to analyze.',
                         nargs='+',

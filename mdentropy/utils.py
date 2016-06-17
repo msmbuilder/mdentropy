@@ -2,10 +2,15 @@ from __future__ import print_function
 
 import time
 
-from numpy import dtype, random, unique, void
+from numpy import dtype, finfo, float32, nan_to_num, random, unique, void
+
+from scipy.spatial import cKDTree
+from scipy.special import digamma
 
 
-__all__ = ['floor_threshold', 'shuffle', 'Timing', 'unique_row_count']
+__all__ = ['floor_threshold', 'shuffle', 'Timing', 'unique_row_count',
+           'avgdigamma']
+EPS = finfo(float32).eps
 
 
 class Timing(object):
@@ -75,6 +80,34 @@ def floor_threshold(arr, threshold=0.):
     new_arr : numpy.ndarray
         thresholded array
     """
-    new_arr = arr.copy()
+    new_arr = nan_to_num(arr.copy())
     new_arr[arr < threshold] = threshold
     return new_arr
+
+
+def avgdigamma(points, dvec):
+    """Convenience function for finding expectation value of <psi(nx)> given
+    some number of neighbors in some radius in a marginal space.
+
+    Parameters
+    ----------
+    points : numpy.ndarray
+    dvec : array_like (n_points,)
+    Returns
+    -------
+    avgdigamma : float
+        expectation value of <psi(nx)>
+    """
+    n_samples = points.shape[0]
+    tree = cKDTree(points)
+
+    avg = 0.
+    for i in range(n_samples):
+        dist = dvec[i]
+        # we don't include the boundary point,
+        # but implicitly add 1 to kraskov def
+        # because center point should be included
+        n_points = len(tree.query_ball_point(points[i], dist - EPS,
+                       p=float('inf')))
+        avg += digamma(n_points) / n_samples
+    return avg

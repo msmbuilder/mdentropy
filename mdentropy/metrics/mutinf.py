@@ -20,25 +20,21 @@ class MutualInformationBase(BaseMetric):
         i, j = p
 
         return self._est(self.n_bins,
-                         self.data[i].values.T,
-                         self.shuffled_data[j].values.T,
+                         self.data[i].values,
+                         self.shuffled_data[j].values,
                          rng=self.rng,
                          method=self.method)
 
     def _exec(self):
         M = np.zeros((self.labels.size, self.labels.size))
-        triu = np.zeros((int((self.labels.size ** 2 + self.labels.size) / 2),))
 
         with closing(Pool(processes=self.n_threads)) as pool:
             values = pool.map(self._partial_mutinf,
                               combinations(self.labels, 2))
             pool.terminate()
 
-        for i, value in enumerate(values):
-            triu[i] = value
-
         idx = np.triu_indices_from(M)
-        M[idx] = triu
+        M[idx] = values
 
         return M + M.T - np.diag(M.diagonal())
 

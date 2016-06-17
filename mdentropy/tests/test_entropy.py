@@ -15,6 +15,11 @@ def test_kde():
     eq(ent(8, RNG, 'kde', a, b), TRUE_ENTROPY, rtol=.4)
 
 
+def test_knn():
+    eq(ent(3, [None], 'knn', a.reshape(-1, 1), b.reshape(-1, 1)), TRUE_ENTROPY,
+       rtol=.4)
+
+
 def test_chaowangjost():
     eq(ent(8, RNG, 'chaowangjost', a, b), TRUE_ENTROPY, rtol=.2)
 

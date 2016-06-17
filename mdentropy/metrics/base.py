@@ -20,13 +20,16 @@ class BaseMetric(object):
     def _extract_data(self, traj):
         pass
 
-    def _exec(self):
-        pass
-
     def _before_exec(self, traj):
         self.data = self._extract_data(traj)
         self.shuffled_data = self.data
         self.labels = np.unique(self.data.columns.levels[0])
+
+    def _exec(self):
+        pass
+
+    def _floored_exec(self):
+        return floor_threshold(self._exec())
 
     def partial_transform(self, traj, shuffle=0, verbose=False):
         """Transform a single mdtraj.Trajectory into an array of metric scores.
@@ -45,12 +48,12 @@ class BaseMetric(object):
             Scoring matrix
         """
         self._before_exec(traj)
-        result = self._exec()
+        result = self._floored_exec()
         correction = np.zeros_like(result)
         for i in range(shuffle):
             with Timing(i, verbose=verbose):
                 self._shuffle()
-                correction += self._exec()
+                correction += self._floored_exec()
 
         return floor_threshold(result - np.nan_to_num(correction / shuffle))
 
@@ -74,7 +77,7 @@ class BaseMetric(object):
             yield self.partial_transform(traj, shuffle=shuffle,
                                          verbose=verbose)
 
-    def __init__(self, n_bins=24, rng=None, method='grassberger',
+    def __init__(self, n_bins=3, rng=None, method='knn',
                  threads=None):
         self.data = None
         self.shuffled_data = None
@@ -100,12 +103,13 @@ class DihedralBaseMetric(BaseMetric):
             summary = featurizer.describe_features(traj)
             idx = [[traj.topology.atom(ati).residue.index
                     for ati in item['atominds']][1] for item in summary]
-            data.append(pd.DataFrame(180. * angles / np.pi,
-                                     columns=[idx, len(idx) * [tp]]))
+            data.append(pd.DataFrame((angles + np.pi) % (2. * np.pi),
+                        columns=[idx, len(idx) * [tp]]))
         return pd.concat(data, axis=1)
 
-    def __init__(self, types=None, **kwargs):
+    def __init__(self, types=None, rng=None, **kwargs):
         self.types = types or ['phi', 'psi']
+        self.rng = rng or [0., 2 * np.pi]
 
         super(DihedralBaseMetric, self).__init__(**kwargs)
 

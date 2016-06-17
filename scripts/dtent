@@ -12,7 +12,8 @@ from mdentropy.metrics import DihedralTransferEntropy
 
 def run(past, current, nbins, iter, N, types, method):
     tent = DihedralTransferEntropy(n_bins=nbins, types=types,
-                                   method=method, threads=N)
+                                   method=method, threads=N,
+                                   normed=True)
 
     T = tent.partial_transform((past, current), shuffle=iter, verbose=True)
 
@@ -38,7 +39,7 @@ def parse_cmdln():
                         dest='top', help='File containing topology.',
                         default=None)
     parser.add_argument('-b', '--n-bins', dest='nbins',
-                        help='Number of bins', default=24, type=int)
+                        help='Number of bins', default=None, type=int)
     parser.add_argument('-n', '--n-threads', dest='N',
                         help='Number of threads', default=None, type=int)
     parser.add_argument('-o', '--output', dest='out',
@@ -46,8 +47,8 @@ def parse_cmdln():
     parser.add_argument('-m', '--method', dest='method',
                         help='Entropy estimate method.',
                         choices=['chaowangjost', 'grassberger', 'kde',
-                                 'naive'],
-                        default='grassberger')
+                                 'knn', 'naive'],
+                        default='knn')
     parser.add_argument('-d', '--dihedrals', dest='dihedrals',
                         help='Dihedral angles to analyze.',
                         nargs='+',
