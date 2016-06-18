@@ -5,7 +5,7 @@ import tempfile
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
-from ..core import cmi, ce, ncmi
+from ..core import cmutinf, centropy, ncmutinf
 from ..metrics import (AlphaAngleTransferEntropy, ContactTransferEntropy,
                        DihedralTransferEntropy)
 
@@ -13,14 +13,14 @@ import mdtraj as md
 from msmbuilder.example_datasets import FsPeptide
 
 
-def test_ncmi():
+def test_ncmutinf():
     a = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
     b = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
     c = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
 
-    NCMI_REF = (cmi(10, a, b, c) /
-                ce(10, a, c))
-    NCMI = ncmi(10, a, b, c)
+    NCMI_REF = (cmutinf(10, a, b, c) /
+                centropy(10, a, c))
+    NCMI = ncmutinf(10, a, b, c)
 
     eq(NCMI, NCMI_REF, 6)
 

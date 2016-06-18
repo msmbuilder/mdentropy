@@ -5,7 +5,7 @@ import tempfile
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
-from ..core import mi, nmi
+from ..core import mutinf, nmutinf
 from ..metrics import (AlphaAngleMutualInformation, ContactMutualInformation,
                        DihedralMutualInformation)
 
@@ -13,27 +13,27 @@ import mdtraj as md
 from msmbuilder.example_datasets import FsPeptide
 
 
-def test_mi():
+def test_mutinf():
     a = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
     b = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
 
-    MI1 = mi(10, a, b)
-    MI2 = mi(10, b, a)
+    MI1 = mutinf(10, a, b)
+    MI2 = mutinf(10, b, a)
 
     eq(MI1, MI2, 6)
 
 
-def test_nmi():
+def test_nmutinf():
     a = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
     b = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
 
-    MI1 = nmi(24, a, b)
-    MI2 = nmi(24, b, a)
+    MI1 = nmutinf(24, a, b)
+    MI2 = nmutinf(24, b, a)
 
     eq(MI1, MI2, 6)
 
 
-def test_fs_mi():
+def test_fs_mutinf():
 
     cwd = os.path.abspath(os.curdir)
     dirname = tempfile.mkdtemp()

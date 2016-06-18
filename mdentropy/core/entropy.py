@@ -15,11 +15,11 @@ from scipy.special import psi
 
 from sklearn.neighbors import KernelDensity
 
-__all__ = ['ent', 'ce']
+__all__ = ['entropy', 'centropy']
 EPS = finfo(float32).eps
 
 
-def ent(n_bins, rng, method, *args):
+def entropy(n_bins, rng, method, *args):
     """Entropy calculation
 
     Parameters
@@ -44,18 +44,18 @@ def ent(n_bins, rng, method, *args):
                         for arg in args]))
 
     if method == 'knn':
-        return knn_ent(*args, k=n_bins,
-                       boxsize=diff(rng).max() if rng[0] else None)
+        return knn_entropy(*args, k=n_bins,
+                           boxsize=diff(rng).max() if rng[0] else None)
 
     if rng is None or None in rng:
-        rng = len(args)*[None]
+        rng = len(args) * [None]
 
     for i, arg in enumerate(args):
         if rng[i] is None:
             rng[i] = (min(arg), max(arg))
 
     if method == 'kde':
-        return kde_ent(rng, *args, grid_size=n_bins or 20)
+        return kde_entropy(rng, *args, grid_size=n_bins or 20)
 
     counts = symbolic(n_bins, rng, *args)
 
@@ -67,7 +67,7 @@ def ent(n_bins, rng, method, *args):
     return naive(counts)
 
 
-def ce(n_bins, x, y, rng=None, method='knn'):
+def centropy(n_bins, x, y, rng=None, method='knn'):
     """Condtional entropy calculation
 
     Parameters
@@ -86,11 +86,11 @@ def ce(n_bins, x, y, rng=None, method='knn'):
     -------
     entropy : float
     """
-    return (ent(n_bins, 2 * [rng], method, x, y) -
-            ent(n_bins, [rng], method, y))
+    return (entropy(n_bins, 2 * [rng], method, x, y) -
+            entropy(n_bins, [rng], method, y))
 
 
-def knn_ent(*args, k=None, boxsize=None):
+def knn_entropy(*args, k=None, boxsize=None):
     """Entropy calculation
 
     Parameters
@@ -113,13 +113,14 @@ def knn_ent(*args, k=None, boxsize=None):
 
     data += EPS * random.rand(n_samples, n_dims)
     tree = cKDTree(data, boxsize=boxsize)
-    nn = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in data]
+    nneighbor = [tree.query(point, k + 1, p=float('inf'))[0][k]
+                 for point in data]
     const = psi(n_samples) - psi(k) + n_dims * log(2)
 
-    return (const + n_dims * log(nn).mean())/log(2)
+    return (const + n_dims * log(nneighbor).mean())/log(2)
 
 
-def kde_ent(rng, *args, grid_size=20, **kwargs):
+def kde_entropy(rng, *args, grid_size=20, **kwargs):
     """Kernel Density Estimation with Scikit-learn"""
     data = vstack((args)).T
     n_samples = data.shape[0]
@@ -134,9 +135,9 @@ def kde_ent(rng, *args, grid_size=20, **kwargs):
 
     # score_samples() returns the log-likelihood of the samples
     log_pdf = kde_skl.score_samples(vstack(map(ravel, grid)).T)
-    pr = exp(log_pdf)
+    prob = exp(log_pdf)
 
-    return -nansum(pr * log2(pr)) * product(diff(space)[:, 0])
+    return -nansum(prob * log2(prob)) * product(diff(space)[:, 0])
 
 
 def grassberger(counts):

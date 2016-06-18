@@ -1,4 +1,4 @@
-from .entropy import ent, ce
+from .entropy import entropy, centropy
 from ..utils import avgdigamma
 
 from numpy import (atleast_2d, diff, finfo, float32, log, nan_to_num, random,
@@ -7,11 +7,11 @@ from numpy import (atleast_2d, diff, finfo, float32, log, nan_to_num, random,
 from scipy.spatial import cKDTree
 from scipy.special import psi
 
-__all__ = ['mi', 'nmi', 'cmi', 'ncmi']
+__all__ = ['mutinf', 'nmutinf', 'cmutinf', 'ncmutinf']
 EPS = finfo(float32).eps
 
 
-def mi(n_bins, x, y, rng=None, method='knn'):
+def mutinf(n_bins, x, y, rng=None, method='knn'):
     """Mutual information calculation
 
     Parameters
@@ -31,15 +31,15 @@ def mi(n_bins, x, y, rng=None, method='knn'):
     entropy : float
     """
     if method == 'knn':
-        return knn_mi(x, y, k=n_bins,
-                      boxsize=diff(rng).max() if rng else None)
+        return knn_mutinf(x, y, k=n_bins,
+                          boxsize=diff(rng).max() if rng else None)
 
-    return (ent(n_bins, [rng], method, x) +
-            ent(n_bins, [rng], method, y) -
-            ent(n_bins, 2 * [rng], method, x, y))
+    return (entropy(n_bins, [rng], method, x) +
+            entropy(n_bins, [rng], method, y) -
+            entropy(n_bins, 2 * [rng], method, x, y))
 
 
-def knn_mi(x, y, k=None,  boxsize=None):
+def knn_mutinf(x, y, k=None, boxsize=None):
     """Entropy calculation
 
     Parameters
@@ -73,7 +73,7 @@ def knn_mi(x, y, k=None,  boxsize=None):
     return (-a - b + c + d) / log(2)
 
 
-def nmi(n_bins, x, y, rng=None, method='knn'):
+def nmutinf(n_bins, x, y, rng=None, method='knn'):
     """Normalized mutual information calculation
 
     Parameters
@@ -92,12 +92,12 @@ def nmi(n_bins, x, y, rng=None, method='knn'):
     -------
     entropy : float
     """
-    return nan_to_num(mi(n_bins, x, y, method=method, rng=rng) /
-                      sqrt(ent(n_bins, [rng], method, x) *
-                      ent(n_bins, [rng], method, y)))
+    return nan_to_num(mutinf(n_bins, x, y, method=method, rng=rng) /
+                      sqrt(entropy(n_bins, [rng], method, x) *
+                      entropy(n_bins, [rng], method, y)))
 
 
-def cmi(n_bins, x, y, z, rng=None, method='knn'):
+def cmutinf(n_bins, x, y, z, rng=None, method='knn'):
     """Conditional mutual information calculation
 
     Parameters
@@ -119,15 +119,15 @@ def cmi(n_bins, x, y, z, rng=None, method='knn'):
     entropy : float
     """
     if method == 'knn':
-        return knn_cmi(x, y, z, k=n_bins,
-                       boxsize=diff(rng).max() if rng else None)
+        return knn_cmutinf(x, y, z, k=n_bins,
+                           boxsize=diff(rng).max() if rng else None)
 
-    return (ce(n_bins, x, z, rng=rng, method=method) +
-            ent(n_bins, 2 * [rng], method, y, z) -
-            ent(n_bins, 3 * [rng], method, x, y, z))
+    return (centropy(n_bins, x, z, rng=rng, method=method) +
+            entropy(n_bins, 2 * [rng], method, y, z) -
+            entropy(n_bins, 3 * [rng], method, x, y, z))
 
 
-def knn_cmi(x, y, z, k=None, boxsize=None):
+def knn_cmutinf(x, y, z, k=None, boxsize=None):
     """Entropy calculation
 
     Parameters
@@ -164,7 +164,7 @@ def knn_cmi(x, y, z, k=None, boxsize=None):
     return (-a - b + c + d) / log(2)
 
 
-def ncmi(n_bins, x, y, z, rng=None, method='knn'):
+def ncmutinf(n_bins, x, y, z, rng=None, method='knn'):
     """Normalized conditional mutual information calculation
 
     Parameters
@@ -186,5 +186,5 @@ def ncmi(n_bins, x, y, z, rng=None, method='knn'):
     ncmi : float
     """
 
-    return (cmi(n_bins, x, y, z, rng=rng, method=method) /
-            ce(n_bins, x, z, rng=rng, method=method))
+    return (cmutinf(n_bins, x, y, z, rng=rng, method=method) /
+            centropy(n_bins, x, z, rng=rng, method=method))

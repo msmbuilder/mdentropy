@@ -1,4 +1,4 @@
-from ..core import cmi, ncmi
+from ..core import cmutinf, ncmutinf
 from .base import (AlphaAngleBaseMetric, ContactBaseMetric, DihedralBaseMetric,
                    BaseMetric)
 
@@ -42,7 +42,7 @@ class TransferEntropyBase(BaseMetric):
         self.labels = np.unique(self.data.columns.levels[0])
 
     def __init__(self, normed=True, **kwargs):
-        self._est = ncmi if normed else cmi
+        self._est = ncmutinf if normed else cmutinf
         self.partial_transform.__func__.__doc__ = """
         Partial transform a mdtraj.Trajectory into an n_residue by n_residue
             matrix of transfer entropy scores.

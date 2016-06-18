@@ -1,4 +1,4 @@
-from ..core import ent
+from ..core import entropy
 
 import numpy as np
 from numpy.testing import assert_allclose as eq
@@ -12,25 +12,25 @@ RNG = ((a.min(), a.max()), (b.min(), b.max()))
 
 
 def test_kde():
-    eq(ent(8, RNG, 'kde', a, b), TRUE_ENTROPY, rtol=.4)
+    eq(entropy(8, RNG, 'kde', a, b), TRUE_ENTROPY, rtol=.4)
 
 
 def test_knn():
-    eq(ent(3, [None], 'knn', a.reshape(-1, 1), b.reshape(-1, 1)), TRUE_ENTROPY,
-       rtol=.4)
+    eq(entropy(3, [None], 'knn', a.reshape(-1, 1), b.reshape(-1, 1)),
+       TRUE_ENTROPY, rtol=.4)
 
 
 def test_chaowangjost():
-    eq(ent(8, RNG, 'chaowangjost', a, b), TRUE_ENTROPY, rtol=.2)
+    eq(entropy(8, RNG, 'chaowangjost', a, b), TRUE_ENTROPY, rtol=.2)
 
 
 def test_grassberger():
-    eq(ent(8, RNG, 'grassberger', a, b), TRUE_ENTROPY, rtol=.2)
+    eq(entropy(8, RNG, 'grassberger', a, b), TRUE_ENTROPY, rtol=.2)
 
 
 def test_adaptive():
-    eq(ent(None, RNG, 'grassberger', a, b), TRUE_ENTROPY, rtol=.4)
+    eq(entropy(None, RNG, 'grassberger', a, b), TRUE_ENTROPY, rtol=.4)
 
 
 def test_naive():
-    eq(ent(8, RNG, None, a, b), TRUE_ENTROPY, rtol=.2)
+    eq(entropy(8, RNG, None, a, b), TRUE_ENTROPY, rtol=.2)
