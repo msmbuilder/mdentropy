@@ -1,4 +1,4 @@
-from ..core import mi, nmi
+from ..core import mutinf, nmutinf
 from .base import (AlphaAngleBaseMetric, ContactBaseMetric, DihedralBaseMetric,
                    BaseMetric)
 
@@ -39,7 +39,7 @@ class MutualInformationBase(BaseMetric):
         return M + M.T - np.diag(M.diagonal())
 
     def __init__(self, normed=True, **kwargs):
-        self._est = nmi if normed else mi
+        self._est = nmutinf if normed else mutinf
         self.partial_transform.__func__.__doc__ = """
         Partial transform a mdtraj.Trajectory into an n_residue by n_residue
             matrix of mutual information scores.
