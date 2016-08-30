@@ -67,7 +67,7 @@ def entropy(n_bins, rng, method, *args):
     return naive(counts)
 
 
-def centropy(n_bins, x, y, rng=None, method='knn'):
+def centropy(n_bins, x, y, rng=None, method='grassberger'):
     """Condtional entropy calculation
 
     Parameters
