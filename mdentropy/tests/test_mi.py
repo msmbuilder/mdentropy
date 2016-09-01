@@ -1,7 +1,3 @@
-import os
-import shutil
-import tempfile
-
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
@@ -9,13 +5,14 @@ from ..core import mutinf, nmutinf
 from ..metrics import (AlphaAngleMutualInformation, ContactMutualInformation,
                        DihedralMutualInformation)
 
-import mdtraj as md
 from msmbuilder.example_datasets import FsPeptide
+
+rs = np.random.RandomState(42)
 
 
 def test_mutinf():
-    a = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
-    b = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
+    a = rs.uniform(low=0., high=360., size=1000).reshape(-1, 1)
+    b = rs.uniform(low=0., high=360., size=1000).reshape(-1, 1)
 
     MI1 = mutinf(10, a, b)
     MI2 = mutinf(10, b, a)
@@ -24,8 +21,8 @@ def test_mutinf():
 
 
 def test_nmutinf():
-    a = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
-    b = np.random.uniform(low=0., high=360., size=1000).reshape(-1, 1)
+    a = rs.uniform(low=0., high=360., size=1000).reshape(-1, 1)
+    b = rs.uniform(low=0., high=360., size=1000).reshape(-1, 1)
 
     MI1 = nmutinf(24, a, b)
     MI2 = nmutinf(24, b, a)
@@ -35,26 +32,15 @@ def test_nmutinf():
 
 def test_fs_mutinf():
 
-    cwd = os.path.abspath(os.curdir)
-    dirname = tempfile.mkdtemp()
-    FsPeptide(dirname).get()
+    traj = FsPeptide().get().trajectories[0]
 
-    try:
-        os.chdir(dirname)
+    idx = [at.index for at in traj.topology.atoms
+           if at.residue.index in [3, 4, 5, 6, 7, 8]]
+    traj = traj.atom_slice(atom_indices=idx)[::100]
 
-        top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
-        idx = [at.index for at in top.topology.atoms
-               if at.residue.index in [3, 4, 5, 6, 7, 8]]
-        traj = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=100,
-                       top=top, atom_indices=idx)
-
-        yield _test_mi_alpha, traj
-        yield _test_mi_contact, traj
-        yield _test_mi_dihedral, traj
-
-    finally:
-        os.chdir(cwd)
-        shutil.rmtree(dirname)
+    yield _test_mi_alpha, traj
+    yield _test_mi_contact, traj
+    yield _test_mi_dihedral, traj
 
 
 def _test_mi_alpha(traj):

@@ -1,7 +1,3 @@
-import os
-import shutil
-import tempfile
-
 import numpy as np
 from numpy.testing import assert_almost_equal as eq
 
@@ -9,14 +5,15 @@ from ..core import cmutinf, centropy, ncmutinf
 from ..metrics import (AlphaAngleTransferEntropy, ContactTransferEntropy,
                        DihedralTransferEntropy)
 
-import mdtraj as md
 from msmbuilder.example_datasets import FsPeptide
+
+rs = np.random.RandomState(42)
 
 
 def test_ncmutinf():
-    a = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
-    b = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
-    c = np.random.uniform(low=0, high=360, size=1000).reshape(-1, 1)
+    a = rs.uniform(low=0, high=360, size=1000).reshape(-1, 1)
+    b = rs.uniform(low=0, high=360, size=1000).reshape(-1, 1)
+    c = rs.uniform(low=0, high=360, size=1000).reshape(-1, 1)
 
     NCMI_REF = (cmutinf(10, a, b, c) /
                 centropy(10, a, c))
@@ -27,29 +24,19 @@ def test_ncmutinf():
 
 def test_fs_tent():
 
-    cwd = os.path.abspath(os.curdir)
-    dirname = tempfile.mkdtemp()
-    FsPeptide(dirname).get()
+    traj1, traj2 = FsPeptide().get().trajectories[:2]
 
-    try:
-        os.chdir(dirname)
+    idx = [at.index for at in traj1.topology.atoms
+           if at.residue.index in [3, 4, 5, 6, 7, 8]]
 
-        top = md.load(dirname + '/fs_peptide/fs-peptide.pdb')
-        idx = [at.index for at in top.topology.atoms
-               if at.residue.index in [3, 4, 5, 6, 7, 8]]
-        traj1 = md.load(dirname + '/fs_peptide/trajectory-1.xtc', stride=100,
-                        top=top, atom_indices=idx)
-        traj2 = md.load(dirname + '/fs_peptide/trajectory-2.xtc', stride=100,
-                        top=top, atom_indices=idx)
-        traj = (traj1, traj2)
+    traj1 = traj1.atom_slice(atom_indices=idx)[::100]
+    traj2 = traj2.atom_slice(atom_indices=idx)[::100]
 
-        yield _test_tent_alpha, traj
-        yield _test_tent_contact, traj
-        yield _test_tent_dihedral, traj
+    traj = (traj1, traj2)
 
-    finally:
-        os.chdir(cwd)
-        shutil.rmtree(dirname)
+    yield _test_tent_alpha, traj
+    yield _test_tent_contact, traj
+    yield _test_tent_dihedral, traj
 
 
 def _test_tent_alpha(traj):

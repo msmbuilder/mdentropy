@@ -1,37 +1,78 @@
-"""MDEntropy: Analyze correlated motions in MD trajectories with only a few
- lines of Python code.
+"""
+MDEntropy: Analyze correlated motions in MD trajectories with only a few
+ lines of Python.
 
 MDEntropy is a python library that allows users to perform
  information-theoretic analyses on molecular dynamics (MD) trajectories.
 """
 
+import sys
+import subprocess
+
+from distutils.spawn import find_executable
 from setuptools import setup, find_packages
+from basesetup import write_version_py
 
-classifiers = """\
-    Development Status :: 3 - Alpha
-    Intended Audience :: Science/Research
-    License :: OSI Approved :: Apache Software License
-    Programming Language :: Python
-    Programming Language :: Python :: 3.5
-    Operating System :: Unix
-    Operating System :: MacOS
-    Operating System :: Microsoft :: Windows
-    Topic :: Scientific/Engineering
-    Topic :: Scientific/Engineering :: Information Analysis"""
+NAME = "mdentropy"
+VERSION = "0.3.0dev"
+ISRELEASED = False
+__version__ = VERSION
 
-setup(
-    name="mdentropy",
-    version="0.1",
-    packages=find_packages(),
-    scripts=['./scripts/dmutinf', './scripts/dtent'],
-    zip_safe=True,
-    platforms=["Windows", "Linux", "Mac OS-X", "Unix"],
-    classifiers=[e.strip() for e in classifiers.splitlines()],
-    author="Carlos Xavier Hernandez",
-    author_email="cxh@stanford.edu",
-    description="Analyze correlated motions in MD trajectories with only "
-                "a few lines of Python code.",
-    license="MIT",
-    keywords="molecular dynamics entropy analysis",
-    url="http://github.com/cxhernandez/mdentropy"
-)
+
+def readme_to_rst():
+    pandoc = find_executable('pandoc')
+    if pandoc is None:
+        raise RuntimeError("Turning the readme into a description requires "
+                           "pandoc.")
+    long_description = subprocess.check_output(
+        [pandoc, 'README.md', '-t', 'rst'])
+    short_description = long_description.split('\n\n')[1]
+    return {
+        'description': short_description,
+        'long_description': long_description,
+    }
+
+
+def main(**kwargs):
+
+    write_version_py(VERSION, ISRELEASED, 'mdentropy/version.py')
+
+    setup(
+        name=NAME,
+        version=VERSION,
+        platforms=("Windows", "Linux", "Mac OS-X", "Unix",),
+        classifiers=(
+            'Intended Audience :: Science/Research',
+            'License :: OSI Approved :: MIT License',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.5',
+            'Operating System :: Unix',
+            'Operating System :: MacOS',
+            'Operating System :: Microsoft :: Windows',
+            'Topic :: Information Analysis',
+        ),
+        keywords="molecular dynamics entropy analysis",
+        author="Carlos Xavier Hernández",
+        author_email="cxh@stanford.edu",
+        url='https://github.com/msmbuilder/%s' % NAME,
+        download_url='https://github.com/msmbuilder/%s/tarball/master' % NAME,
+        license='MIT',
+        packages=find_packages(),
+        scripts=['./scripts/dmutinf', './scripts/dtent'],
+        include_package_data=True,
+        package_data={
+            '': ['README.md',
+                 'requirements.txt'],
+        },
+        zip_safe=False,
+        **kwargs
+    )
+
+
+if __name__ == '__main__':
+    kwargs = {}
+    if any(e in sys.argv for e in ('upload', 'register', 'sdist')):
+        kwargs = readme_to_rst()
+    main(**kwargs)

@@ -1,21 +1,23 @@
-language: python
+language: c
+sudo: false
 
-before_install:
-  - sudo apt-get update
-  - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  - conda install numpy scipy pandas scikit-learn nose
-  - conda install -c omnia mdtraj msmbuilder nose-timer
+env:
+    matrix:
+        - CONDA_PY=3.4
+        - CONDA_PY=3.5
+
+branches:
+  only:
+    - master
 
 install:
-  - python setup.py install
+    - source devtools/travis-ci/install_miniconda.sh
+    - conda config --add channels omnia
+    - conda install -yq python-coveralls
 
 script:
-  - nosetests -v --with-timer
+    - conda build --quiet devtools/conda-recipe
 
 after_success:
-  - echo 'after_success'
+  - cp $HOME/miniconda3/conda-bld/test-tmp_dir/.coverage .
+  - coveralls
