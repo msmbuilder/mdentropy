@@ -55,6 +55,7 @@ class TransferEntropyBase(BaseMetric):
                 Number of shuffle iterations (default: 0)
             verbose : bool
                 Whether to display performance
+
             Returns
             -------
             result : np.ndarray, shape = (n_residue, n_residue)
@@ -66,7 +67,7 @@ class TransferEntropyBase(BaseMetric):
 
 class AlphaAngleTransferEntropy(AlphaAngleBaseMetric, TransferEntropyBase):
 
-    """Mutual information calculations for alpha angles"""
+    """Transfer entropy calculations for alpha angles"""
 
 
 class ContactTransferEntropy(ContactBaseMetric, TransferEntropyBase):

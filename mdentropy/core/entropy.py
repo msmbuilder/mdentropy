@@ -33,6 +33,7 @@ def entropy(n_bins, rng, method, *args):
     args : numpy.ndarray, shape = (n_samples, ) or (n_samples, n_dims)
         Data of which to calculate entropy. Each array must have the same
         number of samples.
+
     Returns
     -------
     entropy : float
@@ -68,7 +69,8 @@ def entropy(n_bins, rng, method, *args):
 
 
 def centropy(n_bins, x, y, rng=None, method='grassberger'):
-    """Condtional entropy calculation
+    """Conditional entropy calculation
+
 
     Parameters
     ----------
@@ -82,6 +84,7 @@ def centropy(n_bins, x, y, rng=None, method='grassberger'):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', None}
         Method used to calculate entropy.
+
     Returns
     -------
     entropy : float
@@ -102,6 +105,7 @@ def knn_entropy(*args, k=None, boxsize=None):
         Number of bins.
     boxsize : float (or None)
         Wrap space between [0., boxsize)
+
     Returns
     -------
     entropy : float
@@ -145,6 +149,7 @@ def grassberger(counts):
     ----------
     counts : list
         bin counts
+
     Returns
     -------
     entropy : float
@@ -163,6 +168,7 @@ def chaowangjost(counts):
     ----------
     counts : list
         bin counts
+
     Returns
     -------
     entropy : float

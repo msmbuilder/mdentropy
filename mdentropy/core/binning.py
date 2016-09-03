@@ -21,6 +21,7 @@ def hist(n_bins, rng, *args):
         List of min/max values to bin data over.
     args : array_like, shape = (n_samples, )
         Data of which to histogram.
+
     Returns
     -------
     bins : array_like, shape = (n_bins, )
@@ -41,6 +42,7 @@ def symbolic(n_bins, rng, *args):
     args : array_like, shape = (n_samples, )
         Data of which to calculate entropy. Each array must have the same
         number of samples.
+
     Returns
     -------
     counts : float
@@ -60,8 +62,8 @@ def symbolic(n_bins, rng, *args):
 
 
 def adaptive(*args, rng=None, alpha=0.05):
-    """ Darbellay-Vajda adaptive partitioning
-    doi:10.1109/18.761290
+    """Darbellay-Vajda adaptive partitioning (doi:10.1109/18.761290)
+
         Parameters
         ----------
         args : array_like, shape = (n_samples, )
@@ -70,6 +72,7 @@ def adaptive(*args, rng=None, alpha=0.05):
             List of min/max values to bin data over.
         alpha : float
             Chi-squared test criterion.
+
         Returns
         -------
         bins : array_like, shape = (n_bins, )

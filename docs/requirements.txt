@@ -1,0 +1,12 @@
+# Include python so this file isn't empty
+python
+numpydoc
+msmbuilder
+msmb_data
+traitlets
+ipython-notebook
+jinja2
+nbconvert
+pyparsing
+matplotlib
+msmexplorer

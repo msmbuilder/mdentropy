@@ -25,6 +25,7 @@ def mutinf(n_bins, x, y, rng=None, method='grassberger'):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', 'knn', None}
         Method used to calculate entropy.
+
     Returns
     -------
     entropy : float
@@ -51,6 +52,7 @@ def knn_mutinf(x, y, k=None, boxsize=None):
         Number of bins.
     boxsize : float (or None)
         Wrap space between [0., boxsize)
+
     Returns
     -------
     mi : float
@@ -83,6 +85,7 @@ def nmutinf(n_bins, x, y, rng=None, method='grassberger'):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', 'knn', None}
         Method used to calculate entropy.
+
     Returns
     -------
     entropy : float
@@ -109,6 +112,7 @@ def cmutinf(n_bins, x, y, z, rng=None, method='grassberger'):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', 'knn', None}
         Method used to calculate entropy.
+
     Returns
     -------
     entropy : float
@@ -137,6 +141,7 @@ def knn_cmutinf(x, y, z, k=None, boxsize=None):
         Number of bins.
     boxsize : float (or None)
         Wrap space between [0., boxsize)
+
     Returns
     -------
     cmi : float
@@ -171,6 +176,7 @@ def ncmutinf(n_bins, x, y, z, rng=None, method='grassberger'):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', 'knn', None}
         Method used to calculate entropy.
+
     Returns
     -------
     ncmi : float

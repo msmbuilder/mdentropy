@@ -16,8 +16,23 @@ install:
     - conda install -yq python-coveralls
 
 script:
-    - conda build --quiet devtools/conda-recipe
+    - conda build --quiet devtools/conda-recipe &&
+      devtools/travis-ci/build_docs.sh
 
 after_success:
   - cp $HOME/miniconda3/conda-bld/test-tmp_dir/.coverage .
   - coveralls
+
+deploy:
+  - provider: s3
+    bucket: msmbuilder.org
+    upload-dir: mdentropy
+    skip_cleanup: true
+    local-dir: docs/_deploy/
+    on:
+      branch: master
+      condition: "$CONDA_PY = 3.5"
+    region: us-east-1
+    detect_encoding: true
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY

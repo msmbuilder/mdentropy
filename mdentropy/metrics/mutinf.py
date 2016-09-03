@@ -52,6 +52,7 @@ class MutualInformationBase(BaseMetric):
                 Number of shuffle iterations (default: 0)
             verbose : bool
                 Whether to display performance
+
             Returns
             -------
             result : np.ndarray, shape = (n_residue, n_residue)
