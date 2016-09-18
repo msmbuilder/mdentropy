@@ -1,14 +1,14 @@
 from .binning import symbolic
+from ..utils import nearest_distances
 
 from itertools import chain
 
 from numpy import ndarray
 from numpy import sum as npsum
 from numpy import (atleast_2d, arange, bincount, diff, finfo, float32,
-                   hsplit, linspace, log, log2, meshgrid, nan_to_num, nansum,
-                   product, random, ravel, vstack, exp)
+                   hsplit, linspace, log, meshgrid, nan_to_num, nansum,
+                   product, ravel, vstack, exp)
 
-from scipy.spatial import cKDTree
 from scipy.stats import entropy as naive
 from scipy.special import psi
 
@@ -111,13 +111,10 @@ def knn_entropy(*args, k=None, boxsize=None):
     k = k if k else max(3, int(data.shape[0] * 0.01))
     n_dims = data.shape[1]
 
-    data += EPS * random.rand(n_samples, n_dims)
-    tree = cKDTree(data, boxsize=boxsize)
-    nneighbor = [tree.query(point, k + 1, p=float('inf'))[0][k]
-                 for point in data]
+    nneighbor = nearest_distances(data, k=k)
     const = psi(n_samples) - psi(k) + n_dims * log(2)
 
-    return (const + n_dims * log(nneighbor).mean())/log(2)
+    return (const + n_dims * log(nneighbor).mean())
 
 
 def kde_entropy(rng, *args, grid_size=20, **kwargs):
@@ -137,7 +134,7 @@ def kde_entropy(rng, *args, grid_size=20, **kwargs):
     log_pdf = kde_skl.score_samples(vstack(map(ravel, grid)).T)
     prob = exp(log_pdf)
 
-    return -nansum(prob * log2(prob)) * product(diff(space)[:, 0])
+    return -nansum(prob * log_pdf) * product(diff(space)[:, 0])
 
 
 def grassberger(counts):

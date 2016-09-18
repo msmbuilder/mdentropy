@@ -1,10 +1,9 @@
 from .entropy import entropy, centropy
-from ..utils import avgdigamma
+from ..utils import avgdigamma, nearest_distances
 
-from numpy import (atleast_2d, diff, finfo, float32, log, nan_to_num, random,
+from numpy import (atleast_2d, diff, finfo, float32, nan_to_num,
                    sqrt, hstack)
 
-from scipy.spatial import cKDTree
 from scipy.special import psi
 
 __all__ = ['mutinf', 'nmutinf', 'cmutinf', 'ncmutinf']
@@ -56,21 +55,17 @@ def knn_mutinf(x, y, k=None, boxsize=None):
     -------
     mi : float
     """
-    # small noise to break degeneracy, see doc.
 
-    x += EPS * random.rand(*x.shape)
-    y += EPS * random.rand(*y.shape)
-    points = hstack((x, y))
+    data = hstack((x, y))
 
-    k = k if k else max(3, int(points.shape[0] * 0.01))
+    k = k if k else max(3, int(data.shape[0] * 0.01))
 
     # Find nearest neighbors in joint space, p=inf means max-norm
-    tree = cKDTree(points, boxsize=boxsize)
-    dvec = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in points]
-    a, b, c, d = (avgdigamma(atleast_2d(x).reshape(points.shape[0], -1), dvec),
-                  avgdigamma(atleast_2d(y).reshape(points.shape[0], -1), dvec),
-                  psi(k), psi(points.shape[0]))
-    return (-a - b + c + d) / log(2)
+    dvec = nearest_distances(data, k=k)
+    a, b, c, d = (avgdigamma(atleast_2d(x).reshape(data.shape[0], -1), dvec),
+                  avgdigamma(atleast_2d(y).reshape(data.shape[0], -1), dvec),
+                  psi(k), psi(data.shape[0]))
+    return (-a - b + c + d)
 
 
 def nmutinf(n_bins, x, y, rng=None, method='grassberger'):
@@ -146,22 +141,17 @@ def knn_cmutinf(x, y, z, k=None, boxsize=None):
     -------
     cmi : float
     """
-    # small noise to break degeneracy, see doc.
-    x += EPS * random.rand(*x.shape)
-    y += EPS * random.rand(*y.shape)
-    z += EPS * random.rand(*z.shape)
-    points = hstack((x, y, z))
+    data = hstack((x, y, z))
 
-    k = k if k else max(3, int(points.shape[0] * 0.01))
+    k = k if k else max(3, int(data.shape[0] * 0.01))
 
     # Find nearest neighbors in joint space, p=inf means max-norm
-    tree = cKDTree(points, boxsize=boxsize)
-    dvec = [tree.query(point, k + 1, p=float('inf'))[0][k] for point in points]
+    dvec = nearest_distances(data, k=k)
     a, b, c, d = (avgdigamma(hstack((x, z)), dvec),
                   avgdigamma(hstack((y, z)), dvec),
-                  avgdigamma(atleast_2d(z).reshape(points.shape[0], -1), dvec),
+                  avgdigamma(atleast_2d(z).reshape(data.shape[0], -1), dvec),
                   psi(k))
-    return (-a - b + c + d) / log(2)
+    return (-a - b + c + d)
 
 
 def ncmutinf(n_bins, x, y, z, rng=None, method='grassberger'):

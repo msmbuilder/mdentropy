@@ -2,14 +2,16 @@ from __future__ import print_function
 
 import time
 
-from numpy import dtype, finfo, float32, nan_to_num, random, unique, void
+from numpy import (dtype, finfo, float32, isscalar, log, nan_to_num, pi,
+                   random, unique, void)
+from numpy.linalg import det
 
-from scipy.spatial import cKDTree
+from sklearn.neighbors import NearestNeighbors, BallTree
 from scipy.special import digamma
 
 
 __all__ = ['floor_threshold', 'shuffle', 'Timing', 'unique_row_count',
-           'avgdigamma']
+           'nearest_distances', 'avgdigamma']
 EPS = finfo(float32).eps
 
 
@@ -85,7 +87,35 @@ def floor_threshold(arr, threshold=0.):
     return new_arr
 
 
-def avgdigamma(points, dvec):
+def entropy_gaussian(C):
+    '''
+    Entropy of a gaussian variable with covariance matrix C
+    '''
+    if isscalar(C):
+        return .5 * (1 + log(2 * pi)) + .5 * log(C)
+    else:
+        n = C.shape[0]
+        return .5 * n * (1 + log(2 * pi)) + .5 * log(abs(det(C)))
+
+
+def nearest_distances(X, k=1, leaf_size=16):
+    '''
+    X = array(N,M)
+    N = number of points
+    M = number of dimensions
+    returns the distance to the kth nearest neighbor for every point in X
+    '''
+    # small amount of noise to break degeneracy.
+    X += EPS * random.rand(*X.shape)
+
+    knn = NearestNeighbors(n_neighbors=k+1, leaf_size=leaf_size,
+                           p=float('inf'))
+    knn.fit(X)
+    d, _ = knn.kneighbors(X)  # the first nearest neighbor is itself
+    return d[:, -1]
+
+
+def avgdigamma(data, dvec, leaf_size=16):
     """Convenience function for finding expectation value of <psi(nx)> given
     some number of neighbors in some radius in a marginal space.
 
@@ -98,16 +128,8 @@ def avgdigamma(points, dvec):
     avgdigamma : float
         expectation value of <psi(nx)>
     """
-    n_samples = points.shape[0]
-    tree = cKDTree(points)
+    tree = BallTree(data, leaf_size=leaf_size, p=float('inf'))
 
-    avg = 0.
-    for i in range(n_samples):
-        dist = dvec[i]
-        # we don't include the boundary point,
-        # but implicitly add 1 to kraskov def
-        # because center point should be included
-        n_points = len(tree.query_ball_point(points[i], dist - EPS,
-                       p=float('inf')))
-        avg += digamma(n_points) / n_samples
-    return avg
+    n_points = tree.query_radius(data, dvec - EPS, count_only=True)
+
+    return digamma(n_points).mean()
