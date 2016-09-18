@@ -10,7 +10,7 @@ __all__ = ['mutinf', 'nmutinf', 'cmutinf', 'ncmutinf']
 EPS = finfo(float32).eps
 
 
-def mutinf(n_bins, x, y, rng=None, method='grassberger'):
+def mutinf(n_bins, x, y, rng=None, method='knn'):
     """Mutual information calculation
 
     Parameters
@@ -70,7 +70,7 @@ def knn_mutinf(x, y, k=None, boxsize=None):
     return (-a - b + c + d)
 
 
-def nmutinf(n_bins, x, y, rng=None, method='grassberger'):
+def nmutinf(n_bins, x, y, rng=None, method='knn'):
     """Normalized mutual information calculation
 
     Parameters
@@ -95,7 +95,7 @@ def nmutinf(n_bins, x, y, rng=None, method='grassberger'):
                       entropy(n_bins, [rng], method, y)))
 
 
-def cmutinf(n_bins, x, y, z, rng=None, method='grassberger'):
+def cmutinf(n_bins, x, y, z, rng=None, method='knn'):
     """Conditional mutual information calculation
 
     Parameters
@@ -159,7 +159,7 @@ def knn_cmutinf(x, y, z, k=None, boxsize=None):
     return (-a - b + c + d)
 
 
-def ncmutinf(n_bins, x, y, z, rng=None, method='grassberger'):
+def ncmutinf(n_bins, x, y, z, rng=None, method='knn'):
     """Normalized conditional mutual information calculation
 
     Parameters

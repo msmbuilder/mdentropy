@@ -44,7 +44,7 @@ def configure_parser(sub_parsers):
                    dest='top', help='File containing topology.',
                    default=None)
     p.add_argument('-b', '--n-bins', dest='nbins',
-                   help='Number of bins', default=30, type=int)
+                   help='Number of bins', default=3, type=int)
     p.add_argument('-n', '--n-threads', dest='N',
                    help='Number of threads', default=None, type=int)
     p.add_argument('-o', '--output', dest='out',
@@ -53,7 +53,7 @@ def configure_parser(sub_parsers):
                    help='Entropy estimate method.',
                    choices=['chaowangjost', 'grassberger', 'kde',
                             'knn', 'naive'],
-                   default='grassberger')
+                   default='knn')
     p.add_argument('-d', '--dihedrals', dest='dihedrals',
                    help='Dihedral angles to analyze.',
                    nargs='+',
