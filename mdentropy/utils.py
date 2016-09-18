@@ -1,6 +1,8 @@
 from __future__ import print_function
 
 import time
+from glob import glob
+from itertools import chain
 
 from numpy import (dtype, finfo, float32, isscalar, log, nan_to_num, pi,
                    random, unique, void)
@@ -10,8 +12,8 @@ from sklearn.neighbors import NearestNeighbors, BallTree
 from scipy.special import digamma
 
 
-__all__ = ['floor_threshold', 'shuffle', 'Timing', 'unique_row_count',
-           'nearest_distances', 'avgdigamma']
+__all__ = ['floor_threshold', 'parse_files', 'shuffle', 'Timing',
+           'unique_row_count', 'nearest_distances', 'avgdigamma']
 EPS = finfo(float32).eps
 
 
@@ -31,6 +33,11 @@ class Timing(object):
             print("Round %d : %0.3f seconds" %
                   (self.iteration, end - self.start))
         return False
+
+
+def parse_files(expr):
+    expr = expr.replace(' ', '').split(',')
+    return list(chain(*map(glob, expr)))
 
 
 def shuffle(df, n=1):

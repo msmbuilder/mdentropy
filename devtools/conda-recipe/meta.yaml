@@ -6,6 +6,8 @@ source:
   path: ../../
 
 build:
+  entry_points:
+    - mdent = mdentropy.cli.main:main
   preserve_egg_dir: True
   number: {{ GIT_DESCRIBE_NUMBER }}
 

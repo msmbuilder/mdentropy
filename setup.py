@@ -60,13 +60,17 @@ def main(**kwargs):
         download_url='https://github.com/msmbuilder/%s/tarball/master' % NAME,
         license='MIT',
         packages=find_packages(),
-        scripts=['./scripts/dmutinf', './scripts/dtent'],
         include_package_data=True,
         package_data={
             '': ['README.md',
                  'requirements.txt'],
         },
         zip_safe=False,
+        entry_points={
+            'console_scripts': [
+                'mdent = mdentropy.cli.main:main',
+            ],
+        },
         **kwargs
     )
 
