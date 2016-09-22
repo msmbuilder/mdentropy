@@ -56,7 +56,6 @@ def knn_mutinf(x, y, k=None, boxsize=None):
     -------
     mi : float
     """
-
     data = hstack((x, y))
 
     k = k if k else max(3, int(data.shape[0] * 0.01))
@@ -180,6 +179,5 @@ def ncmutinf(n_bins, x, y, z, rng=None, method='knn'):
     -------
     ncmi : float
     """
-
     return (cmutinf(n_bins, x, y, z, rng=rng, method=method) /
             centropy(n_bins, x, z, rng=rng, method=method))

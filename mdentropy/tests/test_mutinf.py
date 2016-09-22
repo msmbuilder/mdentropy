@@ -39,7 +39,7 @@ def test_mutinf_grassberger():
           rtol=.2)
 
 
-def test_mutinf_freedman_diaconis():
+def test_mutinf_doanes_rule():
     close(mutinf(None, X, Y, method='grassberger'), TRUE_MUTINF, atol=.01,
           rtol=.2)
 

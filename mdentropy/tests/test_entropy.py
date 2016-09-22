@@ -3,7 +3,6 @@ from ..core import entropy
 
 import numpy as np
 from numpy.testing import assert_allclose as close
-from unittest import skip
 
 rs = np.random.RandomState(42)
 n, d = 50000, 3
@@ -32,9 +31,8 @@ def test_entropy_grassberger():
     close(entropy(8, RNG, 'grassberger', X), TRUE_ENTROPY, rtol=.2)
 
 
-@skip('adaptive is still experimental')
-def test_entropy_adaptive():
-    close(entropy(None, RNG, 'grassberger', X), TRUE_ENTROPY, rtol=.4)
+def test_entropy_doanes_rule():
+    close(entropy(None, RNG, 'grassberger', X), TRUE_ENTROPY, atol=2., rtol=.2)
 
 
 def test_entropy_naive():

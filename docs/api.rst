@@ -12,6 +12,7 @@ Binning Functions
 .. autosummary::
     :toctree: generated/
 
+    mdentropy.core.binning.doanes_rule
     mdentropy.core.binning.hist
     mdentropy.core.binning.symbolic
 

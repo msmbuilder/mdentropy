@@ -45,7 +45,7 @@ def test_ncmutinf_grassberger():
           rtol=.2)
 
 
-def test_ncmutinf_freedman_diaconis():
+def test_ncmutinf_doanes_rule():
     close(ncmutinf(None, a, b, c, method='grassberger'), TRUE_NCMUTINF,
           atol=.05, rtol=.4)
 
