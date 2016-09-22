@@ -1,0 +1,49 @@
+package:
+  name: mdentropy
+  version: {{ GIT_DESCRIBE_TAG }}
+
+source:
+  path: ../../
+
+build:
+  entry_points:
+    - mdent = mdentropy.cli.main:main
+  preserve_egg_dir: True
+  number: {{ GIT_DESCRIBE_NUMBER }}
+
+requirements:
+  build:
+    - python
+    - setuptools
+
+  run:
+    - python
+    - numpy
+    - scipy
+    - scikit-learn
+    - pandas
+    - mdtraj
+    - msmbuilder
+
+test:
+  requires:
+    - nose
+    - nose-timer
+    - coverage
+    - python-coveralls
+    - msmb_data
+
+  imports:
+    - mdentropy
+    - mdentropy.tests
+
+  commands:
+    - python -c "import mdentropy; import mdentropy.tests;"
+    - nosetests -v mdentropy --with-timer --with-coverage --cover-package=mdentropy
+
+about:
+  home: https://github.com/msmbuilder/mdentropy
+  license: MIT
+  summary: 'Analyze correlated motions in MD trajectories with only a few lines of Python.'
+
+# vim: ts=2 sw=2 et

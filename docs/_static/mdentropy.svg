@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   height="500"
+   width="500"
+   version="1.1"
+   enable-background="new"
+   viewBox="0 0 500.00001 500.00001"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="mdentropy.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1113"
+     inkscape:window-height="572"
+     id="namedview22"
+     showgrid="false"
+     inkscape:zoom="0.3337544"
+     inkscape:cx="348.01374"
+     inkscape:cy="225.09401"
+     inkscape:window-x="0"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient4227"
+       y2="363.67"
+       gradientUnits="userSpaceOnUse"
+       x2="127.4"
+       y1="474.42"
+       x1="566.8">
+      <stop
+         id="stop4229"
+         stop-color="#525055"
+         offset="0" />
+      <stop
+         style="stop-color:#5470b2;stop-opacity:0.52549022"
+         id="stop4231"
+         stop-opacity="0"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       x1="566.8"
+       y1="474.42"
+       x2="127.4"
+       gradientUnits="userSpaceOnUse"
+       y2="363.67"
+       id="linearGradient4184">
+      <stop
+         offset="0"
+         stop-color="#525055"
+         id="stop4186" />
+      <stop
+         offset="1"
+         stop-opacity="0"
+         id="stop4188"
+         style="stop-color:#000000;stop-opacity:0" />
+    </linearGradient>
+    <linearGradient
+       x1="566.8"
+       y1="474.42"
+       x2="127.4"
+       gradientUnits="userSpaceOnUse"
+       y2="363.67"
+       id="linearGradient4174">
+      <stop
+         offset="0"
+         stop-color="#525055"
+         id="stop4176" />
+      <stop
+         offset="1"
+         stop-opacity="0"
+         id="stop4178"
+         style="stop-color:#547098;stop-opacity:0.52564102" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4232"
+       y2="363.67"
+       gradientUnits="userSpaceOnUse"
+       x2="127.4"
+       y1="474.42"
+       x1="566.8">
+      <stop
+         id="stop4228"
+         stop-color="#525055"
+         offset="0" />
+      <stop
+         id="stop4230"
+         stop-opacity="0"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4174"
+       id="linearGradient4164"
+       x1="12.996226"
+       y1="229.02644"
+       x2="481.01135"
+       y2="309.92426"
+       gradientUnits="userSpaceOnUse"
+       spreadMethod="pad" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4227"
+       id="linearGradient4182"
+       gradientUnits="userSpaceOnUse"
+       spreadMethod="pad"
+       x1="12.996226"
+       y1="229.02644"
+       x2="481.01135"
+       y2="309.92426" />
+  </defs>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer2"
+     transform="translate(0 -552.36)">
+    <flowRoot
+       id="flowRoot3336"
+       line-height="125%"
+       style="word-spacing:0px;letter-spacing:0px"
+       font-family="sans-serif"
+       xml:space="preserve"
+       transform="matrix(.80260 0 0 .80386 -30.411 464.9)"
+       stroke="url(#linearGradient4232)"
+       font-size="40px"
+       stroke-width="1.245"
+       fill="#000000"><flowRegion
+         id="flowRegion3338"><rect
+           id="rect3340"
+           height="134.29"
+           width="497.55"
+           stroke="url(#linearGradient4232)"
+           y="349.51"
+           x="125.31"
+           stroke-width="1.245" /></flowRegion><flowPara
+         id="flowPara3342"
+         stroke-width="1.245"
+         font-size="90px"
+         line-height="125%"
+         font-family="avenir"
+         fill="#525055">md<flowSpan
+   id="flowSpan4229"
+   style="baseline-shift:sub"
+   stroke-width="1.245"
+   font-size="90px"
+   stroke="url(#linearGradient4232)"
+   font-family="avenir">e</flowSpan><flowSpan
+   id="flowSpan4201"
+   style="baseline-shift:sub"
+   stroke-width="1.245"
+   fill-opacity=".78431"
+   font-size="90px"
+   stroke="url(#linearGradient4232)"
+   font-family="avenir"
+   fill="#525055">n</flowSpan><flowSpan
+   id="flowSpan4205"
+   style="baseline-shift:sub"
+   stroke-width="1.245"
+   fill-opacity=".68627"
+   font-size="90px"
+   stroke="url(#linearGradient4232)"
+   font-family="avenir"
+   fill="#525055">t</flowSpan><flowSpan
+   id="flowSpan4209"
+   style="baseline-shift:sub"
+   stroke-width="1.245"
+   fill-opacity=".58824"
+   font-size="90px"
+   stroke="url(#linearGradient4232)"
+   font-family="avenir"
+   fill="#525055">r</flowSpan><flowSpan
+   id="flowSpan4213"
+   style="baseline-shift:sub"
+   stroke-width="1.245"
+   fill-opacity=".39216"
+   font-size="90px"
+   stroke="url(#linearGradient4232)"
+   font-family="avenir"
+   fill="#525055">o</flowSpan><flowSpan
+   id="flowSpan4217"
+   style="baseline-shift:sub"
+   stroke-width="1.245"
+   fill-opacity=".29412"
+   font-size="90px"
+   stroke="url(#linearGradient4232)"
+   font-family="avenir"
+   fill="#525055">p</flowSpan><flowSpan
+   id="flowSpan4221"
+   style="baseline-shift:sub"
+   stroke-width="1.245"
+   fill-opacity=".19608"
+   font-size="90px"
+   stroke="url(#linearGradient4232)"
+   font-family="avenir"
+   fill="#525055">y</flowSpan></flowPara></flowRoot>  </g>
+  <g
+     id="layer1"
+     style="fill-opacity:1;fill:url(#linearGradient4164);stroke:none;opacity:0.96">
+    <ellipse
+       id="path3380"
+       fill-opacity=".58974"
+       rx="240"
+       transform="translate(0 -1104.7)"
+       ry="90"
+       cy="1354.7"
+       cx="250"
+       fill="#547cb7"
+       style="fill-opacity:1;fill:url(#linearGradient4182);stroke:none;opacity:0.706" />
+  </g>
+</svg>

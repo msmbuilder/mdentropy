@@ -1,17 +1,21 @@
 from __future__ import print_function
 
 import time
+from glob import glob
+from itertools import chain
 
-from numpy import (dtype, finfo, float32, isscalar, log, nan_to_num, pi,
-                   random, unique, void)
+from numpy import (dtype, exp, finfo, float32, isscalar, linspace, log,
+                   meshgrid, nan_to_num, pi, random, ravel, unique, void,
+                   vstack)
 from numpy.linalg import det
 
-from sklearn.neighbors import NearestNeighbors, BallTree
-from scipy.special import digamma
+from sklearn.neighbors import KernelDensity, NearestNeighbors, BallTree
+from scipy.special import digamma, gamma
 
 
-__all__ = ['floor_threshold', 'shuffle', 'Timing', 'unique_row_count',
-           'nearest_distances', 'avgdigamma']
+__all__ = ['floor_threshold', 'parse_files', 'shuffle', 'Timing',
+           'unique_row_count', 'kde', 'nearest_distances', 'avgdigamma',
+           'volume_unit_ball']
 EPS = finfo(float32).eps
 
 
@@ -31,6 +35,11 @@ class Timing(object):
             print("Round %d : %0.3f seconds" %
                   (self.iteration, end - self.start))
         return False
+
+
+def parse_files(expr):
+    expr = expr.replace(' ', '').split(',')
+    return list(chain(*map(glob, expr)))
 
 
 def shuffle(df, n=1):
@@ -98,6 +107,23 @@ def entropy_gaussian(C):
         return .5 * n * (1 + log(2 * pi)) + .5 * log(abs(det(C)))
 
 
+def kde(data, rng, grid_size=10,  **kwargs):
+    """Kernel Density Estimation with Scikit-learn"""
+    n_samples = data.shape[0]
+    n_dims = data.shape[1]
+
+    bandwidth = (n_samples * (n_dims + 2) / 4.)**(-1. / (n_dims + 4.))
+    kde_skl = KernelDensity(bandwidth=bandwidth, **kwargs)
+    kde_skl.fit(data)
+
+    space = [linspace(i[0], i[1], grid_size) for i in rng]
+    grid = meshgrid(*tuple(space))
+
+    # score_samples() returns the log-likelihood of the samples
+    log_pdf = kde_skl.score_samples(vstack(map(ravel, grid)).T)
+    return exp(log_pdf), space
+
+
 def nearest_distances(X, k=1, leaf_size=16):
     '''
     X = array(N,M)
@@ -108,7 +134,7 @@ def nearest_distances(X, k=1, leaf_size=16):
     # small amount of noise to break degeneracy.
     X += EPS * random.rand(*X.shape)
 
-    knn = NearestNeighbors(n_neighbors=k+1, leaf_size=leaf_size,
+    knn = NearestNeighbors(n_neighbors=k + 1, leaf_size=leaf_size,
                            p=float('inf'))
     knn.fit(X)
     d, _ = knn.kneighbors(X)  # the first nearest neighbor is itself
@@ -133,3 +159,7 @@ def avgdigamma(data, dvec, leaf_size=16):
     n_points = tree.query_radius(data, dvec - EPS, count_only=True)
 
     return digamma(n_points).mean()
+
+
+def volume_unit_ball(n_dims):
+    return (pi ** (.5 * n_dims)) / gamma(.5 * n_dims + 1)

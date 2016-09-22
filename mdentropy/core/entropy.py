@@ -1,19 +1,15 @@
 from .binning import symbolic
-from ..utils import nearest_distances
+from ..utils import kde, nearest_distances
 
 from itertools import chain
 
 from numpy import ndarray
 from numpy import sum as npsum
 from numpy import (atleast_2d, arange, bincount, diff, finfo, float32,
-                   hsplit, linspace, log, meshgrid, nan_to_num, nansum,
-                   product, ravel, vstack, exp)
+                   hsplit, log, nan_to_num, nansum, product, ravel, vstack)
 
 from scipy.stats import entropy as naive
 from scipy.special import psi
-
-
-from sklearn.neighbors import KernelDensity
 
 __all__ = ['entropy', 'centropy']
 EPS = finfo(float32).eps
@@ -33,6 +29,7 @@ def entropy(n_bins, rng, method, *args):
     args : numpy.ndarray, shape = (n_samples, ) or (n_samples, n_dims)
         Data of which to calculate entropy. Each array must have the same
         number of samples.
+
     Returns
     -------
     entropy : float
@@ -44,8 +41,7 @@ def entropy(n_bins, rng, method, *args):
                         for arg in args]))
 
     if method == 'knn':
-        return knn_entropy(*args, k=n_bins,
-                           boxsize=diff(rng).max() if rng[0] else None)
+        return knn_entropy(*args, k=n_bins)
 
     if rng is None or None in rng:
         rng = len(args) * [None]
@@ -67,8 +63,8 @@ def entropy(n_bins, rng, method, *args):
     return naive(counts)
 
 
-def centropy(n_bins, x, y, rng=None, method='grassberger'):
-    """Condtional entropy calculation
+def centropy(n_bins, x, y, rng=None, method='knn'):
+    """Conditional entropy calculation
 
     Parameters
     ----------
@@ -82,6 +78,7 @@ def centropy(n_bins, x, y, rng=None, method='grassberger'):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', None}
         Method used to calculate entropy.
+
     Returns
     -------
     entropy : float
@@ -90,7 +87,7 @@ def centropy(n_bins, x, y, rng=None, method='grassberger'):
             entropy(n_bins, [rng], method, y))
 
 
-def knn_entropy(*args, k=None, boxsize=None):
+def knn_entropy(*args, k=None):
     """Entropy calculation
 
     Parameters
@@ -100,41 +97,28 @@ def knn_entropy(*args, k=None, boxsize=None):
         number of samples.
     k : int
         Number of bins.
-    boxsize : float (or None)
-        Wrap space between [0., boxsize)
+
     Returns
     -------
     entropy : float
     """
     data = vstack((args)).T
-    n_samples = data.shape[0]
-    k = k if k else max(3, int(data.shape[0] * 0.01))
-    n_dims = data.shape[1]
+    n_samples, n_dims = data.shape
+    k = k if k else max(3, int(n_samples * 0.01))
 
     nneighbor = nearest_distances(data, k=k)
-    const = psi(n_samples) - psi(k) + n_dims * log(2)
+    const = psi(n_samples) - psi(k) + n_dims * log(2.)
 
     return (const + n_dims * log(nneighbor).mean())
 
 
 def kde_entropy(rng, *args, grid_size=20, **kwargs):
-    """Kernel Density Estimation with Scikit-learn"""
+    """Kernel Density Estimation of Entropy"""
     data = vstack((args)).T
-    n_samples = data.shape[0]
-    n_dims = data.shape[1]
 
-    bandwidth = (n_samples * (n_dims + 2) / 4.)**(-1. / (n_dims + 4.))
-    kde_skl = KernelDensity(bandwidth=bandwidth, **kwargs)
-    kde_skl.fit(data)
+    prob, space = kde(data, rng, grid_size=20, **kwargs)
 
-    space = [linspace(i[0], i[1], grid_size) for i in rng]
-    grid = meshgrid(*tuple(space))
-
-    # score_samples() returns the log-likelihood of the samples
-    log_pdf = kde_skl.score_samples(vstack(map(ravel, grid)).T)
-    prob = exp(log_pdf)
-
-    return -nansum(prob * log_pdf) * product(diff(space)[:, 0])
+    return -nansum(prob * log(prob)) * product(diff(space)[:, 0])
 
 
 def grassberger(counts):
@@ -145,6 +129,7 @@ def grassberger(counts):
     ----------
     counts : list
         bin counts
+
     Returns
     -------
     entropy : float
@@ -163,6 +148,7 @@ def chaowangjost(counts):
     ----------
     counts : list
         bin counts
+
     Returns
     -------
     entropy : float

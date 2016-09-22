@@ -1,13 +1,32 @@
 from ..utils import unique_row_count
 
-from itertools import product as iterproduct
+from numpy import (array, atleast_1d, digitize, empty, floor, linspace, log2,
+                   histogramdd, hstack, ndarray, sqrt, vstack)
+from scipy.stats import skew
 
-from numpy import (digitize, empty, linspace, histogramdd, hstack, product,
-                   vstack, zeros)
+__all__ = ['hist', 'symbolic', 'doanes_rule']
 
-from scipy.stats import binom_test
 
-__all__ = ['hist', 'symbolic', 'adaptive']
+def doanes_rule(x):
+    """Convenience function for choosing an optimal number of bins using Doane's Rule.
+
+    Parameters
+    ----------
+    x : numpy.ndarray or list of floats
+        Data to be binned.
+
+    Returns
+    -------
+    n_bins : int
+    """
+    if not isinstance(x, ndarray):
+        x = array(x)
+
+    n = x.shape[0]
+    g1 = atleast_1d(skew(x))
+    sg1 = sqrt(6 * (n - 2) / ((n + 1) * (n + 3)))
+
+    return min(floor(1 + log2(n) + log2(1 + abs(g1)/sg1)))
 
 
 def hist(n_bins, rng, *args):
@@ -21,11 +40,16 @@ def hist(n_bins, rng, *args):
         List of min/max values to bin data over.
     args : array_like, shape = (n_samples, )
         Data of which to histogram.
+
     Returns
     -------
     bins : array_like, shape = (n_bins, )
     """
     data = vstack((args)).T
+
+    if n_bins is None:
+        n_bins = doanes_rule(data)
+
     return histogramdd(data, bins=n_bins, range=rng)[0].flatten()
 
 
@@ -41,91 +65,20 @@ def symbolic(n_bins, rng, *args):
     args : array_like, shape = (n_samples, )
         Data of which to calculate entropy. Each array must have the same
         number of samples.
+
     Returns
     -------
     counts : float
     """
-
     labels = empty(0).reshape(args[0].shape[0], 0)
+    if n_bins is None:
+        n_bins = min(map(doanes_rule, args))
+
     for i, arg in enumerate(args):
-        if n_bins is not None:
-            partitions = linspace(rng[i][0], rng[i][1], n_bins + 1)
-            label = digitize(arg, partitions).reshape(-1, 1)
-        else:
-            rng = tuple(rng)
-            label = adaptive(arg)
+
+        partitions = linspace(rng[i][0], rng[i][1], n_bins + 1)
+        label = digitize(arg, partitions).reshape(-1, 1)
+
         labels = hstack((labels, label))
 
     return unique_row_count(labels)
-
-
-def adaptive(*args, rng=None, alpha=0.05):
-    """ Darbellay-Vajda adaptive partitioning
-    doi:10.1109/18.761290
-        Parameters
-        ----------
-        args : array_like, shape = (n_samples, )
-            Data of which to histogram.
-        rng : list of lists
-            List of min/max values to bin data over.
-        alpha : float
-            Chi-squared test criterion.
-        Returns
-        -------
-        bins : array_like, shape = (n_bins, )
-    """
-    data = vstack(args).T
-
-    # Get number of dimensions
-    n_dims = data.shape[1]
-    dims = range(n_dims)
-
-    # If no ranges are supplied, initialize with min/max for each dimension
-    if rng is None:
-        rng = tuple((data[:, i].min(), data[:, i].max()) for i in dims)
-
-    if not (0. <= alpha < 1):
-        raise ValueError('alpha must be a float in [0, 1).')
-
-    def dvpartition(data, rng):
-        nonlocal n_dims
-        nonlocal counts
-        nonlocal labels
-        nonlocal dims
-
-        # Filter out data that is not in our initial partition
-        where = product([(i[0] <= data[:, j]) * (i[1] >= data[:, j])
-                        for j, i in enumerate(rng)], 0).astype(bool)
-        filtered = data[where, :]
-
-        # Subdivide our partitions by the midpoint in each dimension
-        partitions = set([])
-        part = [linspace(rng[i][0], rng[i][1], 3) for i in dims]
-        newrng = set((tuple((part[i][j[i]], part[i][j[i] + 1]) for i in dims)
-                     for j in iterproduct(*(n_dims * [[0, 1]]))),)
-
-        # Calculate counts for new partitions
-        freq = histogramdd(filtered, bins=part)[0]
-
-        # Perform binomial test which a given alpha,
-        # and if not uniform proceed
-        if (binom_test(freq) < alpha / 2. and
-                False not in ((filtered.max(0) - filtered.min(0)).T > 0)):
-
-            # For each new partition continue algorithm recursively
-            for nr in newrng:
-                newpart = dvpartition(data, rng=nr)
-                for newp in newpart:
-                    partitions.update(tuple((newp,)))
-
-        # Else if uniform and contains data, return current partition
-        elif filtered.shape[0] > 0:
-            partitions = set(tuple((rng,)))
-            labels[where] = len(counts)
-            counts += (filtered.shape[0],)
-        return partitions
-
-    counts = ()
-    labels = zeros(data.shape[0], dtype=int)
-    dvpartition(data, rng)
-    return labels.reshape(-1, n_dims)

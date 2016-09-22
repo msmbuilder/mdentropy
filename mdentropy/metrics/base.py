@@ -42,6 +42,7 @@ class BaseMetric(object):
             Number of shuffle iterations (default: 0)
         verbose : bool
             Whether to display performance
+
         Returns
         -------
         result : np.ndarray
@@ -68,6 +69,7 @@ class BaseMetric(object):
             Number of shuffle iterations (default: 0)
         verbose : bool
             Whether to display performance
+
         Returns
         -------
         result : array_like

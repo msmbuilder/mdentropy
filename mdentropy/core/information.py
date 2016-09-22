@@ -1,8 +1,7 @@
 from .entropy import entropy, centropy
 from ..utils import avgdigamma, nearest_distances
 
-from numpy import (atleast_2d, diff, finfo, float32, nan_to_num,
-                   sqrt, hstack)
+from numpy import (atleast_2d, diff, finfo, float32, hstack, nan_to_num, sqrt)
 
 from scipy.special import psi
 
@@ -10,7 +9,7 @@ __all__ = ['mutinf', 'nmutinf', 'cmutinf', 'ncmutinf']
 EPS = finfo(float32).eps
 
 
-def mutinf(n_bins, x, y, rng=None, method='grassberger'):
+def mutinf(n_bins, x, y, rng=None, method='knn'):
     """Mutual information calculation
 
     Parameters
@@ -25,6 +24,7 @@ def mutinf(n_bins, x, y, rng=None, method='grassberger'):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', 'knn', None}
         Method used to calculate entropy.
+
     Returns
     -------
     entropy : float
@@ -51,11 +51,11 @@ def knn_mutinf(x, y, k=None, boxsize=None):
         Number of bins.
     boxsize : float (or None)
         Wrap space between [0., boxsize)
+
     Returns
     -------
     mi : float
     """
-
     data = hstack((x, y))
 
     k = k if k else max(3, int(data.shape[0] * 0.01))
@@ -65,10 +65,10 @@ def knn_mutinf(x, y, k=None, boxsize=None):
     a, b, c, d = (avgdigamma(atleast_2d(x).reshape(data.shape[0], -1), dvec),
                   avgdigamma(atleast_2d(y).reshape(data.shape[0], -1), dvec),
                   psi(k), psi(data.shape[0]))
-    return (-a - b + c + d)
+    return max((-a - b + c + d), 0.)
 
 
-def nmutinf(n_bins, x, y, rng=None, method='grassberger'):
+def nmutinf(n_bins, x, y, rng=None, method='knn'):
     """Normalized mutual information calculation
 
     Parameters
@@ -83,6 +83,7 @@ def nmutinf(n_bins, x, y, rng=None, method='grassberger'):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', 'knn', None}
         Method used to calculate entropy.
+
     Returns
     -------
     entropy : float
@@ -92,7 +93,7 @@ def nmutinf(n_bins, x, y, rng=None, method='grassberger'):
                       entropy(n_bins, [rng], method, y)))
 
 
-def cmutinf(n_bins, x, y, z, rng=None, method='grassberger'):
+def cmutinf(n_bins, x, y, z, rng=None, method='knn'):
     """Conditional mutual information calculation
 
     Parameters
@@ -109,6 +110,7 @@ def cmutinf(n_bins, x, y, z, rng=None, method='grassberger'):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', 'knn', None}
         Method used to calculate entropy.
+
     Returns
     -------
     entropy : float
@@ -137,6 +139,7 @@ def knn_cmutinf(x, y, z, k=None, boxsize=None):
         Number of bins.
     boxsize : float (or None)
         Wrap space between [0., boxsize)
+
     Returns
     -------
     cmi : float
@@ -151,10 +154,10 @@ def knn_cmutinf(x, y, z, k=None, boxsize=None):
                   avgdigamma(hstack((y, z)), dvec),
                   avgdigamma(atleast_2d(z).reshape(data.shape[0], -1), dvec),
                   psi(k))
-    return (-a - b + c + d)
+    return max((-a - b + c + d), 0.)
 
 
-def ncmutinf(n_bins, x, y, z, rng=None, method='grassberger'):
+def ncmutinf(n_bins, x, y, z, rng=None, method='knn'):
     """Normalized conditional mutual information calculation
 
     Parameters
@@ -171,10 +174,10 @@ def ncmutinf(n_bins, x, y, z, rng=None, method='grassberger'):
         List of min/max values to bin data over.
     method : {'kde', 'chaowangjost', 'grassberger', 'knn', None}
         Method used to calculate entropy.
+
     Returns
     -------
     ncmi : float
     """
-
     return (cmutinf(n_bins, x, y, z, rng=rng, method=method) /
             centropy(n_bins, x, z, rng=rng, method=method))
