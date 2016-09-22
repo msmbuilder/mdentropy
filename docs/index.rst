@@ -31,6 +31,7 @@ All development takes place on `GitHub <https://github.com/msmbuilder/mdentropy>
    examples/index
    api
    contributing
+   publications
    changelog
 
 .. raw:: html

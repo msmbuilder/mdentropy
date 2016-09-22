@@ -1,8 +1,7 @@
 from .entropy import entropy, centropy
 from ..utils import avgdigamma, nearest_distances
 
-from numpy import (atleast_2d, diff, finfo, float32, nan_to_num,
-                   sqrt, hstack)
+from numpy import (atleast_2d, diff, finfo, float32, hstack, nan_to_num, sqrt)
 
 from scipy.special import psi
 
@@ -67,7 +66,7 @@ def knn_mutinf(x, y, k=None, boxsize=None):
     a, b, c, d = (avgdigamma(atleast_2d(x).reshape(data.shape[0], -1), dvec),
                   avgdigamma(atleast_2d(y).reshape(data.shape[0], -1), dvec),
                   psi(k), psi(data.shape[0]))
-    return (-a - b + c + d)
+    return max((-a - b + c + d), 0.)
 
 
 def nmutinf(n_bins, x, y, rng=None, method='knn'):
@@ -156,7 +155,7 @@ def knn_cmutinf(x, y, z, k=None, boxsize=None):
                   avgdigamma(hstack((y, z)), dvec),
                   avgdigamma(atleast_2d(z).reshape(data.shape[0], -1), dvec),
                   psi(k))
-    return (-a - b + c + d)
+    return max((-a - b + c + d), 0.)
 
 
 def ncmutinf(n_bins, x, y, z, rng=None, method='knn'):
