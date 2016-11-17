@@ -42,7 +42,7 @@ def args_func(args, p):
         if e.__class__.__name__ not in ('ScannerError', 'ParserError'):
             message = """\
 An unexpected error has occurred with mdentropy (version %s), please
-consider sending the following traceback to the osprey GitHub issue tracker at:
+consider sending the following traceback to the mdentropy GitHub issue tracker at:
         https://github.com/msmbuilder/mdentropy/issues
 """
             print(message % __version__, file=sys.stderr)
