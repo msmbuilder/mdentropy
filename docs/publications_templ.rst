@@ -17,7 +17,7 @@ edit ``docs/publications.bib`` and submit a pull request.
 --------------------------------------------------------------------------------
 
  * {{pub.author | join('; ')}}
- * *{{pub.journal}}* **{{pub.year}}**, {{pub.volume}} {{pub.pages}}
+ * *{{pub.journal}}* **{{pub.year}}**
  * `doi: {{pub.doi}} <http://dx.doi.org/{{pub.doi}}>`_
 
 {{pub.abstract | wordwrap }}
