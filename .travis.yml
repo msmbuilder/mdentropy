@@ -16,8 +16,8 @@ install:
     - conda install -yq python-coveralls
 
 script:
-    - conda build --quiet devtools/conda-recipe &&
-      devtools/travis-ci/build_docs.sh
+    - conda build --quiet devtools/conda-recipe
+    - if [ "$CONDA_PY" = "3.5" ]; then devtools/travis-ci/build_docs.sh; fi
 
 after_success:
   - cp $HOME/miniconda3/conda-bld/test-tmp_dir/.coverage .
