@@ -34,7 +34,7 @@ as ``mdtraj``, ``msmbuilder``, and ``numpy`` [@mdtraj, @numpy, @msmbuilder].
 Functionality in *MDEntropy* is centered around ``mdtraj`` trajectories and the
 statistical tools available in ``msmbuilder``. Leveraging these tools allows
 for statistically robust analyses of many IT estimators across a variety of
-biomolecular feature-spaces.
+biomolecular feature-spaces [@schreiber, @grassberger].
 
 *MDEntropy* is actively developed and maintained by researchers at Stanford
 University. Source code for *MDEntropy* is hosted on GitHub and is
