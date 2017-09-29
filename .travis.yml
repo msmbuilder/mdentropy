@@ -5,6 +5,7 @@ env:
     matrix:
         - CONDA_PY=3.4
         - CONDA_PY=3.5
+        - CONDA_PY=3.6
 
 branches:
   only:
@@ -31,7 +32,7 @@ deploy:
     local-dir: docs/_deploy/
     on:
       branch: master
-      condition: "$CONDA_PY = 3.5"
+      condition: "$CONDA_PY = 3.6"
     region: us-east-1
     detect_encoding: true
     access_key_id: $AWS_ACCESS_KEY
