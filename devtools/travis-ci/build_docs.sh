@@ -17,6 +17,7 @@ pip install -I urllib3 sphinx_rtd_theme==0.1.9 msmb_theme==1.2.0
 # Install doc requirements
 conda install --yes --file docs/requirements.txt
 conda install -yq -c bioconda nglview
+jupyter nbextension enable --py --sys-prefix widgetsnbextension
 
 # Make docs
 cd docs && make html && cd -
