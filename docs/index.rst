@@ -18,7 +18,18 @@ application areas in computational protein dynamics and drug design, and distrib
 under the `MIT License <https://tldrlegal.com/l/mit>`_.
 All development takes place on `GitHub <https://github.com/msmbuilder/mdentropy>`_.
 
+To cite MDEntropy, please use the following reference:
 
+.. code:: bibtex
+
+  @misc{mdentropy,
+    author       = {Carlos X. Hern{\'{a}}ndez and Vijay S. Pande},
+    title        = {mdentropy: v0.2},
+    month        = jun,
+    year         = 2015,
+    doi          = {10.5281/zenodo.18859},
+    url          = {https://doi.org/10.5281/zenodo.18859}
+  }
 
 .. raw:: html
 
