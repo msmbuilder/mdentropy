@@ -18,7 +18,7 @@ install:
 
 script:
     - conda build --quiet devtools/conda-recipe
-    - if [ "$CONDA_PY" = "3.5" ]; then devtools/travis-ci/build_docs.sh; fi
+    - if [ "$CONDA_PY" = "3.6" ]; then devtools/travis-ci/build_docs.sh; fi
 
 after_success:
   - cp $HOME/miniconda3/conda-bld/test-tmp_dir/.coverage .
