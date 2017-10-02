@@ -4,7 +4,7 @@ numpydoc
 msmbuilder
 msmb_data
 traitlets
-ipython-notebook
+jupyter
 jinja2
 nbconvert
 pyparsing
