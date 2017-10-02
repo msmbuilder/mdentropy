@@ -17,7 +17,7 @@ affiliations:
 date: 1 October 2017
 bibliography: paper.bib
 repository: https://github.com/msmbuilder/mdentropy
-archive_doi: https://doi.org/10.5281/zenodo.18859
+archive_doi: https://doi.org/10.5281/zenodo.1000997
 ---
 
 
