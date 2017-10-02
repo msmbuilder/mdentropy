@@ -14,8 +14,8 @@ from setuptools import setup, find_packages
 from basesetup import write_version_py
 
 NAME = "mdentropy"
-VERSION = "0.3.0.dev0"
-ISRELEASED = False
+VERSION = "0.3.0"
+ISRELEASED = True
 __version__ = VERSION
 
 
