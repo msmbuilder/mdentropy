@@ -24,11 +24,11 @@ To cite MDEntropy, please use the following reference:
 
   @misc{mdentropy,
     author       = {Carlos X. Hern{\'{a}}ndez and Vijay S. Pande},
-    title        = {mdentropy: v0.2},
-    month        = jun,
-    year         = 2015,
-    doi          = {10.5281/zenodo.18859},
-    url          = {https://doi.org/10.5281/zenodo.18859}
+    title        = {msmbuilder/mdentropy: v0.3},
+    month        = oct,
+    year         = 2017,
+    doi          = {10.5281/zenodo.1000997},
+    url          = {https://doi.org/10.5281/zenodo.1000997}
   }
 
 .. raw:: html
