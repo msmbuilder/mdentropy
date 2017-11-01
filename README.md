@@ -21,6 +21,23 @@ calculate:
 + Normalized Conditional Mutual Information
 
 
+## Documentation
+
+Full documentation can be found at [http://msmbuilder.org/mdentropy/](http://msmbuilder.org/mdentropy/).
+For information about installation, please refer to our [Installation](http://msmbuilder.org/mdentropy/0.3.0/installation.html) page.
+
+We also have [example notebooks](http://msmbuilder.org/mdentropy/0.3.0/examples/index.html) with common use cases for MDEntropy.
+Please feel free to add your own as a pull-request!
+
+## Requirements
+
++ `python`>=3.4
++ `numpy`>=1.10.4
++ `scipy`>=0.17.0
++ `scikit-learn`>=0.17.0
++ `msmbuilder`>=3.5.0
++ `nose` (optional, for testing)
+
 ## Citing
 
 Please cite:
