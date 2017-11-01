@@ -21,6 +21,9 @@ them in Jupyter::
   mutual-information
 
 
+Please note that additional requirement for these notebooks inclue the latest versions of ``matplotlib``, ``nglview``, and ``msmexplorer``.
+
+
 Contributing examples
 ---------------------
 
