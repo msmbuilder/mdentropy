@@ -51,7 +51,7 @@ Or clone the repo yourself and run `setup.py`:
 
 Dependencies
 ------------
-- ``python>=2.7.11``
+- ``python>=3.4``
 - ``numpy>=1.10.4``
 - ``scipy>=0.17.0``
 - ``scikit-learn>=0.17.0``
