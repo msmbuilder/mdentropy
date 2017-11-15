@@ -3,7 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/mdentropy.svg)](http://badge.fury.io/py/mdentropy)
 [![License](https://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg?style=flat)](http://msmbuilder.org/mdentropy/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1000997.svg)](https://doi.org/10.5281/zenodo.1000997)
+[![DOI](http://joss.theoj.org/papers/10.21105/joss.00427/status.svg)](https://doi.org/10.21105/joss.00427)
 
 
 MDEntropy
@@ -43,12 +43,12 @@ Please feel free to add your own as a pull-request!
 Please cite:
 
 ```bibtex
-@misc{mdentropy,
+@article{mdentropy,
   author       = {Carlos X. Hern{\'{a}}ndez and Vijay S. Pande},
-  title        = {msmbuilder/mdentropy: v0.3},
-  month        = oct,
+  title        = {{MDEntropy: Information-Theoretic Analyses for Molecular Dynamics}},
+  month        = nov,
   year         = 2017,
-  doi          = {10.5281/zenodo.1000997},
-  url          = {https://doi.org/10.5281/zenodo.1000997}
+  doi          = {10.21105/joss.00427},
+  url          = {https://doi.org/10.21105/joss.00427}
 }
 ```
