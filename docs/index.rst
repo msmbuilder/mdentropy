@@ -22,13 +22,13 @@ To cite MDEntropy, please use the following reference:
 
 .. code:: bibtex
 
-  @misc{mdentropy,
+  @article{mdentropy,
     author       = {Carlos X. Hern{\'{a}}ndez and Vijay S. Pande},
-    title        = {msmbuilder/mdentropy: v0.3},
-    month        = oct,
+    title        = {{MDEntropy: Information-Theoretic Analyses for Molecular Dynamics}},
+    month        = nov,
     year         = 2017,
-    doi          = {10.5281/zenodo.1000997},
-    url          = {https://doi.org/10.5281/zenodo.1000997}
+    doi          = {10.21105/joss.00427},
+    url          = {https://doi.org/10.21105/joss.00427}
   }
 
 .. raw:: html
