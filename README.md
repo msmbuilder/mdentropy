@@ -43,7 +43,7 @@ Please feel free to add your own as a pull-request!
 Please cite:
 
 ```bibtex
-@misc{mdentropy,
+@article{mdentropy,
   author       = {Carlos X. Hern{\'{a}}ndez and Vijay S. Pande},
   title        = {{MDEntropy: Information-Theoretic Analyses for Molecular Dynamics}},
   month        = nov,
