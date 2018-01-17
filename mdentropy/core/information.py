@@ -39,7 +39,7 @@ def mutinf(n_bins, x, y, rng=None, method='knn'):
 
 
 def knn_mutinf(x, y, k=None, boxsize=None):
-    """Entropy calculation
+    """k-NN mutual information calculation
 
     Parameters
     ----------
